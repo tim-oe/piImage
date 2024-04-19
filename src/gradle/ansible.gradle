@@ -1,0 +1,14 @@
+tasks.register('aptUpdate') {
+    description = 'run ansible apt update script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+            'ansible-playbook ' +
+            '-i ' +
+            'tec-test, ' +  
+            'src/ansible/common/apt-update.yml'
+        }
+    }
+}

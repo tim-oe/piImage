@@ -1,0 +1,33 @@
+ #
+---
+- name: disable onboard wifi
+  hosts: all
+  become: true
+  become_user: root
+  vars:
+    config_file: /boot/firmware/config.txt
+    disable_wifi: dtoverlay=disable-wifi
+  tasks:
+  - name: Remove wifi packages
+    ansible.builtin.apt:
+      name: "{{ item }}"
+      state: absent
+    loop:
+     - firmware-brcm80211 
+     - firmware-atheros 
+     - firmware-libertas 
+     - firmware-misc-nonfree 
+  - name: Check if wifi already disabled.
+    lineinfile:
+      state: absent
+      path: "{{ config_file }}"
+      regexp: "^{{ disable_wifi }}"
+    check_mode: true
+    changed_when: false 
+    register: wifi
+  - name: Disble onboard wifi.
+    lineinfile:
+      state: present
+      path: "{{ config_file }}"
+      line: "{{ disable_wifi }}"
+    when: wifi.found == 0

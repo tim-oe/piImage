@@ -1,0 +1,35 @@
+# https://askubuntu.com/questions/346857/how-do-i-force-ssh-to-only-allow-users-with-a-key-to-log-in
+# https://askubuntu.com/questions/1338807/default-sshd-config-file-for-ubunu-20-04
+---
+- name: Lockdown ssh configs
+  hosts: all
+  become: true
+  become_user: root
+  vars:
+    config_file: /etc/ssh/sshd_config
+  tasks:
+    - name: Enable public key authentication
+      ansible.builtin.replace:
+        path: "{{ config_file }}"
+        regexp: '^#PubkeyAuthentication.*$'
+        replace: 'PubkeyAuthentication yes'
+    - name: Disable password authentication
+      ansible.builtin.replace:
+        path: "{{ config_file }}"
+        regexp: '^#PasswordAuthentication.*$'
+        replace: 'PasswordAuthentication no'
+    - name: Disable root authentication
+      ansible.builtin.replace:
+        path: "{{ config_file }}"
+        regexp: '^#PermitRootLogin.*$'
+        replace: 'PermitRootLogin no'
+    - name: Disable empty pwd authentication
+      ansible.builtin.replace:
+        path: "{{ config_file }}"
+        regexp: '^#PermitEmptyPasswords.*$'
+        replace: 'PermitEmptyPasswords no'
+    - name: restart  sshd
+      systemd:
+        state: restarted
+        daemon_reload: yes
+        name: sshd
