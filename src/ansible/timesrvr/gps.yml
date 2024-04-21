@@ -1,0 +1,78 @@
+# https://unix.stackexchange.com/questions/385749/preventing-udev-symlink-overwrite
+---
+- name: setup gps
+  hosts: all
+  become: true
+  become_user: root
+  vars:
+    gpsd_config_file: /etc/default/gpsd
+    gps_dev: ttyAMA0
+    config_file: /boot/firmware/config.txt
+    # TODO pin could be variable
+    pps_enable: dtoverlay=pps-gpio,gpiopin=4
+    udev_file: /etc/udev/rules.d/100-nmea.rules 
+  tasks:
+    - name: Update apt repo and cache.
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+    - name: install gpsd
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - gpsd
+        - gpsd-tools
+        - gpsd-clients 
+    - name: configure gps devices
+      ansible.builtin.replace:
+        path: "{{ gpsd_config_file }}"
+        regexp: '^DEVICES=.*$'
+        replace: 'DEVICES="/dev/gps0 /dev/pps0"'
+    - name: configure gps options
+      ansible.builtin.replace:
+        path: "{{ gpsd_config_file }}"
+        regexp: '^GPSD_OPTIONS=.*$'
+        replace: 'GPSD_OPTIONS="-n"'
+    - name: install pps
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - libcap-dev 
+        - libssl-dev 
+        - pps-tools
+    - name: Check if pps enabled.
+      lineinfile:
+        state: absent_SEED_SERVERS_
+        path: "{{ config_file }}"
+        regexp: "^{{ pps_enable }}"
+      check_mode: true
+      changed_when: false 
+      register: pps
+    - name: enable pps channel.
+      lineinfile:
+        state: present
+        path: "{{ config_file }}"
+        line: "{{ pps_enable }}"
+      when: pps.found == 0
+    - name: remove udev linkage rule file
+      ansible.builtin.file:
+        path: "{{ udev_file }}"
+        state: absent
+    - name: create udev rules
+      copy:
+        dest: "{{ udev_file }}"
+        content: |
+          ACTION=="add", SUBSYSTEM=="tty", KERNEL=="{{ gps_dev }}", SYMLINK+="gps0", GROUP="dialout"
+          ACTION=="add", SUBSYSTEM=="pps", KERNEL=="pps0", SYMLINK+="gpspps0"
+    - name: Enable gpsd.service
+      ansible.builtin.systemd_service:
+        name: gpsd.service
+        enabled: true
+        masked: no
+    - name: Enable gpsd.socket
+      ansible.builtin.systemd_service:
+        name: gpsd.socket
+        enabled: true
+        masked: no

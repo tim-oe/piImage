@@ -1,3 +1,19 @@
+// dowload pi image
+// https://downloads.raspberrypi.com/raspios_lite_arm64/images
+tasks.register('imgGet') {
+    description = 'copy clean image to target'
+    group = 'sdm'
+    doLast {
+        ant.get(src: "${pi_img_url}", dest: "${project.rootDir}/img", verbose: true)
+        exec {
+            workingDir "${project.rootDir}/img"
+            commandLine 'bash', '-c',
+            'unxz ' + 
+            "${pi_img}.xz"
+        }
+    }
+}
+
 // copy fresh image to build dir
 tasks.register('imgInit') {
     description = 'copy clean image to target'
@@ -36,6 +52,22 @@ tasks.register('sdmImage') {
             '--regen-ssh-host-keys ' + 
             '--reboot 5 ' + 
             '--nowait-timesync ' + 
+            "${project.buildDir}/${pi_img}"
+        }
+    }
+}
+
+// https://github.com/gitbls/sdm/blob/master/Docs/Burn-Scripts.md
+tasks.register('sdmBurn') {
+    description = 'burn customized rpi image to sd card'
+    group = 'sdm'
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+            'sudo sdm --burn /dev/sdc ' + 
+            '--hostname tec-test ' + 
+            '--expand-root ' + 
             "${project.buildDir}/${pi_img}"
         }
     }

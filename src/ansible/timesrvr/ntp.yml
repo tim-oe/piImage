@@ -1,0 +1,92 @@
+# https://gist.github.com/edro15/c3fbaaabfe31ecb799363ffab587f336
+# https://blog.thelifeofkenneth.com/2020/03/building-raspberry-pi-stratum-1-ntp.html
+# seed servers
+# https://support.ntp.org/Servers/NTPPoolServers
+# pps driver
+# https://www.eecis.udel.edu/~mills/ntp/html/drivers/driver22.html
+# https://www.ntp.org/documentation/drivers/driver22/
+# shm driver
+# https://www.ntp.org/documentation/drivers/driver28/
+# https://www.eecis.udel.edu/~mills/ntp/html/drivers/driver28.html
+# nmea driver
+# https://www.eecis.udel.edu/~mills/ntp/html/drivers/driver20.html
+# https://www.ntp.org/documentation/drivers/driver20/
+---
+- name: setup ntp
+  hosts: all
+  become: true
+  become_user: root
+  vars:
+    config_file: /etc/ntpsec/ntp.conf
+    use_shm: false
+  tasks:
+    - name: Update apt repo and cache.
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+    - name: Remove systemd timesync
+      ansible.builtin.apt:
+        name: systemd-timesyncd
+        state: absent
+    - name: install ntp
+      ansible.builtin.apt:
+        name: ntp
+        state: present
+    - name: clear pools
+      ansible.builtin.replace:
+        path: "{{ config_file }}"
+        regexp: '^pool '
+        replace: '#pool '
+    - name: add seed servers
+      blockinfile: 
+        state: present
+        insertafter: EOF
+        dest: "{{ config_file }}"
+        marker: "# _SEED_SERVERS_"
+        append_newline: true
+        prepend_newline: true
+        content: |
+            server 0.north-america.pool.ntp.org
+            server 1.north-america.pool.ntp.org
+            server 2.north-america.pool.ntp.org
+            server 3.north-america.pool.ntp.org
+    - name: add pps driver
+      blockinfile: 
+        state: present
+        insertafter: EOF
+        dest: "{{ config_file }}"
+        marker: "# _PPS_DRIVER_"
+        append_newline: true
+        prepend_newline: true
+        content: |
+            server 127.127.22.0 minpoll 4
+            fudge 127.127.22.0 refid PPS flag3 1 time1 0.0
+    - name: add shm driver
+      blockinfile: 
+        state: present
+        insertafter: EOF
+        dest: "{{ config_file }}"
+        marker: "# _SHM_DRIVER_"
+        append_newline: true
+        prepend_newline: true
+        content: |
+            server 127.127.28.0 minpoll 4 maxpoll 4 prefer
+            fudge 127.127.28.0 refid GPS stratum 0 time1 0.5
+      when: use_shm == true
+    - name: add nmea driver
+      blockinfile: 
+        state: present
+        insertafter: EOF
+        dest: "{{ config_file }}"
+        marker: "# _NMEA_DRIVER_"
+        append_newline: true
+        prepend_newline: true
+        content: |
+            server 127.127.20.0 mode 131088 minpoll 4 prefer
+            fudge 127.127.20.0 stratum 0 refid NMEA flag1 1 flag3 1 time1 0.0 time2 0.5
+      when: use_shm == false
+    - name: Enable ntp
+      ansible.builtin.systemd_service:
+        name: ntpsec.service
+        enabled: true
+        masked: no

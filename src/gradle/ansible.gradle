@@ -12,3 +12,35 @@ tasks.register('aptUpdate') {
         }
     }
 }
+
+tasks.register('gpsdUsb0') {
+    description = 'run ansible gpsd script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+            'ansible-playbook ' +
+            '-i ' +
+            'tec-test, ' +  
+            'src/ansible/timesrvr/gps.yml ' +
+            '-e \'{"gps_dev":"ttyUSB0"}\''
+        }
+    }
+}
+
+tasks.register('ntpShm') {
+    description = 'run ansible gpsd script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+            'ansible-playbook ' +
+            '-i ' +
+            'tec-test, ' +  
+            'src/ansible/timesrvr/ntp.yml ' +
+            '-e \'{"use_shm":true}\''
+        }
+    }
+}
