@@ -7,11 +7,177 @@ tasks.register('aptUpdate') {
             commandLine 'bash', '-c',
             'ansible-playbook ' +
             '-i ' +
-            'tec-test, ' +  
+            "${target_host}, " +  
             'src/ansible/common/apt-update.yml'
         }
     }
 }
+
+tasks.register('aptPurge') {
+    description = 'run ansible apt purge script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+            'ansible-playbook ' +
+            '-i ' +
+            "${target_host}, " +  
+            'src/ansible/common/apt-purge.yml'
+        }
+    }
+}
+
+tasks.register('brutoof') {
+    description = 'run ansible disable onboard brutoof script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+            'ansible-playbook ' +
+            '-i ' +
+            "${target_host}, " +  
+            'src/ansible/common/brutoof-disable.yml'
+        }
+    }
+}
+
+tasks.register('wifi') {
+    description = 'run ansible disable onboard wifi script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+            'ansible-playbook ' +
+            '-i ' +
+            "${target_host}, " +  
+            'src/ansible/common/wifi-disable.yml'
+        }
+    }
+}
+
+tasks.register('clones') {
+    description = 'run ansible clones mount script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+            'ansible-playbook ' +
+            '-i ' +
+            "${target_host}, " +  
+            'src/ansible/common/clones-mnt.yml'
+        }
+    }
+}
+
+tasks.register('console') {
+    description = 'run ansible console resize script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+            'ansible-playbook ' +
+            '-i ' +
+            "${target_host}, " +  
+            'src/ansible/common/console-resize.yml'
+        }
+    }
+}
+
+tasks.register('ssh') {
+    description = 'run ansible ssh lockdown script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+            'ansible-playbook ' +
+            '-i ' +
+            "${target_host}, " +  
+            'src/ansible/common/ssh-lockdown.yml'
+        }
+    }
+}
+
+tasks.register('swap') {
+    description = 'run ansible swap script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+            'ansible-playbook ' +
+            '-i ' +
+            "${target_host}, " +  
+            'src/ansible/common/swap.yml'
+        }
+    }
+}
+
+tasks.register('telegraf') {
+    description = 'run ansible telegraf script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+            'ansible-playbook ' +
+            '-i ' +
+            "${target_host}, " +  
+            'src/ansible/common/telegraf.yml'
+        }
+    }
+}
+
+tasks.register('ansible') {
+    description = 'run ansible ansible script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+            'ansible-playbook ' +
+            '-i ' +
+            "${target_host}, " +  
+            'src/ansible/mgr/ansible.yml'
+        }
+    }
+}
+
+tasks.register('java') {
+    description = 'run ansible java script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+            'ansible-playbook ' +
+            '-i ' +
+            "${target_host}, " +  
+            'src/ansible/mgr/java.yml'
+        }
+    }
+}
+
+tasks.register('gpsd') {
+    description = 'run ansible gpsd script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+            'ansible-playbook ' +
+            '-i ' +
+            "${target_host}, " +  
+            'src/ansible/timesrvr/gps.yml'
+        }
+    }
+}
+
 
 tasks.register('gpsdUsb0') {
     description = 'run ansible gpsd script'
@@ -22,7 +188,7 @@ tasks.register('gpsdUsb0') {
             commandLine 'bash', '-c',
             'ansible-playbook ' +
             '-i ' +
-            'tec-test, ' +  
+            "${target_host}, " +  
             'src/ansible/timesrvr/gps.yml ' +
             '-e \'{"gps_dev":"ttyUSB0"}\''
         }
@@ -38,9 +204,25 @@ tasks.register('ntpShm') {
             commandLine 'bash', '-c',
             'ansible-playbook ' +
             '-i ' +
-            'tec-test, ' +  
+            "${target_host}, " +  
             'src/ansible/timesrvr/ntp.yml ' +
             '-e \'{"use_shm":true}\''
         }
     }
+}
+
+/** 
+ * can't nest GradleBuild tasks so use dependsOn to group
+ * to call multiple GradleBuild tasks each thas has to have a unique buildName
+ */
+tasks.register('systemInit') {
+    description = 'run mutiple ansible playbooks for system intialization'
+    group = "ansible"
+    //dependsOn 'resetHost'
+    dependsOn 'aptPurge' 
+    dependsOn 'brutoof' 
+    dependsOn 'clones' 
+    dependsOn 'console'
+    dependsOn 'ssh'
+    dependsOn 'swap'
 }

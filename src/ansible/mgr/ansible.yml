@@ -1,0 +1,30 @@
+# to get latest version of ansible
+# https://docs.ansible.com/ansible/latest/installation_guide/installation_distros.html#installing-ansible-on-debian
+---
+- name: install ansible
+  hosts: all
+  become: true
+  become_user: root
+  vars:
+    dev_version: jammy 
+  tasks:
+    - name: add and sign repo
+      block:
+        - name: repo key
+          ansible.builtin.get_url:
+            url: https://keyserver.ubuntu.com/pks/lookup?fingerprint=on&op=get&search=0x6125E2A8C77F2818FB7BD15B93C4A3FD7BB9C367
+            dest: /tmp/ansible.key
+            mode: '0644'
+            force: true
+        - name: sign key
+          command: bash -c 'cat /tmp/ansible.key | gpg --dearmour -o /usr/share/keyrings/ansible-archive-keyring.gpg'
+        - name: apt source
+          ansible.builtin.apt_repository:
+            repo: 'deb [signed-by=/usr/share/keyrings/ansible-archive-keyring.gpg] http://ppa.launchpad.net/ansible/ansible/ubuntu {{ dev_version }} main'
+            filename: ansible
+            state: present
+            update_cache: True
+    - name: install ansible
+      ansible.builtin.apt:
+        name: ansible
+        state: present

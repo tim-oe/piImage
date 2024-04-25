@@ -1,0 +1,26 @@
+# https://pimylifeup.com/raspberry-pi-swap-file/
+---
+- name: increase swap space
+  hosts: all
+  become: true
+  become_user: root
+  vars:
+    config_file: /etc/dphys-swapfile
+    swap_space: 4096
+  tasks:
+    - name: swap off
+      command: dphys-swapfile swapoff
+    - name: set swap space
+      ansible.builtin.replace:
+        path: "{{ config_file }}"
+        regexp: '^CONF_SWAPSIZE=.*$'
+        replace: "CONF_SWAPSIZE={{ swap_space }}"
+    - name: set max swap space
+      ansible.builtin.replace:
+        path: "{{ config_file }}"
+        regexp: '^#?CONF_MAXSWAP=.*$'
+        replace: "CONF_MAXSWAP={{ swap_space }}"
+    - name: swap init
+      command: dphys-swapfile setup
+    - name: swap on
+      command: dphys-swapfile swapon

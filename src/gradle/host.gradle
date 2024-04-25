@@ -1,21 +1,16 @@
 tasks.register('resetHost') {
+    description = 'reset known host for tec-test'
+    group = "hosts"
     doLast {
         exec {
             workingDir '.'
             commandLine 'bash', '-c',
-                "ssh-keygen -R ${host_name}" 
+                "ssh-keygen -R ${target_host}" 
         }
         exec {
             workingDir '.'
             commandLine 'bash', '-c',
-                "ssh-keyscan -H ${host_name} >> ~/.ssh/known_hosts" 
+                "ssh-keyscan -H ${target_host} >> ~/.ssh/known_hosts" 
         }
     }
-}
-
-tasks.register('resetTecTest', GradleBuild) {
-    description = 'reset known host for tec-test'
-    group = "hosts"
-    startParameter.projectProperties = ['host_name':'tec-test']
-    tasks = ['resetHost']
 }

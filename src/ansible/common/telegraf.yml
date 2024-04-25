@@ -1,0 +1,37 @@
+# https://community.influxdata.com/t/use-telegraf-to-get-metrics-from-raspberry-pi/26686
+# apt repo 
+# https://repos.influxdata.com/debian/dists/bookworm/
+# commands from here worked
+# https://docs.influxdata.com/telegraf/v1/install/
+# TODO
+# https://data.engrie.be/RaspberryPi/Raspberry_Pi_-_Part_43_-_Telegraf.pdf
+---
+- name: install telegraf
+  hosts: all
+  become: true
+  become_user: root
+  vars:
+    config_file: /etc/telegraf/telegraf.conf
+    env_file: /etc/default/telegraf 
+    dev_version: bookworn 
+  tasks:
+    - name: add and sign telegraf repo
+      block:
+        - name: repo key
+          ansible.builtin.get_url:
+            url: https://repos.influxdata.com/influxdata-archive_compat.key
+            dest: /tmp/influxdata-archive_compat.key
+            mode: '0644'
+            force: true
+        - name: sign key
+          command: bash -c 'echo '393e8779c89ac8d958f81f942f9ad7fb82a25e133faddaf92e15b16e6ac9ce4c /tmp/influxdata-archive_compat.key' | sha256sum -c && cat /tmp/influxdata-archive_compat.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/influxdata-archive_compat.gpg > /dev/null'
+        - name: apt source
+          ansible.builtin.apt_repository:
+            repo: 'deb [signed-by=/etc/apt/trusted.gpg.d/influxdata-archive_compat.gpg] https://repos.influxdata.com/debian stable main'
+            filename: influxdata
+            state: present
+            update_cache: True
+    - name: install telegraf
+      ansible.builtin.apt:
+        name: telegraf
+        state: present

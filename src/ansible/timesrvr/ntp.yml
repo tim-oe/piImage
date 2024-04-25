@@ -1,5 +1,6 @@
 # https://gist.github.com/edro15/c3fbaaabfe31ecb799363ffab587f336
 # https://blog.thelifeofkenneth.com/2020/03/building-raspberry-pi-stratum-1-ntp.html
+# https://linlog.blogspot.com/2009/07/synchronizing-ntp-server-to-gpspps.html
 # seed servers
 # https://support.ntp.org/Servers/NTPPoolServers
 # pps driver
@@ -18,6 +19,7 @@
   become_user: root
   vars:
     config_file: /etc/ntpsec/ntp.conf
+    dhcp_config_file: /etc/dhcp/dhclient.conf
     use_shm: false
   tasks:
     - name: Update apt repo and cache.
@@ -30,8 +32,11 @@
         state: absent
     - name: install ntp
       ansible.builtin.apt:
-        name: ntp
+        name: "{{ item }}"
         state: present
+      loop:
+        - ntp
+        - ntpdate
     - name: clear pools
       ansible.builtin.replace:
         path: "{{ config_file }}"
@@ -85,8 +90,33 @@
             server 127.127.20.0 mode 131088 minpoll 4 prefer
             fudge 127.127.20.0 stratum 0 refid NMEA flag1 1 flag3 1 time1 0.0 time2 0.5
       when: use_shm == false
+    - name: remove ntp from dhcp
+      ansible.builtin.replace:
+        path: "{{ dhcp_config_file }}"
+        regexp: ', ntp-servers'
+        replace: ''
+    - name: remove ntp dhcp hook file
+      ansible.builtin.file:
+        path: /etc/dhcp/dhclient-exit-hooks.d/ntp
+        state: absent
+    - name: remove ntpsec dhcp hook file
+      ansible.builtin.file:
+        path: /etc/dhcp/dhclient-exit-hooks.d/ntpsec
+        state: absent
     - name: Enable ntp
       ansible.builtin.systemd_service:
         name: ntpsec.service
         enabled: true
         masked: no
+    - name: dissble gpsd.service
+      ansible.builtin.systemd_service:
+        name: gpsd.service
+        enabled: false
+        masked: no      
+      when: use_shm == false
+    - name: dissble gpsd.socket
+      ansible.builtin.systemd_service:
+        name: gpsd.socket
+        enabled: false
+        masked: no      
+      when: use_shm == false

@@ -1,6 +1,5 @@
-# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/apt_module.html
-# playbook remove any uneeded packages
-# rmdir: failed to remove '/run/avahi-daemon': Directory not empty
+# removed drivers and disable onboard brutoof 
+#
 ---
 - name: remove brutoof
   hosts: all
@@ -8,7 +7,6 @@
   become_user: root
   vars:
     config_file: /boot/firmware/config.txt
-    disable_bt: dtoverlay=disable-bt
   tasks:
   - name: Remove brutoof packages
     ansible.builtin.apt:
@@ -17,17 +15,23 @@
     loop:
      - bluez 
      - bluez-firmware 
-  - name: Check if bluetooth already disabled.
-    lineinfile:
-      state: absent
-      path: "{{ config_file }}"
-      regexp: "^{{ disable_bt }}"
-    check_mode: true
-    changed_when: false 
-    register: bt
   - name: Disble bluetooth.
-    lineinfile:
+    blockinfile: 
       state: present
-      path: "{{ config_file }}"
-      line: "{{ disable_bt }}"
-    when: bt.found == 0
+      insertafter: EOF
+      dest: "{{ config_file }}"
+      marker: "# _BT_DISABLE"
+      append_newline: true
+      prepend_newline: true
+      content: |
+        dtoverlay=disable-bt
+    # - name: dissble hciuart.service
+    #   ansible.builtin.systemd_service:
+    #     name: hciuart.service
+    #     enabled: false
+    #     masked: no      
+    # - name: dissble bluetooth.service
+    #   ansible.builtin.systemd_service:
+    #     name: bluetooth.service
+    #     enabled: false
+    #     masked: no

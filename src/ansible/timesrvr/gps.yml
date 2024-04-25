@@ -1,4 +1,12 @@
+# this is gps setup that works for adafruit ultimate gps
+# usb board (test bed) https://www.adafruit.com/product/4279 
+# hat https://www.adafruit.com/product/2324
+# dev aliases
 # https://unix.stackexchange.com/questions/385749/preventing-udev-symlink-overwrite
+# enable serial interface
+# https://www.raspberrypi.com/documentation/computers/configuration.html#serial-nonint
+# disable serial console
+# https://www.raspberrypi.com/documentation/computers/configuration.html#serial-console-nonint
 ---
 - name: setup gps
   hosts: all
@@ -8,8 +16,6 @@
     gpsd_config_file: /etc/default/gpsd
     gps_dev: ttyAMA0
     config_file: /boot/firmware/config.txt
-    # TODO pin could be variable
-    pps_enable: dtoverlay=pps-gpio,gpiopin=4
     udev_file: /etc/udev/rules.d/100-nmea.rules 
   tasks:
     - name: Update apt repo and cache.
@@ -23,7 +29,7 @@
       loop:
         - gpsd
         - gpsd-tools
-        - gpsd-clients 
+        - gpsd-clients
     - name: configure gps devices
       ansible.builtin.replace:
         path: "{{ gpsd_config_file }}"
@@ -42,20 +48,16 @@
         - libcap-dev 
         - libssl-dev 
         - pps-tools
-    - name: Check if pps enabled.
-      lineinfile:
-        state: absent_SEED_SERVERS_
-        path: "{{ config_file }}"
-        regexp: "^{{ pps_enable }}"
-      check_mode: true
-      changed_when: false 
-      register: pps
     - name: enable pps channel.
-      lineinfile:
+      blockinfile: 
         state: present
-        path: "{{ config_file }}"
-        line: "{{ pps_enable }}"
-      when: pps.found == 0
+        insertafter: EOF
+        dest: "{{ config_file }}"
+        marker: "# _PPS_ENABLE"
+        append_newline: true
+        prepend_newline: true
+        content: |
+          dtoverlay=pps-gpio,gpiopin=4
     - name: remove udev linkage rule file
       ansible.builtin.file:
         path: "{{ udev_file }}"
@@ -64,8 +66,12 @@
       copy:
         dest: "{{ udev_file }}"
         content: |
-          ACTION=="add", SUBSYSTEM=="tty", KERNEL=="{{ gps_dev }}", SYMLINK+="gps0", GROUP="dialout"
+          ACTION=="add", SUBSYSTEM=="tty", KERNEL=="{{ gps_dev }}", SYMLINK+="gps0", GROUP="tty"
           ACTION=="add", SUBSYSTEM=="pps", KERNEL=="pps0", SYMLINK+="gpspps0"
+    - name: enable serial interface
+      command: raspi-config nonint do_serial_hw=0
+    - name: disable serial console
+      command: raspi-config nonint do_serial_cons=1
     - name: Enable gpsd.service
       ansible.builtin.systemd_service:
         name: gpsd.service

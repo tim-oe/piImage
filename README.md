@@ -22,3 +22,8 @@ this a pi with ths project and ansible installed.
 ## utility scripts
 I went with gradle as i'm familiur with it and it's used in my day job.  
 I used [sdkman](https://sdkman.io/) to setup java and gradle
+
+## hardware stuff
+- pi zero
+    - [poe hat](https://www.waveshare.com/wiki/PoE/ETH/USB_HUB_HAT)
+    - [usb hat](https://www.waveshare.com/wiki/USB_HUB_HAT)

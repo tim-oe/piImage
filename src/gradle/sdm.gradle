@@ -30,30 +30,14 @@ tasks.register('imgInit') {
 
 // https://github.com/gitbls/sdm/blob/master/Docs/Command-Details.md
 // https://github.com/gitbls/sdm/blob/master/Docs/Plugins.md
+// https://www.raspberrypi.com/documentation/computers/configuration.html#raspi-config-cli
 tasks.register('sdmImage') {
     description = 'build customized rpi image'
     group = 'sdm'
     doLast {
         exec {
             workingDir '.'
-            commandLine 'bash', '-c',
-            'sudo sdm --customize ' + 
-            '--plugin user:"adduser=tcronin|password=$TEC_PWD" ' + 
-            '--plugin mkdir:"dir=/home/tcronin/.ssh|chown=tcronin:tcronin|chmod=700" ' +
-            '--plugin copyfile:"from=/mnt/clones/data/home/tcronin/.ssh/authorized_keys|to=/home/tcronin/.ssh|runphase=postinstall|chown=tcronin:tcronin|chmod=600" ' +
-            '--plugin user:"adduser=ansible|password=$ANS_PWD" ' + 
-            '--plugin mkdir:"dir=/home/ansible/.ssh|chown=ansible:ansible|chmod=700"  ' + 
-            '--plugin copyfile:"from=/mnt/clones/data/home/ansible/.ssh/authorized_keys|to=/home/ansible/.ssh|runphase=postinstall|chown=ansible:ansible|chmod=600" ' + 
-            '--plugin user:"deluser=pi" ' + 
-            '--plugin L10n:"keymap=us|locale=en_US.UTF-8|timezone=America/Chicago" ' + 
-            '--plugin disables:piwiz ' + 
-            '--plugin network:"netman=nm|wifissid=tec-wan|wifipassword=$WIFI_PWD|wificountry=US" ' + 
-            '--redact ' + 
-            '--regen-ssh-host-keys ' + 
-            '--reboot 5 ' + 
-            '--nowait-timesync ' + 
-            "${project.buildDir}/${pi_img}"
-        }
+            commandLine 'src/sdm/image.sh'        }
     }
 }
 
@@ -66,7 +50,7 @@ tasks.register('sdmBurn') {
             workingDir '.'
             commandLine 'bash', '-c',
             'sudo sdm --burn /dev/sdc ' + 
-            '--hostname tec-test ' + 
+            "--hostname ${target_host} " + 
             '--expand-root ' + 
             "${project.buildDir}/${pi_img}"
         }
