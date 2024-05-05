@@ -12,6 +12,8 @@
 # nmea driver
 # https://www.eecis.udel.edu/~mills/ntp/html/drivers/driver20.html
 # https://www.ntp.org/documentation/drivers/driver20/
+#
+# ntpq -pnu
 ---
 - name: setup ntp
   hosts: all
@@ -21,6 +23,10 @@
     config_file: /etc/ntpsec/ntp.conf
     dhcp_config_file: /etc/dhcp/dhclient.conf
     use_shm: false
+    # offset on adafruit: 0.45
+    # offset on uptronics: 0.07
+    # start with no offset
+    shm_offset: 0.0
   tasks:
     - name: Update apt repo and cache.
       apt:
@@ -76,7 +82,7 @@
         prepend_newline: true
         content: |
             server 127.127.28.0 minpoll 4 maxpoll 4 prefer
-            fudge 127.127.28.0 refid GPS stratum 0 time1 0.5
+            fudge 127.127.28.0 refid GPS stratum 0 time1 {{ shm_offset }}
       when: use_shm == true
     - name: add nmea driver
       blockinfile: 

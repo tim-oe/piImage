@@ -18,7 +18,7 @@
      - firmware-misc-nonfree 
   - name: Disble onboard wifi.
     blockinfile: 
-      state: present,
+      state: present
       insertafter: EOF
       dest: "{{ config_file }}"
       marker: "# _WIFI_DISABLE"
