@@ -10,7 +10,7 @@ let hours=$((${upSeconds}/3600%24))
 let days=$((${upSeconds}/86400))
 
 OSVER=`cat /etc/os-release | egrep -o  PRETTY_NAME=.* | sed -E 's/PRETTY_NAME=\"(.+)\"/\1/'`
-PIVER=`cat /proc/device-tree/model | sed -E 's/(Raspberry Pi [0-9]+ Model [A-Z]? Rev [0-9\.]+).*/\1/'`
+PIVER=`pinout | egrep Description.*:.* | sed -E 's/Description\s+:\s+(.*)/\1/'`
 MEM_TOTAL=`pinout | egrep RAM.*:.* | sed -E 's/RAM\s+:\s+(.*)/total: \1/'`
 MEM=`free -gh --si | egrep -o Mem:.* | sed -E 's/\Mem:\s+([0-9\.]+[GMK]?)\s+([0-9\.]+[GMK]?)\s+([0-9\.]+[GMK]?)\s+([0-9\.]+[GMK]?)\s+([0-9\.]+[GMK]?)\s+([0-9\.]+[GMK]?)/used: \2 free: \3/'`
 DISK=`df -h / | egrep -o /dev/.* | sed -E 's/\/dev\/[^\s]+\s+([0-9]+[GM]?)\s+([0-9\.]+[GM]?)\s+([0-9\.]+[GM]?).*/total: \1 used: \2 free: \3/'`
@@ -19,7 +19,7 @@ UPTIME=`printf "%d days, %02dh%02dm%02ds" "$days" "$hours" "$mins" "$secs"`
 # get the load averages
 read one five fifteen rest < /proc/loadavg
 
-clear
+#clear
 echo "$(tput bold)$(tput setaf 2)"
 echo "    .~~.   .~~.  "
 echo "   '. \ ' ' / .' "

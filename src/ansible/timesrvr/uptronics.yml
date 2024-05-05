@@ -1,0 +1,131 @@
+# this is gps setup that works for uptronics usb hat
+# hat https://store.uputronics.com/index.php?route=product/product&product_id=81
+# dev aliases
+# https://unix.stackexchange.com/questions/385749/preventing-udev-symlink-overwrite
+# enable serial interface
+# https://www.raspberrypi.com/documentation/computers/configuration.html#serial-nonint
+# disable serial console
+# https://www.raspberrypi.com/documentation/computers/configuration.html#serial-console-nonint
+# enable i2c
+# https://www.raspberrypi.com/documentation/computers/configuration.html#i2c-nonint
+#
+# sudo ppstest /dev/pps0
+# sudo hwclock -r
+
+---
+- name: setup uptronics gps hat
+  hosts: all
+  become: true
+  become_user: root
+  vars:
+    gpsd_config_file: /etc/default/gpsd
+    gps_dev: ttyAMA0
+    config_file: /boot/firmware/config.txt
+    module_file: /etc/modules
+    clock_file: /lib/udev/hwclock-set
+    udev_file: /etc/udev/rules.d/100-nmea.rules 
+  tasks:
+    - name: Update apt repo and cache.
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+    - name: install gpsd and dependent libs
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - gpsd
+        - gpsd-tools
+        - gpsd-clients
+        - python3-smbus
+        - i2c-tools
+        - pps-tools
+        - libcap-dev
+        - libssl-dev
+        - lsof
+    - name: Remove fake clock
+      ansible.builtin.apt:
+        name: fake-hwclock
+        state: absent
+    - name: enable i2c interface
+      command: raspi-config nonint do_serial_hw 0
+    - name: enable serial interface
+      command: raspi-config nonint do_serial_hw 0
+    - name: disable serial console
+      command: raspi-config nonint do_serial_cons 1
+    - name: remove fake clock rc.d
+      command: update-rc.d -f fake-hwclock remove
+    - name: disble fake clock service
+      command: systemctl disable fake-hwclock
+    - name: enable i2c rtc.
+      blockinfile: 
+        state: present
+        insertafter: EOF
+        dest: "{{ config_file }}"
+        marker: "# _UPTRONICS"
+        append_newline: true
+        prepend_newline: true
+        content: |
+          dtoverlay=i2c-rtc,rv3028
+          dtoverlay=pps-gpio,gpiopin=18
+    # the below is a bit hacky as it relies on specific file impl
+    - name: tweak clock file 1
+      ansible.builtin.replace:
+        path: "{{ clock_file }}"
+        regexp: '^if \[ -e /run/systemd/system \] ; then'
+        replace: '#if [ -e /run/systemd/system ] ; then'
+    - name: tweak clock file 2
+      ansible.builtin.replace:
+        path: "{{ clock_file }}"
+        regexp: '^    exit 0'
+        replace: '#    exit 0'
+    - name: tweak clock file 3
+      ansible.builtin.replace:
+        path: "{{ clock_file }}"
+        regexp: '^fi'
+        replace: '#fi'
+    - name: tweak clock file 4
+      ansible.builtin.replace:
+        path: "{{ clock_file }}"
+        regexp: '^/sbin/hwclock --rtc=\$dev --systz'
+        replace: '#/sbin/hwclock --rtc=$dev --systz'
+    - name: enable pps.
+      blockinfile: 
+        state: present
+        insertafter: EOF
+        dest: "{{ module_file }}"
+        marker: "# _UPTRONICS"
+        append_newline: true
+        prepend_newline: true
+        content: |
+          pps-gpio
+    - name: configure gps devices
+      ansible.builtin.replace:
+        path: "{{ gpsd_config_file }}"
+        regexp: '^DEVICES=.*$'
+        replace: 'DEVICES="/dev/gps0 /dev/pps0"'
+    - name: configure gps options
+      ansible.builtin.replace:
+        path: "{{ gpsd_config_file }}"
+        regexp: '^GPSD_OPTIONS=.*$'
+        replace: 'GPSD_OPTIONS="-n -s 115200"'
+    - name: remove udev linkage rule file
+      ansible.builtin.file:
+        path: "{{ udev_file }}"
+        state: absent
+    - name: create udev rules
+      copy:
+        dest: "{{ udev_file }}"
+        content: |
+          ACTION=="add", SUBSYSTEM=="tty", KERNEL=="{{ gps_dev }}", SYMLINK+="gps0", GROUP="dialout"
+          ACTION=="add", SUBSYSTEM=="pps", KERNEL=="pps0", SYMLINK+="gpspps0"
+    - name: Enable gpsd.service
+      ansible.builtin.systemd_service:
+        name: gpsd.service
+        enabled: true
+        masked: no
+    - name: Enable gpsd.socket
+      ansible.builtin.systemd_service:
+        name: gpsd.socket
+        enabled: true
+        masked: no

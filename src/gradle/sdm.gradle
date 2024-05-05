@@ -49,7 +49,7 @@ tasks.register('sdmBurn') {
         exec {
             workingDir '.'
             commandLine 'bash', '-c',
-            'sudo sdm --burn /dev/sdc ' + 
+            'sudo sdm --burn /dev/sdb ' + 
             "--hostname ${target_host} " + 
             '--expand-root ' + 
             "${project.buildDir}/${pi_img}"

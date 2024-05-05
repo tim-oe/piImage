@@ -14,7 +14,7 @@
       ansible.builtin.replace:
         path: "{{ config_file }}"
         regexp: '^CONF_SWAPSIZE=.*$'
-        replace: "CONF_SWAPSIZE={{ swap_space }}"
+        replace: "CONF_SWAPSIZE=512"
     - name: set max swap space
       ansible.builtin.replace:
         path: "{{ config_file }}"

@@ -163,8 +163,8 @@ tasks.register('java') {
     }
 }
 
-tasks.register('gpsd') {
-    description = 'run ansible gpsd script'
+tasks.register('uptronics') {
+    description = 'run ansible uptronics script'
     group = "ansible"
     doLast {
         exec {
@@ -173,14 +173,29 @@ tasks.register('gpsd') {
             'ansible-playbook ' +
             '-i ' +
             "${target_host}, " +  
-            'src/ansible/timesrvr/gps.yml'
+            'src/ansible/timesrvr/uptronics.yml'
+        }
+    }
+}
+
+tasks.register('adafruit') {
+    description = 'run ansible adafruit script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+            'ansible-playbook ' +
+            '-i ' +
+            "${target_host}, " +  
+            'src/ansible/timesrvr/adafruit.yml'
         }
     }
 }
 
 
-tasks.register('gpsdUsb0') {
-    description = 'run ansible gpsd script'
+tasks.register('adafruitUsb0') {
+    description = 'run ansible adafruit script for usb'
     group = "ansible"
     doLast {
         exec {
@@ -189,7 +204,7 @@ tasks.register('gpsdUsb0') {
             'ansible-playbook ' +
             '-i ' +
             "${target_host}, " +  
-            'src/ansible/timesrvr/gps.yml ' +
+            'src/ansible/timesrvr/adafruit.yml ' +
             '-e \'{"gps_dev":"ttyUSB0"}\''
         }
     }
@@ -215,7 +230,7 @@ tasks.register('ntpShm') {
  * can't nest GradleBuild tasks so use dependsOn to group
  * to call multiple GradleBuild tasks each thas has to have a unique buildName
  */
-tasks.register('systemInit') {
+tasks.register('piInit') {
     description = 'run mutiple ansible playbooks for system intialization'
     group = "ansible"
     //dependsOn 'resetHost'
