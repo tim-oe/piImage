@@ -5,13 +5,86 @@ tasks.register('aptUpdate') {
         exec {
             workingDir '.'
             commandLine 'bash', '-c',
-            'ansible-playbook ' +
-            '-i ' +
-            "${target_host}, " +  
-            'src/ansible/common/apt-update.yml'
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/common/apt-update.yml'
         }
     }
 }
+
+tasks.register('ntpClient') {
+    description = 'run ansible ntp client script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/common/ntp-client.yml'
+        }
+    }
+}
+
+tasks.register('timesyncd') {
+    description = 'deploy ansible ntp timesyncd script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/common/nm-timesyncd.yml'
+        }
+    }
+}
+
+tasks.register('piAptUpdate') {
+    description = 'run ansible apt update script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                    'ansible-playbook ' +
+                    '-l pi-all ' +
+                    'src/ansible/common/apt-update.yml'
+        }
+    }
+}
+
+tasks.register('kubeAptUpdate') {
+    description = 'run ansible apt update script on kube cluster'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                    'ansible-playbook ' +
+                    '-l kube_all ' +
+                    'src/ansible/common/apt-update.yml'
+        }
+    }
+}
+
+tasks.register('piReboot') {
+    description = 'run ansible apt update script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                    'ansible-playbook ' +
+                    '-l pi-all ' +
+                    'src/ansible/common/apt-update.yml'
+        }
+    }
+}
+
 
 tasks.register('aptPurge') {
     description = 'run ansible apt purge script'
@@ -20,10 +93,10 @@ tasks.register('aptPurge') {
         exec {
             workingDir '.'
             commandLine 'bash', '-c',
-            'ansible-playbook ' +
-            '-i ' +
-            "${target_host}, " +  
-            'src/ansible/common/apt-purge.yml'
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/common/apt-purge.yml'
         }
     }
 }
@@ -35,10 +108,10 @@ tasks.register('brutoof') {
         exec {
             workingDir '.'
             commandLine 'bash', '-c',
-            'ansible-playbook ' +
-            '-i ' +
-            "${target_host}, " +  
-            'src/ansible/common/brutoof-disable.yml'
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/common/brutoof-disable.yml'
         }
     }
 }
@@ -50,10 +123,10 @@ tasks.register('wifi') {
         exec {
             workingDir '.'
             commandLine 'bash', '-c',
-            'ansible-playbook ' +
-            '-i ' +
-            "${target_host}, " +  
-            'src/ansible/common/wifi-disable.yml'
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/common/wifi-disable.yml'
         }
     }
 }
@@ -65,10 +138,10 @@ tasks.register('clones') {
         exec {
             workingDir '.'
             commandLine 'bash', '-c',
-            'ansible-playbook ' +
-            '-i ' +
-            "${target_host}, " +  
-            'src/ansible/common/clones-mnt.yml'
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/common/clones-mnt.yml'
         }
     }
 }
@@ -80,10 +153,10 @@ tasks.register('console') {
         exec {
             workingDir '.'
             commandLine 'bash', '-c',
-            'ansible-playbook ' +
-            '-i ' +
-            "${target_host}, " +  
-            'src/ansible/common/console-resize.yml'
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/common/console-resize.yml'
         }
     }
 }
@@ -95,10 +168,10 @@ tasks.register('ssh') {
         exec {
             workingDir '.'
             commandLine 'bash', '-c',
-            'ansible-playbook ' +
-            '-i ' +
-            "${target_host}, " +  
-            'src/ansible/common/ssh-lockdown.yml'
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/common/ssh-lockdown.yml'
         }
     }
 }
@@ -110,10 +183,10 @@ tasks.register('swap') {
         exec {
             workingDir '.'
             commandLine 'bash', '-c',
-            'ansible-playbook ' +
-            '-i ' +
-            "${target_host}, " +  
-            'src/ansible/common/swap.yml'
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/common/swap.yml'
         }
     }
 }
@@ -125,10 +198,25 @@ tasks.register('telegraf') {
         exec {
             workingDir '.'
             commandLine 'bash', '-c',
-            'ansible-playbook ' +
-            '-i ' +
-            "${target_host}, " +  
-            'src/ansible/common/telegraf.yml'
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/common/telegraf.yml'
+        }
+    }
+}
+
+tasks.register('jimmies') {
+    description = 'run ansible ansible script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/common/jimmies.yml'
         }
     }
 }
@@ -140,10 +228,10 @@ tasks.register('ansible') {
         exec {
             workingDir '.'
             commandLine 'bash', '-c',
-            'ansible-playbook ' +
-            '-i ' +
-            "${target_host}, " +  
-            'src/ansible/mgr/ansible.yml'
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/mgr/ansible.yml'
         }
     }
 }
@@ -155,10 +243,10 @@ tasks.register('java') {
         exec {
             workingDir '.'
             commandLine 'bash', '-c',
-            'ansible-playbook ' +
-            '-i ' +
-            "${target_host}, " +  
-            'src/ansible/mgr/java.yml'
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/mgr/java.yml'
         }
     }
 }
@@ -170,10 +258,10 @@ tasks.register('uptronics') {
         exec {
             workingDir '.'
             commandLine 'bash', '-c',
-            'ansible-playbook ' +
-            '-i ' +
-            "${target_host}, " +  
-            'src/ansible/timesrvr/uptronics.yml'
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/timesrvr/uptronics.yml'
         }
     }
 }
@@ -185,14 +273,13 @@ tasks.register('adafruit') {
         exec {
             workingDir '.'
             commandLine 'bash', '-c',
-            'ansible-playbook ' +
-            '-i ' +
-            "${target_host}, " +  
-            'src/ansible/timesrvr/adafruit.yml'
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/timesrvr/adafruit.yml'
         }
     }
 }
-
 
 tasks.register('adafruitUsb0') {
     description = 'run ansible adafruit script for usb'
@@ -201,11 +288,11 @@ tasks.register('adafruitUsb0') {
         exec {
             workingDir '.'
             commandLine 'bash', '-c',
-            'ansible-playbook ' +
-            '-i ' +
-            "${target_host}, " +  
-            'src/ansible/timesrvr/adafruit.yml ' +
-            '-e \'{"gps_dev":"ttyUSB0"}\''
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/timesrvr/adafruit.yml ' +
+                    '-e \'{"gps_dev":"ttyUSB0"}\''
         }
     }
 }
@@ -217,11 +304,86 @@ tasks.register('ntpShm') {
         exec {
             workingDir '.'
             commandLine 'bash', '-c',
-            'ansible-playbook ' +
-            '-i ' +
-            "${target_host}, " +  
-            'src/ansible/timesrvr/ntp.yml ' +
-            '-e \'{"use_shm":true}\''
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/timesrvr/ntp.yml ' +
+                    '-e \'{"use_shm":true}\''
+        }
+    }
+}
+
+tasks.register('virtbox') {
+    description = 'run ansible virtualbox script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/common/virtbox.yml'
+        }
+    }
+}
+
+tasks.register('ltInit') {
+    description = 'run ansible laptop init script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/laptop/apt-init.yml'
+        }
+    }
+}
+
+tasks.register('ltPrinter') {
+    description = 'run ansible laptop printer script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/laptop/printer.yml'
+        }
+    }
+}
+
+tasks.register('dtInit') {
+    description = 'run ansible desktop init script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/desktop/desktop-init.yml'
+        }
+    }
+}
+
+tasks.register('docker') {
+    description = 'run ansible docker script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/common/docker.yml'
         }
     }
 }
@@ -234,9 +396,9 @@ tasks.register('piInit') {
     description = 'run mutiple ansible playbooks for system intialization'
     group = "ansible"
     //dependsOn 'resetHost'
-    dependsOn 'aptPurge' 
-    dependsOn 'brutoof' 
-    dependsOn 'clones' 
+    dependsOn 'aptPurge'
+    dependsOn 'brutoof'
+    dependsOn 'clones'
     dependsOn 'console'
     dependsOn 'ssh'
     dependsOn 'swap'

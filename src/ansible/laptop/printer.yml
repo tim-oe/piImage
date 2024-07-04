@@ -1,0 +1,22 @@
+---
+- name: "initialize packages for laptop"
+  hosts: "all"
+  become: true
+  become_user: "root"
+  vars:
+    base_driver_path: "/media/clones/drivers/printer/MFC7460DN/"
+  tasks:
+    - name: "install cups printer driver."
+      block:
+        - name: "add architecture"
+          command: "bash -c 'dpkg --add-architecture i386'"
+        - name: "install cups driver."
+          apt:
+            force: true
+            deb: "{{ base_driver_path }}/cupswrapperMFC7460DN-2.0.4-2.i386.deb"
+    - name: "install scanner driver."
+      apt:
+        force: true
+        deb: "{{ base_driver_path }}/brscan4-0.4.10-1.amd64.deb"
+    - name: "package cleanup"
+      command: "bash -c 'apt -y --fix-broken install'"

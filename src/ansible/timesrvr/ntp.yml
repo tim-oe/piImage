@@ -1,128 +1,107 @@
-# https://gist.github.com/edro15/c3fbaaabfe31ecb799363ffab587f336
-# https://blog.thelifeofkenneth.com/2020/03/building-raspberry-pi-stratum-1-ntp.html
-# https://linlog.blogspot.com/2009/07/synchronizing-ntp-server-to-gpspps.html
-# seed servers
-# https://support.ntp.org/Servers/NTPPoolServers
-# pps driver
-# https://www.eecis.udel.edu/~mills/ntp/html/drivers/driver22.html
-# https://www.ntp.org/documentation/drivers/driver22/
-# shm driver
-# https://www.ntp.org/documentation/drivers/driver28/
-# https://www.eecis.udel.edu/~mills/ntp/html/drivers/driver28.html
-# nmea driver
-# https://www.eecis.udel.edu/~mills/ntp/html/drivers/driver20.html
-# https://www.ntp.org/documentation/drivers/driver20/
-#
-# ntpq -pnu
 ---
-- name: setup ntp
-  hosts: all
+- name: "setup ntp"
+  hosts: "all"
   become: true
-  become_user: root
+  become_user: "root"
   vars:
-    config_file: /etc/ntpsec/ntp.conf
-    dhcp_config_file: /etc/dhcp/dhclient.conf
+    config_file: "/etc/ntpsec/ntp.conf"
+    dhcp_config_file: "/etc/dhcp/dhclient.conf"
     use_shm: false
-    # offset on adafruit: 0.45
-    # offset on uptronics: 0.07
-    # start with no offset
     shm_offset: 0.0
   tasks:
-    - name: Update apt repo and cache.
+    - name: "Update apt repo and cache."
       apt:
         update_cache: true
         cache_valid_time: 3600
-    - name: Remove systemd timesync
+    - name: "Remove systemd timesync"
       ansible.builtin.apt:
-        name: systemd-timesyncd
-        state: absent
-    - name: install ntp
+        name: "systemd-timesyncd"
+        state: "absent"
+    - name: "install ntp"
       ansible.builtin.apt:
         name: "{{ item }}"
-        state: present
+        state: "present"
       loop:
-        - ntp
-        - ntpdate
-    - name: clear pools
+        - "ntp"
+        - "ntpdate"
+    - name: "clear pools"
       ansible.builtin.replace:
         path: "{{ config_file }}"
-        regexp: '^pool '
-        replace: '#pool '
-    - name: add seed servers
-      blockinfile: 
-        state: present
-        insertafter: EOF
+        regexp: "^pool "
+        replace: "#pool "
+    - name: "add seed servers"
+      blockinfile:
+        state: "present"
+        insertafter: "EOF"
         dest: "{{ config_file }}"
         marker: "# _SEED_SERVERS_"
         append_newline: true
         prepend_newline: true
-        content: |
-            server 0.north-america.pool.ntp.org
-            server 1.north-america.pool.ntp.org
-            server 2.north-america.pool.ntp.org
-            server 3.north-america.pool.ntp.org
-    - name: add pps driver
-      blockinfile: 
-        state: present
-        insertafter: EOF
+        content:
+          "server 0.north-america.pool.ntp.org\nserver 1.north-america.pool.ntp.org\n\
+          server 2.north-america.pool.ntp.org\nserver 3.north-america.pool.ntp.org\n"
+    - name: "add pps driver"
+      blockinfile:
+        state: "present"
+        insertafter: "EOF"
         dest: "{{ config_file }}"
         marker: "# _PPS_DRIVER_"
         append_newline: true
         prepend_newline: true
-        content: |
-            server 127.127.22.0 minpoll 4
-            fudge 127.127.22.0 refid PPS flag3 1 time1 0.0
-    - name: add shm driver
-      blockinfile: 
-        state: present
-        insertafter: EOF
+        content:
+          "server 127.127.22.0 minpoll 4\nfudge 127.127.22.0 refid PPS flag3\
+          \ 1 time1 0.0\n"
+    - name: "add shm driver"
+      blockinfile:
+        state: "present"
+        insertafter: "EOF"
         dest: "{{ config_file }}"
         marker: "# _SHM_DRIVER_"
         append_newline: true
         prepend_newline: true
-        content: |
-            server 127.127.28.0 minpoll 4 maxpoll 4 prefer
-            fudge 127.127.28.0 refid GPS stratum 0 time1 {{ shm_offset }}
-      when: use_shm == true
-    - name: add nmea driver
-      blockinfile: 
-        state: present
-        insertafter: EOF
+        content:
+          "server 127.127.28.0 minpoll 4 maxpoll 4 prefer\nfudge 127.127.28.0\
+          \ refid GPS stratum 0 time1 {{ shm_offset }}\n"
+      when: "use_shm == true"
+    - name: "add nmea driver"
+      blockinfile:
+        state: "present"
+        insertafter: "EOF"
         dest: "{{ config_file }}"
         marker: "# _NMEA_DRIVER_"
         append_newline: true
         prepend_newline: true
-        content: |
-            server 127.127.20.0 mode 131088 minpoll 4 prefer
-            fudge 127.127.20.0 stratum 0 refid NMEA flag1 1 flag3 1 time1 0.0 time2 0.5
-      when: use_shm == false
-    - name: remove ntp from dhcp
+        content:
+          "server 127.127.20.0 mode 131088 minpoll 4 prefer\nfudge 127.127.20.0\
+          \ stratum 0 refid NMEA flag1 1 flag3 1 time1 0.0 time2 0.5\n"
+      when: "use_shm == false"
+    - name: "remove ntp from dhcp"
       ansible.builtin.replace:
         path: "{{ dhcp_config_file }}"
-        regexp: ', ntp-servers'
-        replace: ''
-    - name: remove ntp dhcp hook file
+        regexp: ", ntp-servers"
+        replace: ""
+    - name: "remove ntp dhcp hook file"
       ansible.builtin.file:
-        path: /etc/dhcp/dhclient-exit-hooks.d/ntp
-        state: absent
-    - name: remove ntpsec dhcp hook file
+        path: "/etc/dhcp/dhclient-exit-hooks.d/ntp"
+        state: "absent"
+    - name: "remove ntpsec dhcp hook file"
       ansible.builtin.file:
-        path: /etc/dhcp/dhclient-exit-hooks.d/ntpsec
-        state: absent
-    - name: Enable ntp
+        path: "/etc/dhcp/dhclient-exit-hooks.d/ntpsec"
+        state: "absent"
+    - name: "Enable ntp"
       ansible.builtin.systemd_service:
-        name: ntpsec.service
+        name: "ntpsec.service"
         enabled: true
-        masked: no
-    - name: dissble gpsd.service
+        masked: false
+    - name: "dissble gpsd.service"
       ansible.builtin.systemd_service:
-        name: gpsd.service
+        name: "gpsd.service"
         enabled: false
-        masked: no      
-      when: use_shm == false
-    - name: dissble gpsd.socket
+        masked: false
+      when: "use_shm == false"
+    - name: "dissble gpsd.socket"
       ansible.builtin.systemd_service:
-        name: gpsd.socket
+        name: "gpsd.socket"
         enabled: false
-        masked: no      
-      when: use_shm == false
+        masked: false
+      when: "use_shm == false"

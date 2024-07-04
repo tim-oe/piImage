@@ -8,8 +8,8 @@ tasks.register('imgGet') {
         exec {
             workingDir "${project.rootDir}/img"
             commandLine 'bash', '-c',
-            'unxz ' + 
-            "${pi_img}.xz"
+                    'unxz ' +
+                    "${pi_img}.xz"
         }
     }
 }
@@ -20,12 +20,12 @@ tasks.register('imgInit') {
     group = 'sdm'
     doLast {
         delete files("${project.buildDir}/${pi_img}")
-         copy {
+        copy {
             from layout.projectDirectory.dir('img')
             into layout.buildDirectory
             include "${pi_img}"
         }
-   }
+    }
 }
 
 // https://github.com/gitbls/sdm/blob/master/Docs/Command-Details.md
@@ -37,7 +37,8 @@ tasks.register('sdmImage') {
     doLast {
         exec {
             workingDir '.'
-            commandLine 'src/sdm/image.sh'        }
+            commandLine 'src/sdm/image.sh'
+        }
     }
 }
 
@@ -49,10 +50,10 @@ tasks.register('sdmBurn') {
         exec {
             workingDir '.'
             commandLine 'bash', '-c',
-            'sudo sdm --burn /dev/sdb ' + 
-            "--hostname ${target_host} " + 
-            '--expand-root ' + 
-            "${project.buildDir}/${pi_img}"
+                    'sudo sdm --burn /dev/sdb ' +
+                    "--hostname ${target_host} " +
+                    '--expand-root ' +
+                    "${project.buildDir}/${pi_img}"
         }
     }
 }

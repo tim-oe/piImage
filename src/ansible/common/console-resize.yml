@@ -1,21 +1,18 @@
-# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/apt_module.html
-# playbook remove any uneeded packages
-# rmdir: failed to remove '/run/avahi-daemon': Directory not empty
 ---
-- name: resize default console font size
-  hosts: all
+- name: "resize default console font size"
+  hosts: "all"
   become: true
-  become_user: root
+  become_user: "root"
   vars:
-    config_file: /etc/default/console-setup
+    config_file: "/etc/default/console-setup"
   tasks:
-  - name: replace font face.
-    ansible.builtin.replace:
-      path: "{{ config_file }}"
-      regexp: '^FONTFACE=.*$'
-      replace: 'FONTFACE="TerminusBold"'
-  - name: replace font size.
-    ansible.builtin.replace:
-      path: "{{ config_file }}"
-      regexp: '^FONTSIZE=.*$'
-      replace: 'FONTSIZE="16x32"'
+    - name: "replace font face."
+      ansible.builtin.replace:
+        path: "{{ config_file }}"
+        regexp: "^FONTFACE=.*$"
+        replace: 'FONTFACE="TerminusBold"'
+    - name: "replace font size."
+      ansible.builtin.replace:
+        path: "{{ config_file }}"
+        regexp: "^FONTSIZE=.*$"
+        replace: 'FONTSIZE="16x32"'

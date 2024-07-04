@@ -1,0 +1,14 @@
+---
+- name: "reboot server"
+  hosts: "all"
+  become: true
+  become_user: "root"
+  tasks:
+    - name: "Reboot machine and send a message"
+      ansible.builtin.reboot:
+        msg: "Reboot initiated by Ansible"
+        connect_timeout: 5
+        reboot_timeout: 300
+        pre_reboot_delay: 0
+        post_reboot_delay: 10
+        test_command: "uptime"

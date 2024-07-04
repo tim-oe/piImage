@@ -1,29 +1,26 @@
-# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/apt_module.html
-# playbook remove any uneeded packages
-# rmdir: failed to remove '/run/avahi-daemon': Directory not empty
 ---
-- name: purge any uneeded apt packages
-  hosts: all
+- name: "purge any uneeded apt packages"
+  hosts: "all"
   become: true
-  become_user: root
+  become_user: "root"
   tasks:
-  - name: Remove unused packages
-    ansible.builtin.apt:
-      name: "{{ item }}"
-      state: absent
-    loop:
-     - libpam-chksshpwd 
-     - vim-tiny 
-     - vim-common 
-     - avahi-daemon 
-     - triggerhappy 
-     - ed
-     - modemmanager
-     - busybox 
-     - flashrom
-  - name: Remove useless packages from the cache
-    apt:
-      autoclean: true
-  - name: Remove dependencies that are no longer required
-    apt:
-      autoremove: true
+    - name: "Remove unused packages"
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        state: "absent"
+      loop:
+        - "libpam-chksshpwd"
+        - "vim-tiny"
+        - "vim-common"
+        - "avahi-daemon"
+        - "triggerhappy"
+        - "ed"
+        - "modemmanager"
+        - "busybox"
+        - "flashrom"
+    - name: "Remove useless packages from the cache"
+      apt:
+        autoclean: true
+    - name: "Remove dependencies that are no longer required"
+      apt:
+        autoremove: true

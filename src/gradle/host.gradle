@@ -5,12 +5,12 @@ tasks.register('resetHost') {
         exec {
             workingDir '.'
             commandLine 'bash', '-c',
-                "ssh-keygen -R ${target_host}" 
+                    "ssh-keygen -R ${target_host}"
         }
         exec {
             workingDir '.'
             commandLine 'bash', '-c',
-                "ssh-keyscan -H ${target_host} >> ~/.ssh/known_hosts" 
+                    "ssh-keyscan -T 30 -H ${target_host} >> ~/.ssh/known_hosts"
         }
     }
 }

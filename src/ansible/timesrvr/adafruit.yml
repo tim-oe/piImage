@@ -1,84 +1,75 @@
-# this is gps setup that works for adafruit ultimate gps
-# usb board (test bed) https://www.adafruit.com/product/4279 
-# hat https://www.adafruit.com/product/2324
-# dev aliases
-# https://unix.stackexchange.com/questions/385749/preventing-udev-symlink-overwrite
-# enable serial interface
-# https://www.raspberrypi.com/documentation/computers/configuration.html#serial-nonint
-# disable serial console
-# https://www.raspberrypi.com/documentation/computers/configuration.html#serial-console-nonint
 ---
-- name: setup gps
-  hosts: all
+- name: "setup gps"
+  hosts: "all"
   become: true
-  become_user: root
+  become_user: "root"
   vars:
-    gpsd_config_file: /etc/default/gpsd
-    gps_dev: ttyAMA0
-    config_file: /boot/firmware/config.txt
-    udev_file: /etc/udev/rules.d/100-nmea.rules 
+    gpsd_config_file: "/etc/default/gpsd"
+    gps_dev: "ttyAMA0"
+    config_file: "/boot/firmware/config.txt"
+    udev_file: "/etc/udev/rules.d/100-nmea.rules"
   tasks:
-    - name: Update apt repo and cache.
+    - name: "Update apt repo and cache."
       apt:
         update_cache: true
         cache_valid_time: 3600
-    - name: install gpsd
+    - name: "install gpsd"
       ansible.builtin.apt:
         name: "{{ item }}"
-        state: present
+        state: "present"
       loop:
-        - gpsd
-        - gpsd-tools
-        - gpsd-clients
-    - name: configure gps devices
+        - "gpsd"
+        - "gpsd-tools"
+        - "gpsd-clients"
+    - name: "configure gps devices"
       ansible.builtin.replace:
         path: "{{ gpsd_config_file }}"
-        regexp: '^DEVICES=.*$'
+        regexp: "^DEVICES=.*$"
         replace: 'DEVICES="/dev/gps0 /dev/pps0"'
-    - name: configure gps options
+    - name: "configure gps options"
       ansible.builtin.replace:
         path: "{{ gpsd_config_file }}"
-        regexp: '^GPSD_OPTIONS=.*$'
+        regexp: "^GPSD_OPTIONS=.*$"
         replace: 'GPSD_OPTIONS="-n"'
-    - name: install pps
+    - name: "install pps"
       ansible.builtin.apt:
         name: "{{ item }}"
-        state: present
+        state: "present"
       loop:
-        - libcap-dev 
-        - libssl-dev 
-        - pps-tools
-    - name: enable pps channel.
-      blockinfile: 
-        state: present
-        insertafter: EOF
+        - "libcap-dev"
+        - "libssl-dev"
+        - "pps-tools"
+    - name: "enable pps channel."
+      blockinfile:
+        state: "present"
+        insertafter: "EOF"
         dest: "{{ config_file }}"
         marker: "# _PPS_ENABLE"
         append_newline: true
         prepend_newline: true
-        content: |
-          dtoverlay=pps-gpio,gpiopin=4
-    - name: remove udev linkage rule file
+        content: "dtoverlay=pps-gpio,gpiopin=4\n"
+    - name: "remove udev linkage rule file"
       ansible.builtin.file:
         path: "{{ udev_file }}"
-        state: absent
-    - name: create udev rules
+        state: "absent"
+    - name: "create udev rules"
       copy:
         dest: "{{ udev_file }}"
-        content: |
-          ACTION=="add", SUBSYSTEM=="tty", KERNEL=="{{ gps_dev }}", SYMLINK+="gps0", GROUP="tty"
-          ACTION=="add", SUBSYSTEM=="pps", KERNEL=="pps0", SYMLINK+="gpspps0"
-    - name: enable serial interface
-      command: raspi-config nonint do_serial_hw=0
-    - name: disable serial console
-      command: raspi-config nonint do_serial_cons=1
-    - name: Enable gpsd.service
+        content:
+          "ACTION==\"add\", SUBSYSTEM==\"tty\", KERNEL==\"{{ gps_dev }}\", SYMLINK+=\"\
+          gps0\", GROUP=\"tty\"\nACTION==\"add\", SUBSYSTEM==\"pps\", KERNEL==\"pps0\"\
+          , SYMLINK+=\"gpspps0\"\n"
+    - name: "enable serial interface"
+      command: "raspi-config nonint do_serial_hw=0"
+    - name: "disable serial console"
+      command: "raspi-config nonint do_serial_cons=1"
+    - name: "Enable gpsd.service"
       ansible.builtin.systemd_service:
-        name: gpsd.service
+        name: "gpsd.service"
         enabled: true
-        masked: no
-    - name: Enable gpsd.socket
+        masked: false
+    - name: "Enable gpsd.socket"
       ansible.builtin.systemd_service:
-        name: gpsd.socket
+        name: "gpsd.socket"
         enabled: true
-        masked: no
+        masked: false

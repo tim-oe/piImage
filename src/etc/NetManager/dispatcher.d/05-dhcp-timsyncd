@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# sync ntp server from dhcp to timesyncd
+
+LOG_FILE=/var/log/dhcp-ntp.log
+CONFD=/run/systemd/timesyncd.conf.d
+CONF_FILE=$CONFD/dhcp-ntp.conf
+DEBUG=false
+
+if [ "$DEBUG" = "TRUE" ] ; then
+    echo "*********************************************************************" 1>&2 >> $LOG_FILE
+    echo "ifs: $1" 1>&2 >> $LOG_FILE
+    echo "evt: $2" 1>&2 >> $LOG_FILE
+    echo "ntp: $DHCP4_NTP_SERVERS" 1>&2 >> $LOG_FILE
+    CURR_ENV=$(env)
+    echo "$CURR_ENV" 1>&2 >> $LOG_FILE
+    echo "*********************************************************************" 1>&2 >> $LOG_FILE
+fi
+
+if [ "$2" = "up" ] && [ "$1" != "lo" ] && [ -n "$DHCP4_NTP_SERVERS" ] ; then
+    echo "adding $DHCP4_NTP_SERVERS to timesyncd" 1>&2 >> $LOG_FILE
+
+    mkdir -p $CONFD
+    (
+        echo "# Created by nm dispatcher"
+        echo "[Time]"
+        echo "NTP=$DHCP4_NTP_SERVERS"
+    ) > $CONF_FILE
+
+    systemctl try-reload-or-restart systemd-timesyncd
+fi

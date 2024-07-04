@@ -1,3 +1,27 @@
+plugins {
+    id("com.diffplug.spotless") version "6.25.0"
+}
+
+repositories {
+    mavenCentral()
+    gradlePluginPortal()
+}
+
 apply from: 'src/gradle/ansible.gradle'
 apply from: 'src/gradle/sdm.gradle'
 apply from: 'src/gradle/host.gradle'
+
+// https://github.com/diffplug/spotless/tree/main/plugin-gradle
+spotless {
+    yaml {
+        target 'src/ansible/**/*.yml'
+        jackson()
+        prettier()
+        indentWithSpaces()
+    }
+    groovyGradle {
+        target '*.gradle','src/gradle/*.gradle'
+        greclipse()
+        indentWithSpaces()
+    }
+}

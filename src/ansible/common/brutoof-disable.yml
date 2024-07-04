@@ -1,37 +1,24 @@
-# removed drivers and disable onboard brutoof 
-#
 ---
-- name: remove brutoof
-  hosts: all
+- name: "remove brutoof"
+  hosts: "all"
   become: true
-  become_user: root
+  become_user: "root"
   vars:
-    config_file: /boot/firmware/config.txt
+    config_file: "/boot/firmware/config.txt"
   tasks:
-  - name: Remove brutoof packages
-    ansible.builtin.apt:
-      name: "{{ item }}"
-      state: absent
-    loop:
-     - bluez 
-     - bluez-firmware 
-  - name: Disble bluetooth.
-    blockinfile: 
-      state: present
-      insertafter: EOF
-      dest: "{{ config_file }}"
-      marker: "# _BT_DISABLE"
-      append_newline: true
-      prepend_newline: true
-      content: |
-        dtoverlay=disable-bt
-    # - name: dissble hciuart.service
-    #   ansible.builtin.systemd_service:
-    #     name: hciuart.service
-    #     enabled: false
-    #     masked: no      
-    # - name: dissble bluetooth.service
-    #   ansible.builtin.systemd_service:
-    #     name: bluetooth.service
-    #     enabled: false
-    #     masked: no
+    - name: "Remove brutoof packages"
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        state: "absent"
+      loop:
+        - "bluez"
+        - "bluez-firmware"
+    - name: "Disble bluetooth."
+      blockinfile:
+        state: "present"
+        insertafter: "EOF"
+        dest: "{{ config_file }}"
+        marker: "# _BT_DISABLE"
+        append_newline: true
+        prepend_newline: true
+        content: "dtoverlay=disable-bt\n"

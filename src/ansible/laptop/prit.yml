@@ -1,0 +1,43 @@
+---
+- name: "initialize packages for laptop"
+  hosts: "all"
+  become: true
+  become_user: "root"
+  tasks:
+    - name: "Update apt repo and cache."
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+    - name: "Ansible apt install base deps"
+      apt:
+        name: "{{ item }}"
+        state: "present"
+      loop:
+        - "curl"
+        - "gnupg"
+        - "gpg"
+        - "wget"
+    - name: "add and sign pritnl repo"
+      block:
+        - name: "pritnl get key"
+          command: "bash -c 'gpg --keyserver hkp://keyserver.ubuntu.com --recv-keys 7568D9BB55FF9E5287D586017AE645C0CF8E292A'"
+        - name: "pritnl sign key"
+          command:
+            "bash -c 'gpg --armor --export 7568D9BB55FF9E5287D586017AE645C0CF8E292A\
+            \ | sudo tee /etc/apt/trusted.gpg.d/pritunl.asc'"
+        - name: "chrome apt source"
+          ansible.builtin.apt_repository:
+            repo:
+              "deb [arch=amd64 signed-by=/etc/apt/trusted.gpg.d/pritunl.asc] https://repo.pritunl.com/stable/apt\
+              \ {{ ansible_distribution_release }} main"
+            filename: "pritunl"
+            state: "present"
+            update_cache: true
+    - name: "Update apt added repo and cache."
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+    - name: "apt install prit client"
+      apt:
+        name: "pritunl-client-electron"
+        state: "present"

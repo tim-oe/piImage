@@ -1,27 +1,26 @@
 ---
-- name: Initialize kube node
-  hosts: all
+- name: "Initialize kube node"
+  hosts: "all"
   become: true
-  become_user: root
-  tasks: 
-    - name: Ansible apt install cifs-utils
+  become_user: "root"
+  tasks:
+    - name: "Ansible apt install cifs-utils"
       apt:
-        name: cifs-utils
-        state: present
-    - name: create mount point
+        name: "cifs-utils"
+        state: "present"
+    - name: "create mount point"
       file:
-        path: /mnt/clones
-        mode: '0777'
-        state: directory
-    - name: add mount
+        path: "/mnt/clones"
+        mode: "0777"
+        state: "directory"
+    - name: "add mount"
       ansible.posix.mount:
-        path: /mnt/clones
-        src: //tec-nas/clones
-        fstype: cifs
-        opts: guest,iocharset=utf8,file_mode=0777,dir_mode=0777,noperm
-        state: present
-    - name: reload fstab
-      command: systemctl daemon-reload
-    - name: mount
-      command: mount -a
-
+        path: "/mnt/clones"
+        src: "//tec-nas/clones"
+        fstype: "cifs"
+        opts: "guest,iocharset=utf8,file_mode=0777,dir_mode=0777,noperm"
+        state: "present"
+    - name: "reload fstab"
+      command: "systemctl daemon-reload"
+    - name: "mount"
+      command: "mount -a"
