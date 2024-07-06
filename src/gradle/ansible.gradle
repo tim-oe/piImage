@@ -236,6 +236,21 @@ tasks.register('ansible') {
     }
 }
 
+tasks.register('helm') {
+    description = 'run ansible helm script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/mgr/helm.yml'
+        }
+    }
+}
+
 tasks.register('java') {
     description = 'run ansible java script'
     group = "ansible"

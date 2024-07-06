@@ -1,0 +1,32 @@
+---
+- name: "install helm"
+  hosts: "all"
+  become: true
+  become_user: "root"
+  vars:
+    helm_version: "3.15.2"
+  tasks:
+    - name: "get helm archive"
+      ansible.builtin.get_url:
+        url: "https://get.helm.sh/helm-v{{ helm_version }}-linux-arm.tar.gz"
+        dest: "/tmp/helm-linux-arm.tar.gz"
+        mode: "0666"
+        force: true
+    - name: "expand archive"
+      ansible.builtin.unarchive:
+        src: "/tmp/helm-linux-arm.tar.gz"
+        dest: "/tmp"
+    - name: "copy helm to bin"
+      ansible.builtin.copy:
+        src: "/tmp/linux-arm/helm"
+        dest: "/usr/local/bin/helm"
+        remote_src: true
+        mode: "0777"
+    - name: "Delete archive"
+      ansible.builtin.file:
+        path: "/tmp/helm-linux-arm.tar.gz"
+        state: "absent"
+    - name: "Delete folder"
+      ansible.builtin.file:
+        path: "/tmp/linux-arm"
+        state: "absent"
