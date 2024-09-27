@@ -1,0 +1,29 @@
+---
+- name: "add python libs and dependencies"
+  hosts: "all"
+  become: true
+  become_user: "root"
+  tasks:
+    - name: "Update apt repo and cache."
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+    - name: "Ansible apt install base deps"
+      apt:
+        name: "{{ item }}"
+        state: "present"
+      loop:
+        - "python3-pip"
+        - "python3-setuptools"
+        - "python3-virtualenv"
+        - "python3-wheel"
+        - "python3-coverage"
+        - "python3-sqlalchemy"
+        - "python3-rpi.gpio"
+        - "python3-libgpiod"
+        - "python3-pytest"
+        - "python3-flake8"
+        - "i2c-tools"
+        - "libgpiod-dev"
+        - "git"
+        - "wget"

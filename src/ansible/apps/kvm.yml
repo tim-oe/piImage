@@ -1,0 +1,22 @@
+---
+- name: "install kvm"
+  hosts: "all"
+  become: true
+  become_user: "root"
+  tasks:
+    - name: "Update apt repo and cache."
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+    - name: "install deps"
+      apt:
+        name: "{{ item }}"
+        state: "present"
+      loop:
+        - "cpu-checker"
+        - "qemu-kvm" 
+        - "virt-manager" 
+        - "libvirt-daemon-system" 
+        - "virtinst" 
+        - "libvirt-clients" 
+        - "bridge-utils"

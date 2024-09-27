@@ -1,0 +1,58 @@
+---
+- name: "initialize packages for docker"
+  hosts: "all"
+  become: true
+  become_user: "root"
+  vars:
+    user_name: "tcronin"
+  tasks:
+    - name: "Remove any legacy docker libs"
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        state: "absent"
+      loop:
+        - "docker.io"
+        - "docker-compose"
+        - "docker-compose-v2"
+        - "docker-doc"
+        - "podman-docker"
+    - name: "add and sign docker repo"
+      block:
+        - name: "docker repo key"
+          ansible.builtin.get_url:
+            url: "https://download.docker.com/linux/debian/gpg"
+            dest: "/etc/apt/keyrings/docker.asc"
+            mode: "0644"
+            force: true
+        - name: Get pi architecture
+          shell: dpkg --print-architecture
+          register: pi_architecture
+
+        - name: "docker apt source {{ pi_architecture }} {{ ansible_distribution_release }}"
+          ansible.builtin.apt_repository:
+            repo:
+              "deb [arch={{ pi_architecture }} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian\
+              \ {{ ansible_distribution_release }} stable"
+            filename: "docker"
+            state: "present"
+            update_cache: true
+        - name: "Update apt added repo and cache."
+          apt:
+            update_cache: true
+            cache_valid_time: 3600
+        - name: "apt install docker deps"
+          apt:
+            name: "{{ item }}"
+            install_recommends: true
+            state: "present"
+          loop:
+            - "docker-ce"
+            - "docker-ce-cli"
+            - "containerd.io"
+            - "docker-buildx-plugin"
+            - "docker-compose-plugin"
+    - name: "adding existing user '{{ user_name }}' to group docker"
+      user:
+        name: "{{ user_name }}"
+        groups: "docker"
+        append: true

@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+# https://forums.raspberrypi.com/viewtopic.php?t=246492
+# https://forums.raspberrypi.com/viewtopic.php?t=217832
+# https://man.archlinux.org/man/NetworkManager-dispatcher.8.en
+#
 # sync ntp server from dhcp to timesyncd
 
 LOG_FILE=/var/log/dhcp-ntp.log

@@ -1,5 +1,5 @@
 ---
-- name: "initialize packages for laptop"
+- name: "install virtualbox"
   hosts: "all"
   become: true
   become_user: "root"
@@ -8,7 +8,7 @@
       apt:
         update_cache: true
         cache_valid_time: 3600
-    - name: "Ansible apt install base deps"
+    - name: "install deps"
       apt:
         name: "{{ item }}"
         state: "present"
@@ -17,7 +17,6 @@
         - "gnupg"
         - "gpg"
         - "wget"
-        - "snapd"
     - name: "add and sign virtualbox repo"
       block:
         - name: "virtualbox repo key"
@@ -36,14 +35,14 @@
               "deb [arch=amd64 signed-by=/usr/share/keyrings/oracle-virtualbox-2016.gpg]\
               \ http://download.virtualbox.org/virtualbox/debian {{ ansible_distribution_release\
               \ }} contrib"
-            filename: "virtualbox"
+            filename: "virtualbox-{{ ansible_distribution_release }}"
             state: "present"
             update_cache: true
     - name: "Update apt added repo and cache."
       apt:
         update_cache: true
         cache_valid_time: 3600
-    - name: "apt install deps"
+    - name: "apt install virtualbox"
       apt:
         name: "virtualbox-7.0"
         install_recommends: true

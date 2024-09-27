@@ -16,8 +16,12 @@ sudo sdm --customize \
 --plugin L10n:"keymap=us|locale=en_US.UTF-8|timezone=America/Chicago" \
 --plugin disables:"triggerhappy|piwiz" \
 --plugin network:"netman=nm|wifissid=tec-wan|wifipassword=$WIFI_PWD|wificountry=US" \
+--extend --xmb 3072 \
 --regen-ssh-host-keys \
 --reboot 5 \
 --nowait-timesync \
 --redact \
-build/2024-03-15-raspios-bookworm-arm64-lite.img
+build/2024-07-04-raspios-bookworm-arm64-lite.img
+
+# shrink image
+sudo sdm --shrink build/2024-07-04-raspios-bookworm-arm64-lite.img

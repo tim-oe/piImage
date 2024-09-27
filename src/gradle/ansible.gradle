@@ -1,49 +1,51 @@
-tasks.register('aptUpdate') {
-    description = 'run ansible apt update script'
+// generic task to run ansible playbook
+tasks.register('playbook') {
     group = "ansible"
     doLast {
+    }
+    if (project.hasProperty('ansible_playbook')) {
         exec {
             workingDir '.'
             commandLine 'bash', '-c',
                     'ansible-playbook ' +
                     '-i ' +
                     "${target_host}, " +
-                    'src/ansible/common/apt-update.yml'
+                    "${ansible_playbook}"
         }
+    } else {
+        println "need to set -ansible_playbook=[src relative path to playbook.yml file]"
     }
 }
 
-tasks.register('ntpClient') {
+tasks.register('aptUpdate', GradleBuild) {
+    description = 'run ansible apt update script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/common/apt-update.yml']
+    tasks = ['playbook']
+}
+
+tasks.register('ntpClient', GradleBuild) {
     description = 'run ansible ntp client script'
     group = "ansible"
-    doLast {
-        exec {
-            workingDir '.'
-            commandLine 'bash', '-c',
-                    'ansible-playbook ' +
-                    '-i ' +
-                    "${target_host}, " +
-                    'src/ansible/common/ntp-client.yml'
-        }
-    }
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/common/ntp-client.yml']
+    tasks = ['playbook']
 }
 
-tasks.register('timesyncd') {
+tasks.register('timesyncd', GradleBuild) {
     description = 'deploy ansible ntp timesyncd script'
     group = "ansible"
-    doLast {
-        exec {
-            workingDir '.'
-            commandLine 'bash', '-c',
-                    'ansible-playbook ' +
-                    '-i ' +
-                    "${target_host}, " +
-                    'src/ansible/common/nm-timesyncd.yml'
-        }
-    }
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/common/nm-timesyncd.yml']
+    tasks = ['playbook']
 }
 
-tasks.register('piAptUpdate') {
+tasks.register('telegraf', GradleBuild) {
+    description = 'run ansible telegraf script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/common/telegraf.yml']
+    tasks = ['playbook']
+}
+
+tasks.register('piUpdate') {
     description = 'run ansible apt update script'
     group = "ansible"
     doLast {
@@ -56,35 +58,6 @@ tasks.register('piAptUpdate') {
         }
     }
 }
-
-tasks.register('kubeAptUpdate') {
-    description = 'run ansible apt update script on kube cluster'
-    group = "ansible"
-    doLast {
-        exec {
-            workingDir '.'
-            commandLine 'bash', '-c',
-                    'ansible-playbook ' +
-                    '-l kube_all ' +
-                    'src/ansible/common/apt-update.yml'
-        }
-    }
-}
-
-tasks.register('piReboot') {
-    description = 'run ansible apt update script'
-    group = "ansible"
-    doLast {
-        exec {
-            workingDir '.'
-            commandLine 'bash', '-c',
-                    'ansible-playbook ' +
-                    '-l pi-all ' +
-                    'src/ansible/common/apt-update.yml'
-        }
-    }
-}
-
 
 tasks.register('aptPurge') {
     description = 'run ansible apt purge script'
@@ -111,7 +84,7 @@ tasks.register('brutoof') {
                     'ansible-playbook ' +
                     '-i ' +
                     "${target_host}, " +
-                    'src/ansible/common/brutoof-disable.yml'
+                    'src/ansible/pi/brutoof-disable.yml'
         }
     }
 }
@@ -126,7 +99,7 @@ tasks.register('wifi') {
                     'ansible-playbook ' +
                     '-i ' +
                     "${target_host}, " +
-                    'src/ansible/common/wifi-disable.yml'
+                    'src/ansible/pi/wifi-disable.yml'
         }
     }
 }
@@ -156,7 +129,7 @@ tasks.register('console') {
                     'ansible-playbook ' +
                     '-i ' +
                     "${target_host}, " +
-                    'src/ansible/common/console-resize.yml'
+                    'src/ansible/pi/console-resize.yml'
         }
     }
 }
@@ -186,13 +159,13 @@ tasks.register('swap') {
                     'ansible-playbook ' +
                     '-i ' +
                     "${target_host}, " +
-                    'src/ansible/common/swap.yml'
+                    'src/ansible/pi/swap.yml'
         }
     }
 }
 
-tasks.register('telegraf') {
-    description = 'run ansible telegraf script'
+tasks.register('log2ram') {
+    description = 'run ansible log2ram script'
     group = "ansible"
     doLast {
         exec {
@@ -201,7 +174,7 @@ tasks.register('telegraf') {
                     'ansible-playbook ' +
                     '-i ' +
                     "${target_host}, " +
-                    'src/ansible/common/telegraf.yml'
+                    'src/ansible/common/log2ram.yml'
         }
     }
 }
@@ -338,7 +311,7 @@ tasks.register('virtbox') {
                     'ansible-playbook ' +
                     '-i ' +
                     "${target_host}, " +
-                    'src/ansible/common/virtbox.yml'
+                    'src/ansible/apps/virtbox.yml'
         }
     }
 }
@@ -398,7 +371,22 @@ tasks.register('docker') {
                     'ansible-playbook ' +
                     '-i ' +
                     "${target_host}, " +
-                    'src/ansible/common/docker.yml'
+                    'src/ansible/apps/docker.yml'
+        }
+    }
+}
+
+tasks.register('pidocker') {
+    description = 'run ansible docker script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/pi/docker.yml'
         }
     }
 }
@@ -410,11 +398,56 @@ tasks.register('docker') {
 tasks.register('piInit') {
     description = 'run mutiple ansible playbooks for system intialization'
     group = "ansible"
-    //dependsOn 'resetHost'
     dependsOn 'aptPurge'
     dependsOn 'brutoof'
     dependsOn 'clones'
     dependsOn 'console'
     dependsOn 'ssh'
     dependsOn 'swap'
+    dependsOn 'log2ram'
+}
+
+tasks.register('piAptUpdate') {
+    description = 'run ansible apt update script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                    'ansible-playbook ' +
+                    '-l pi-all ' +
+                    'src/ansible/common/apt-update.yml'
+        }
+    }
+}
+
+// https://github.com/azlux/log2ram
+tasks.register('sdr') {
+    description = 'run ansible apt sdr script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/weather/nesdr.yml'
+        }
+    }
+}
+
+tasks.register('wPython') {
+    description = 'run ansible apt weather python script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/weather/python.yml'
+        }
+    }
 }

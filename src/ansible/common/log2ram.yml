@@ -1,0 +1,52 @@
+---
+- name: "install log2ram"
+  hosts: "all"
+  become: true
+  become_user: "root"
+  vars:
+    config_file: "/etc/log2ram.conf"
+  tasks:
+    - name: "Update apt repo and cache."
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+    - name: "Ansible apt install base deps"
+      apt:
+        name: "{{ item }}"
+        state: "present"
+      loop:
+        - "curl"
+        - "gnupg"
+        - "gpg"
+        - "wget"
+    - name: "add and sign log2ram repo"
+      block:
+        - name: "log2ram repo key"
+          ansible.builtin.get_url:
+            url: "https://azlux.fr/repo.gpg"
+            dest: "/usr/share/keyrings/azlux-archive-keyring.gpg"
+            mode: "0644"
+            force: true
+        - name: "log2ram apt source"
+          ansible.builtin.apt_repository:
+            repo:
+              "deb [signed-by=/usr/share/keyrings/azlux-archive-keyring.gpg] http://packages.azlux.fr/debian/ bookworm main"
+            filename: "log2ram-{{ ansible_distribution_release }}"
+            state: "present"
+            update_cache: true
+    - name: "Update apt added repo and cache."
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+    - name: "apt install deps"
+      apt:
+        name: "{{ item }}"
+        install_recommends: true
+        state: "present"
+      loop:
+        - "log2ram"
+    - name: "increase initial ram size"
+      ansible.builtin.replace:
+        path: "{{ config_file }}"
+        regexp: "^SIZE=.*$"
+        replace: "SIZE=256M"
