@@ -1,0 +1,34 @@
+---
+- name: "install mysql server"
+  hosts: "all"
+  become: true
+  become_user: "root"
+  vars:
+    config_file: "/etc/mysql/mariadb.conf.d/50-server.cnf"
+    root_pwd: "root"
+  tasks:
+    - name: "Update apt repo and cache."
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+    - name: "install mysql"
+      apt:
+        name: "{{ item }}"
+        state: "present"
+      loop:
+        - "mariadb-server"
+        - "mariadb-client"
+    - name: set root pwd
+      ansible.builtin.shell: "sudo mysql -e \"CREATE user 'root'@'%' identified by '{{ root_pwd }}'\"" 
+      args:
+        executable: /bin/bash
+    - name: "allow remote access"
+      ansible.builtin.replace:
+        path: "{{ config_file }}"
+        regexp: "^bind-address.*$"
+        replace: "bind-address=0.0.0.0"
+    - name: Restart mysql
+      ansible.builtin.systemd_service:
+        state: restarted
+        daemon_reload: true
+        name: mysql

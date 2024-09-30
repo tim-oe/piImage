@@ -451,3 +451,18 @@ tasks.register('wPython') {
         }
     }
 }
+
+tasks.register('mysql') {
+    description = 'run ansible apt weather python script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/apps/mysql.yml'
+        }
+    }
+}
