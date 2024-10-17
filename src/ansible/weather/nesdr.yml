@@ -1,5 +1,5 @@
 ---
-- name: "install log2ram"
+- name: "install sdr dependencies"
   hosts: "all"
   become: true
   become_user: "root"
@@ -28,4 +28,6 @@
         - "cmake" 
         - "pkg-config"
         - "ninja-build"
+        - "doxygen"
+        - "graphviz"
         - "git"

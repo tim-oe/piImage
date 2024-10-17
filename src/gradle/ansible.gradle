@@ -69,7 +69,7 @@ tasks.register('aptPurge') {
                     'ansible-playbook ' +
                     '-i ' +
                     "${target_host}, " +
-                    'src/ansible/common/apt-purge.yml'
+                    'src/ansible/pi/apt-purge.yml'
         }
     }
 }
@@ -394,6 +394,7 @@ tasks.register('pidocker') {
 /** 
  * can't nest GradleBuild tasks so use dependsOn to group
  * to call multiple GradleBuild tasks each thas has to have a unique buildName
+ * https://github.com/azlux/log2ram
  */
 tasks.register('piInit') {
     description = 'run mutiple ansible playbooks for system intialization'
@@ -421,7 +422,6 @@ tasks.register('piAptUpdate') {
     }
 }
 
-// https://github.com/azlux/log2ram
 tasks.register('sdr') {
     description = 'run ansible apt sdr script'
     group = "ansible"
@@ -463,6 +463,7 @@ tasks.register('mysql') {
                     '-i ' +
                     "${target_host}, " +
                     'src/ansible/apps/mysql.yml'
+                    "-e '{\"root_pwd\":\"${mysql_root_pwd}\"}'"
         }
     }
 }

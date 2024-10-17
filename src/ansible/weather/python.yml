@@ -3,6 +3,8 @@
   hosts: "all"
   become: true
   become_user: "root"
+  vars:
+    env_file: "/etc/environment"
   tasks:
     - name: "Update apt repo and cache."
       apt:
@@ -13,25 +15,32 @@
         name: "{{ item }}"
         state: "present"
       loop:
-        - "python3-pip"
-        - "python3-setuptools"
-        - "python3-virtualenv"
-        - "python3-wheel"
+        - "python3-dev"
         - "python3-rpi.gpio"
         - "python3-libgpiod"
+        - "python3-pigpio"
+        - "python3-smbus2"
+        - "python3-setuptools"
+        - "python3-wheel"
+        - "python3-pip"
         - "i2c-tools"
         - "libgpiod-dev"
+        - "pipx"
         - "git"
         - "wget"
-    - name: "Remove unused packages"
+    - name: "install picamera2"
       ansible.builtin.apt:
-        name: "{{ item }}"
-        state: "absent"
-      loop:
-        - "ibpam-chksshpwd"
-        - "vim-tiny"
-        - "vim-common"
-        - "avahi-daemon"
-        - "triggerhappy"
-        - "read-edid"
-
+        name: python3-picamera2
+        state: latest
+        install_recommends: no
+    - name: "add poetry envars"
+      blockinfile:
+        state: "present"
+        insertafter: "EOF"
+        dest: "{{ env_file }}"
+        marker: "# _POETRY"
+        append_newline: true
+        prepend_newline: true
+        block: |
+          POETRY_VIRTUALENVS_IN_PROJECT=true
+          POETRY_VIRTUALENVS_OPTIONS_SYSTEM_SITE_PACKAGES=true

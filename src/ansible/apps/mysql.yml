@@ -18,6 +18,8 @@
       loop:
         - "mariadb-server"
         - "mariadb-client"
+        - "libmariadb3" 
+        - "libmariadb-dev"
     - name: set root pwd
       ansible.builtin.shell: "sudo mysql -e \"CREATE user 'root'@'%' identified by '{{ root_pwd }}'\"" 
       args:
