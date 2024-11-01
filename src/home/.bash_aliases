@@ -4,6 +4,7 @@ alias piver='cat /proc/device-tree/model;printf "\n"'
 alias pimem="free -mh | egrep -0 Mem:.* | sed -E 's/Mem:\s+([0-9]+\.?[0-9]?[GMi]{2})\s+.*/\1/'"
 alias pidisk="df -h | egrep -0 /dev/root.* | sed -E 's/\/dev\/root\s+([0-9]+[GM]?)\s+([0-9\.]+[GM]?)\s+([0-9\.]+[GM]?).*/disk total:\1 used:\2/'"
 alias pitemp='vcgencmd measure_temp | egrep -o "[0-9]*\.[0-9]*.{2}"'
+alias watchfreq="watch vcgencmd measure_clock arm"
 alias listsvc='systemctl list-unit-files --type=service'
 alias listenable='systemctl list-unit-files --type=service --state=enabled'
 alias liteon='sudo bash -c "echo 0 > /sys/class/backlight/rpi_backlight/bl_power"'
