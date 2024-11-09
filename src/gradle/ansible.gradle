@@ -391,6 +391,21 @@ tasks.register('pidocker') {
     }
 }
 
+tasks.register('gpsd') {
+    description = 'run ansible gpsd script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/apps/gpsd.yml'
+        }
+    }
+}
+
 /** 
  * can't nest GradleBuild tasks so use dependsOn to group
  * to call multiple GradleBuild tasks each thas has to have a unique buildName

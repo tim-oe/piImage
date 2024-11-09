@@ -1,0 +1,43 @@
+---
+- name: "setup gps"
+  hosts: "all"
+  become: true
+  become_user: "root"
+  vars:
+    gpsd_config_file: "/etc/default/gpsd"
+    gps_dev: "ttyAMA0"
+    config_file: "/boot/firmware/config.txt"
+    udev_file: "/etc/udev/rules.d/100-nmea.rules"
+  tasks:
+    - name: "Update apt repo and cache."
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+    - name: "install gpsd"
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        state: "present"
+      loop:
+        - "gpsd"
+        - "gpsd-tools"
+        - "gpsd-clients"
+    - name: "configure gps devices"
+      ansible.builtin.replace:
+        path: "{{ gpsd_config_file }}"
+        regexp: "^DEVICES=.*$"
+        replace: 'DEVICES="/dev/ttyUSB0"'
+    - name: "configure gps options"
+      ansible.builtin.replace:
+        path: "{{ gpsd_config_file }}"
+        regexp: "^GPSD_OPTIONS=.*$"
+        replace: 'GPSD_OPTIONS="-n"'
+    - name: "Enable gpsd.service"
+      ansible.builtin.systemd_service:
+        name: "gpsd.service"
+        enabled: true
+        masked: false
+    - name: "Enable gpsd.socket"
+      ansible.builtin.systemd_service:
+        name: "gpsd.socket"
+        enabled: true
+        masked: false
