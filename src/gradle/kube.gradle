@@ -1,0 +1,13 @@
+tasks.register('kubeUpdate') {
+    description = 'run ansible apt update script on kube cluster'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                    'ansible-playbook ' +
+                    '-l kube_all ' +
+                    'src/ansible/common/apt-update.yml'
+        }
+    }
+}

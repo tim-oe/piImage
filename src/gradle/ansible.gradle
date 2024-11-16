@@ -46,14 +46,14 @@ tasks.register('telegraf', GradleBuild) {
 }
 
 tasks.register('piUpdate') {
-    description = 'run ansible apt update script'
+    description = 'run ansible apt update script on pi instances'
     group = "ansible"
     doLast {
         exec {
             workingDir '.'
             commandLine 'bash', '-c',
                     'ansible-playbook ' +
-                    '-l pi-all ' +
+                    '-l pi_all ' +
                     'src/ansible/common/apt-update.yml'
         }
     }

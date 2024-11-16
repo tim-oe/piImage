@@ -8,6 +8,7 @@ repositories {
 }
 
 apply from: 'src/gradle/ansible.gradle'
+apply from: 'src/gradle/kube.gradle'
 apply from: 'src/gradle/sdm.gradle'
 apply from: 'src/gradle/host.gradle'
 
