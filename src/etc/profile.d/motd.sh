@@ -1,7 +1,11 @@
 #!/bin/sh
+#
 # motd script
 # https://zsitko.com/welcome-message-motd-raspberry-pi/
 # https://krishna-alagiri.medium.com/raspberry-pi-awesome-custom-motd-db16e0c1902
+# https://forums.raspberrypi.com/viewtopic.php?t=23440
+# https://upload.wikimedia.org/wikipedia/commons/1/15/Xterm_256color_chart.svg 
+# https://linuxcommand.org/lc3_adv_tput.php
 #
 let upSeconds="$(/usr/bin/cut -d. -f1 /proc/uptime)"
 let secs=$((${upSeconds}%60))
@@ -20,19 +24,18 @@ UPTIME=`printf "%d days, %02dh%02dm%02ds" "$days" "$hours" "$mins" "$secs"`
 read one five fifteen rest < /proc/loadavg
 
 #clear
-echo "$(tput bold)$(tput setaf 2)"
-echo "    .~~.   .~~.  "
-echo "   '. \ ' ' / .' "
-echo "$(tput setaf 1)"
-echo "    .~ .~~~..~.   "
-echo "   : .~.'~'.~. :  "
-echo "  ~ (   ) (   ) ~ "
-echo " ( : '~'.~.'~' : )"
-echo "  ~ .~ (   ) ~. ~ "
-echo "   (  : '~' :  )  "
-echo "    '~ .~~~. ~'   "
-echo "        '~'      "
-
+echo "$(tput setaf 2)"
+echo "    .~~.   .~~."
+echo "   '. \ ' ' / .'$(tput setaf 1)"
+echo "    .~ .~~~..~.    $(tput sgr0)$(tput bold)                 _                          _ $(tput sgr0)$(tput setaf 1)"
+echo "   : .~.'~'.~. :   $(tput sgr0)$(tput bold) ___ ___ ___ ___| |_ ___ ___ ___ _ _    ___|_|$(tput sgr0)$(tput setaf 1)"
+echo "  ~ (   ) (   ) ~  $(tput sgr0)$(tput bold)|  _| .'|_ -| . | . | -_|  _|  _| | |  | . | |$(tput sgr0)$(tput setaf 1)"
+echo " ( : '~'.~.'~' : ) $(tput sgr0)$(tput bold)|_| |__,|___|  _|___|___|_| |_| |_  |  |  _|_|$(tput sgr0)$(tput setaf 1)"
+echo "  ~ .~ (   ) ~. ~  $(tput sgr0)$(tput bold)            |_|                 |___|  |_|    $(tput sgr0)$(tput setaf 1)"
+echo "   (  : '~' :  )"
+echo "    '~ .~~~. ~'"
+echo "        '~'"
+echo "$(tput sgr0)"
 echo "$(tput setaf 2)
 `date +"%A, %e %B %Y, %r"`
 `uname -srmo`
