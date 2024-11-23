@@ -1,0 +1,13 @@
+---
+- name: "copy motd script"
+  hosts: "all"
+  become: true
+  become_user: "root"
+  tasks:
+    - name: deploy motd
+      copy:
+        src: "{{ playbook_dir }}/../../etc/profile.d/motd.sh"
+        dest: /etc/profile.d/motd.sh
+        owner: root
+        group: root
+        mode: 0644

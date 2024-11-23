@@ -1,17 +1,17 @@
 ---
-- name: "install chrome"
+- name: "install dbeaver"
   hosts: "all"
   become: true
   become_user: "root"
   tasks:
     - name: "add repo"
       ansible.builtin.apt_repository:
-        repo: ppa:xtradeb/apps
+        repo: ppa:serge-rider/dbeaver-ce
     - name: "Update apt repo and cache."
       apt:
         update_cache: true
         cache_valid_time: 3600
     - name: "install"
       apt:
-        name: "ungoogled-chromium"
+        name: "dbeaver-ce"
         state: "present"

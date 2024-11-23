@@ -406,6 +406,21 @@ tasks.register('gpsd') {
     }
 }
 
+tasks.register('motd') {
+    description = 'run ansible motd script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/pi/motd.yml'
+        }
+    }
+}
+
 /** 
  * can't nest GradleBuild tasks so use dependsOn to group
  * to call multiple GradleBuild tasks each thas has to have a unique buildName
