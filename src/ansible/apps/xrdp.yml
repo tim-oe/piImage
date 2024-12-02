@@ -1,0 +1,23 @@
+---
+- name: "install xrdp"
+  hosts: "all"
+  become: true
+  become_user: "root"
+  tasks:
+    - name: "Update apt repo and cache."
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+    - name: "install xrdp"
+      apt:
+        name: "xrdp"
+        state: "present"
+    - name: deploy polkit files
+      copy:
+        src: "{{ item }}"
+        dest: /etc/polkit-1/localauthority/50-local.d/
+        owner: root
+        group: root
+        mode: 0755
+      with_fileglob:
+        - "{{ playbook_dir }}/../../etc/polkit-1/localauthority/50-local.d/*"

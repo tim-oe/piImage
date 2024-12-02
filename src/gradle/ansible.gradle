@@ -316,8 +316,8 @@ tasks.register('virtbox') {
     }
 }
 
-tasks.register('ltInit') {
-    description = 'run ansible laptop init script'
+tasks.register('chrome') {
+    description = 'run ansible chrome script'
     group = "ansible"
     doLast {
         exec {
@@ -326,7 +326,52 @@ tasks.register('ltInit') {
                     'ansible-playbook ' +
                     '-i ' +
                     "${target_host}, " +
-                    'src/ansible/laptop/apt-init.yml'
+                    'src/ansible/apps/chrome.yml'
+        }
+    }
+}
+
+tasks.register('dbeaver') {
+    description = 'run ansible dbeaver script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/apps/dbeaver.yml'
+        }
+    }
+}
+
+tasks.register('libreoffice') {
+    description = 'run ansible libreoffice script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/apps/libreoffice.yml'
+        }
+    }
+}
+
+tasks.register('pritunl') {
+    description = 'run ansible pritunl script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/laptop/work/prit.yml'
         }
     }
 }
@@ -417,6 +462,36 @@ tasks.register('motd') {
                     '-i ' +
                     "${target_host}, " +
                     'src/ansible/pi/motd.yml'
+        }
+    }
+}
+
+tasks.register('xrdp') {
+    description = 'run ansible xrdp script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/apps/xrdp.yml'
+        }
+    }
+}
+
+tasks.register('wine') {
+    description = 'run ansible wine script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/apps/wine.yml'
         }
     }
 }

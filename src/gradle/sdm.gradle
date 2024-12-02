@@ -4,6 +4,8 @@ tasks.register('imgGet') {
     description = 'copy clean image to target'
     group = 'sdm'
     doLast {
+        delete files("${project.rootDir}/img/*")
+        //mkdir("${project.rootDir}/img")
         ant.get(src: "${pi_img_url}", dest: "${project.rootDir}/img", verbose: true)
         exec {
             workingDir "${project.rootDir}/img"
@@ -19,7 +21,7 @@ tasks.register('imgInit') {
     description = 'copy clean image to target'
     group = 'sdm'
     doLast {
-        delete files("${project.buildDir}/${pi_img}")
+        delete files("${project.buildDir}/*")
         copy {
             from layout.projectDirectory.dir('img')
             into layout.buildDirectory
@@ -37,7 +39,7 @@ tasks.register('sdmImage') {
     doLast {
         exec {
             workingDir '.'
-            commandLine 'src/sdm/image.sh'
+            commandLine 'bash', '-c', "src/sdm/image.sh ${project.buildDir}/${pi_img}"
         }
     }
 }

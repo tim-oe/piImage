@@ -1,0 +1,13 @@
+[Enable Reboot]
+Identity=unix-group:*
+Action=org.freedesktop.login1.reboot;org.freedesktop.login1.reboot-multiple-sessions
+ResultAny=yes
+ResultActive=no
+ResultInactive=no
+
+[Enable Shutdown]
+Identity=unix-group:*
+Action=org.freedesktop.login1.power-off;org.freedesktop.login1.power-off-multiple-sessions
+ResultAny=yes
+ResultActive=no
+ResultInactive=no
