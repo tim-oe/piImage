@@ -376,6 +376,21 @@ tasks.register('pritunl') {
     }
 }
 
+tasks.register('shutter') {
+    description = 'run ansible shutter script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/apps/shutter.yml'
+        }
+    }
+}
+
 tasks.register('ltPrinter') {
     description = 'run ansible laptop printer script'
     group = "ansible"

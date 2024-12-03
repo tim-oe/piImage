@@ -1,0 +1,21 @@
+---
+- name: "install shutter"
+  hosts: "all"
+  become: true
+  become_user: "root"
+  tasks:
+    - name: Enable universe repository
+      apt_repository:
+        repo: "{{ item }}"
+      loop:
+        - "deb http://archive.ubuntu.com/ubuntu/ {{ ansible_distribution_release }} universe"
+        - "deb http://archive.ubuntu.com/ubuntu/ {{ ansible_distribution_release }}-updates universe"
+        - "deb http://security.ubuntu.com/ubuntu/ {{ ansible_distribution_release }}-security universe"
+    - name: "Update apt repo and cache."
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+    - name: "install"
+      apt:
+        name: "shutter"
+        state: "present"

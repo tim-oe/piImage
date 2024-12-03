@@ -51,8 +51,12 @@ tasks.register('sdmBurn') {
     doLast {
         exec {
             workingDir '.'
+            commandLine 'bash', '-c', "sudo wipefs --all --force ${smd_dev}?; sudo wipefs --all --force ${smd_dev}"
+        }
+        exec {
+            workingDir '.'
             commandLine 'bash', '-c',
-                    'sudo sdm --burn /dev/sdb ' +
+                    "sudo sdm --burn ${smd_dev} " +
                     "--hostname ${target_host} " +
                     '--expand-root ' +
                     "${project.buildDir}/${pi_img}"
