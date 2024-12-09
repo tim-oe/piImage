@@ -10,8 +10,6 @@ In order to better manage mutliple PI instances my plan is to to use a 2 phased 
 - [image.sh](src/sdm/image.sh)
     - builds image with initial ansible user
     - assumes bookworm.img in img folder
-- [burn.sh](src/sdm/burn.sh)
-    - burns image to sd card at /dev/sdc
 
 ## provisioning image
 the first instance to setup is the provisioning system.  
@@ -24,6 +22,7 @@ I went with gradle as i'm familiur with it and it's used in my day job.
 I used [sdkman](https://sdkman.io/) to setup java and gradle
 
 ## hardware stuff
-- pi zero
-    - [poe hat](https://www.waveshare.com/wiki/PoE/ETH/USB_HUB_HAT)
-    - [usb hat](https://www.waveshare.com/wiki/USB_HUB_HAT)
+- pi5 with m2 drive
+
+## TODOs
+- [git bash prompt](https://www.baeldung.com/linux/bash-prompt-git)
