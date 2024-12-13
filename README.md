@@ -25,4 +25,6 @@ I used [sdkman](https://sdkman.io/) to setup java and gradle
 - pi5 with m2 drive
 
 ## TODOs
-- [git bash prompt](https://www.baeldung.com/linux/bash-prompt-git)
+- [git bash prompt](https://git-scm.com/book/pl/v2/Appendix-A:-Git-in-Other-Environments-Git-in-Bash)
+    - [example 1](https://code.mendhak.com/simple-bash-prompt-for-developers-ps1-git/)
+    - [example 2](https://www.baeldung.com/linux/bash-prompt-git)

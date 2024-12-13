@@ -21,16 +21,13 @@ sudo sdm --customize \
 --plugin copyfile:"from=src/etc/profile.d/motd.sh|to=/etc/profile.d|runphase=postinstall|chown=root:root|chmod=644" \
 --plugin L10n:"keymap=us|locale=en_US.UTF-8|timezone=America/Chicago" \
 --plugin disables:"bluetooth|triggerhappy|piwiz" \
---plugin network:"netman=nm" \
+--plugin network:"netman=nm|ifname=wlan0|wifissid=tec-wan|wifipassword=$WIFI_PWD|wificountry=US" \
 --extend --xmb 4096 \
 --regen-ssh-host-keys \
 --reboot 5 \
 --nowait-timesync \
 --redact \
 $1
-
-# current issue with wifi pwd /w spaces
-#--plugin network:"netman=nm|wifissid=tec-wan|wifipassword=$WIFI_PWD|wificountry=US" \
 
 # shrink image
 sudo sdm --shrink $1
