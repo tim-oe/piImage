@@ -45,6 +45,20 @@ tasks.register('telegraf', GradleBuild) {
     tasks = ['playbook']
 }
 
+tasks.register('influx', GradleBuild) {
+    description = 'run ansible influx script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/mgr/influx.yml']
+    tasks = ['playbook']
+}
+
+tasks.register('certbot', GradleBuild) {
+    description = 'run ansible certbot script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/mgr/certbot.yml']
+    tasks = ['playbook']
+}
+
 tasks.register('piUpdate') {
     description = 'run ansible apt update script on pi instances'
     group = "ansible"
@@ -205,6 +219,21 @@ tasks.register('ansible') {
                     '-i ' +
                     "${target_host}, " +
                     'src/ansible/mgr/ansible.yml'
+        }
+    }
+}
+
+tasks.register('terraform') {
+    description = 'run ansible terraform script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/mgr/terraform.yml'
         }
     }
 }
@@ -584,6 +613,21 @@ tasks.register('mysql') {
                     "${target_host}, " +
                     'src/ansible/apps/mysql.yml'
                     "-e '{\"root_pwd\":\"${mysql_root_pwd}\"}'"
+        }
+    }
+}
+
+tasks.register('encrypt') {
+    description = 'encrypt key value with ansible vault'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                    'ansible-vault encrypt_string ' +
+                    "${ans_val} " +
+                    '--name ' +
+                    "${ans_prop} " 
         }
     }
 }

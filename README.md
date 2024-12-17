@@ -24,7 +24,36 @@ I used [sdkman](https://sdkman.io/) to setup java and gradle
 ## hardware stuff
 - pi5 with m2 drive
 
+
+## telegraf-grafana-influx
+- [github](https://github.com/influxdata/telegraf/blob/master/docs/CONFIGURATION.md)
+- [monitor pi temp](https://github.com/TheMickeyMike/raspberrypi-temperature-telegraf)
+- [influx template](https://github.com/influxdata/community-templates/tree/master/raspberry-pi)
+    - [influx cli](https://docs.influxdata.com/influxdb/cloud/reference/cli/influx/?t=Linux#provide-required-authentication-credentials)
+    - ```influx config create --config-name tec --host-url $INFLUX_HOST --org $INFLUX_ORG --token $INFLUX_TOKEN --active```
+    - ```influx apply -f https://raw.githubusercontent.com/influxdata/community-templates/master/raspberry-pi/raspberry-pi-system.yml```
+- [grafana template](https://grafana.com/grafana/dashboards/10578-raspberry-pi-monitoring/)
+- [grafana datasource](https://www.influxdata.com/blog/getting-started-influxdb-grafana/)
+
+- setup
+    - [sample conf](https://gist.github.com/atanasyanew/5c5db975a7179fc271daea43b6592b5b)
+    - [example 1](https://community.influxdata.com/t/use-telegraf-to-get-metrics-from-raspberry-pi/26686)
+    - [example 2](https://randomnerdtutorials.com/monitor-raspberry-pi-influxdb-telegraf/)
+    - [grafana pwd](https://signoz.io/guides/what-is-the-default-username-and-password-for-grafana-login-page/)
+
+## ansible
+- [tips n trix](https://docs.ansible.com/ansible/latest/tips_tricks/index.html)
+- [dir hierarchy](https://docs.ansible.com/ansible/latest/tips_tricks/sample_setup.html)
+- [vault](https://docs.ansible.com/ansible/latest/vault_guide/index.html)
+    - [inline encryption](https://docs.ansible.com/ansible/latest/vault_guide/vault_encrypting_content.html)
+    - [howto 1](https://www.digitalocean.com/community/tutorials/how-to-use-vault-to-protect-sensitive-ansible-data)
+
 ## TODOs
 - [git bash prompt](https://git-scm.com/book/pl/v2/Appendix-A:-Git-in-Other-Environments-Git-in-Bash)
     - [example 1](https://code.mendhak.com/simple-bash-prompt-for-developers-ps1-git/)
     - [example 2](https://www.baeldung.com/linux/bash-prompt-git)
+
+- pi montoring grafana influx telegraf
+    - [telegraf setup](https://randomnerdtutorials.com/monitor-raspberry-pi-influxdb-telegraf/)
+    - [blog](https://www.kevsrobots.com/blog/telegraf-on-pi.html)
+    - [video](https://www.youtube.com/watch?v=CrWh34bQK7M)

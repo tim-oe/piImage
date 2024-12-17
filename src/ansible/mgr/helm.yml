@@ -6,16 +6,14 @@
   vars:
     helm_version: "3.15.2"
   tasks:
-    - name: "get helm archive"
-      ansible.builtin.get_url:
-        url: "https://get.helm.sh/helm-v{{ helm_version }}-linux-arm.tar.gz"
-        dest: "/tmp/helm-linux-arm.tar.gz"
-        mode: "0666"
-        force: true
-    - name: "expand archive"
+    - name: "download n unarchive"
       ansible.builtin.unarchive:
-        src: "/tmp/helm-linux-arm.tar.gz"
-        dest: "/tmp"
+        src: "https://get.helm.sh/helm-v{{ helm_version }}-linux-arm.tar.gz"
+        dest: /tmp
+        owner: root
+        group: root
+        mode: 0755
+        remote_src: yes
     - name: "copy helm to bin"
       ansible.builtin.copy:
         src: "/tmp/linux-arm/helm"

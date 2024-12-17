@@ -14,6 +14,10 @@
             dest: "/tmp/ansible.key"
             mode: "0644"
             force: true
+        - name: Remove key
+          ansible.builtin.file:
+            path: /usr/share/keyrings/ansible-archive-keyring.gpg
+            state: absent
         - name: "sign key"
           command: "bash -c 'cat /tmp/ansible.key | gpg --dearmour -o /usr/share/keyrings/ansible-archive-keyring.gpg'"
         - name: "apt source"

@@ -8,24 +8,40 @@
     env_file: "/etc/default/telegraf"
     dev_version: "bookworn"
   tasks:
+    - name: get token
+      ansible.builtin.set_fact:
+        influx_token: "{{ lookup('env', 'INFLUX_TOKEN') }}"
+      delegate_to: localhost
+    - name: get host
+      ansible.builtin.set_fact:
+        influx_host: "{{ lookup('env', 'INFLUX_HOST') }}"
+      delegate_to: localhost
+    - name: get org
+      ansible.builtin.set_fact:
+        influx_org: "{{ lookup('env', 'INFLUX_ORG') }}"
+      delegate_to: localhost
+    - name: get bucket
+      ansible.builtin.set_fact:
+        influx_bucket: "{{ lookup('env', 'INFLUX_BUCKET') }}"
+      delegate_to: localhost
     - name: "add and sign telegraf repo"
       block:
         - name: "repo key"
           ansible.builtin.get_url:
-            url: "https://repos.influxdata.com/influxdata-archive_compat.key"
-            dest: "/tmp/influxdata-archive_compat.key"
+            url: "https://repos.influxdata.com/influxdata-archive.key"
+            dest: "/tmp/influxdata-archive.key"
             mode: "0644"
             force: true
+        - name: Remove old key
+          ansible.builtin.file:
+            path: /etc/apt/trusted.gpg.d/influxdata-archive.gpg
+            state: absent
         - name: "sign key"
-          command:
-            "bash -c 'echo \"393e8779c89ac8d958f81f942f9ad7fb82a25e133faddaf92e15b16e6ac9ce4c\
-            \ /tmp/influxdata-archive_compat.key\" | sha256sum -c && cat /tmp/influxdata-archive_compat.key\
-            \ | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/influxdata-archive_compat.gpg\
-            \ > /dev/null'"
+          command: "bash -c 'echo \"943666881a1b8d9b849b74caebf02d3465d6beb716510d86a39f6c8e8dac7515  /tmp/influxdata-archive.key\" | sha256sum -c - && cat /tmp/influxdata-archive.key | gpg --dearmor | tee /etc/apt/trusted.gpg.d/influxdata-archive.gpg > /dev/null'"
         - name: "apt source"
           ansible.builtin.apt_repository:
             repo:
-              "deb [signed-by=/etc/apt/trusted.gpg.d/influxdata-archive_compat.gpg]\
+              "deb [signed-by=/etc/apt/trusted.gpg.d/influxdata-archive.gpg] \
               \ https://repos.influxdata.com/debian stable main"
             filename: "influxdata"
             state: "present"
@@ -34,3 +50,51 @@
       ansible.builtin.apt:
         name: "telegraf"
         state: "present"
+    - name: Create config dir
+      ansible.builtin.file:
+        path: /etc/telegraf
+        state: directory
+        mode: '0755'
+    - name: Remove old config
+      ansible.builtin.file:
+        path: /etc/telegraf/telegraf.conf
+        state: absent
+    - name: deploy telegraf config
+      copy:
+        src: "{{ item }}"
+        dest: /etc/telegraf/
+        owner: root
+        group: root
+        mode: 0666
+      with_fileglob:
+        - "{{ playbook_dir }}/../../etc/telegraf/*"    
+    - name: "set token"
+      ansible.builtin.replace:
+        path: "{{ config_file }}"
+        regexp: "__TOKEN__"
+        replace: "{{ influx_token }}"
+    - name: "set host"
+      ansible.builtin.replace:
+        path: "{{ config_file }}"
+        regexp: "__URL__"
+        replace: "{{ influx_host }}"
+    - name: "set org"
+      ansible.builtin.replace:
+        path: "{{ config_file }}"
+        regexp: "__ORG__"
+        replace: "{{ influx_org }}"
+    - name: "set bucket"
+      ansible.builtin.replace:
+        path: "{{ config_file }}"
+        regexp: "__BUCKET__"
+        replace: "{{ influx_bucket }}"
+    - name: "add telegraf to video group"
+      user:
+        name: telegraf
+        groups: video
+        append: yes
+    - name: Restart service
+      ansible.builtin.systemd_service:
+        state: restarted
+        daemon_reload: true
+        name: telegraf

@@ -1,0 +1,34 @@
+---
+- name: "install terraform"
+  hosts: "all"
+  become: true
+  become_user: "root"
+  vars:
+    dev_version: "jammy"
+  tasks:
+    - name: "add and sign repo"
+      block:
+        - name: "repo key"
+          ansible.builtin.get_url:
+            url: "https://apt.releases.hashicorp.com/gpg"
+            dest: "/tmp/terraform.key"
+            mode: "0644"
+            force: true
+        - name: Remove key
+          ansible.builtin.file:
+            path: /usr/share/keyrings/hashicorp-archive-keyring.gpg
+            state: absent
+        - name: sign key
+          command: "bash -c 'cat /tmp/terraform.key | gpg --dearmour -o /usr/share/keyrings/hashicorp-archive-keyring.gpg'"
+        - name: "apt source"
+          ansible.builtin.apt_repository:
+            repo:
+              "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com\
+              \ {{ dev_version }} main"
+            filename: "hashicorp"
+            state: "present"
+            update_cache: true
+    - name: "install terraform"
+      ansible.builtin.apt:
+        name: "terraform"
+        state: "present"
