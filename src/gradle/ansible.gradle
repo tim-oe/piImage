@@ -59,6 +59,13 @@ tasks.register('certbot', GradleBuild) {
     tasks = ['playbook']
 }
 
+tasks.register('sonar-scanner', GradleBuild) {
+    description = 'run ansible sonar-scanner script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/dev/sonar-scanner.yml']
+    tasks = ['playbook']
+}
+
 tasks.register('piUpdate') {
     description = 'run ansible apt update script on pi instances'
     group = "ansible"

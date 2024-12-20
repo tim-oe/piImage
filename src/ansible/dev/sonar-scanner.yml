@@ -1,0 +1,46 @@
+---
+- name: "install sonar-scanner cli"
+  hosts: "all"
+  become: true
+  become_user: "root"
+  vars:
+    sonar_ver: "6.2.1.4610"
+  tasks:
+    - name: remove symlink
+      ansible.builtin.file:
+        path: /opt/sonar-scanner
+        state: absent
+    - name: find old sonar dirs
+      find:
+        paths: /opt/
+        patterns: "sonar-scanner*"
+        use_regex: true
+        file_type: directory
+      register: folders_to_delete
+    - name: Delete old sonar dirs
+      file:
+        path: "{{ item.path }}"
+        state: absent
+      with_items: "{{ folders_to_delete.files }}"
+      become: yes
+    - name: "download n install"
+      ansible.builtin.unarchive:
+        src: "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-{{ sonar_ver }}-linux-aarch64.zip"
+        dest: /opt
+        owner: root
+        group: root
+        mode: 0755
+        remote_src: yes
+    - name: link
+      ansible.builtin.file:
+        src: "/opt/sonar-scanner-{{ sonar_ver }}-linux-aarch64"
+        dest: /opt/sonar-scanner
+        owner: root
+        group: root
+        state: link
+        mode: 0755
+    # https://www.jeffgeerling.com/blog/2017/add-path-global-path-ansible
+    - name: update path.
+      copy:
+        dest: /etc/profile.d/custom-path.sh
+        content: 'PATH=$PATH:/opt/sonar-scanner/bin'

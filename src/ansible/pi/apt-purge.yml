@@ -10,13 +10,11 @@
         state: "absent"
       loop:
         - "avahi-daemon"
-        - "busybox"
         - "ed"
         - "firmware-atheros"
         - "firmware-libertas"
         - "firmware-linux-free"
         - "firmware-misc-nonfree"
-        - "firmware-realtek"
         - "flashrom"
         - "libpam-chksshpwd"
         - "modemmanager"
