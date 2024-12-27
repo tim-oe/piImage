@@ -14,12 +14,14 @@ apply from: 'src/gradle/host.gradle'
 
 // https://github.com/diffplug/spotless/tree/main/plugin-gradle
 spotless {
-    yaml {
-        target 'src/ansible/**/*.yml'
-        jackson()
-        prettier()
-        indentWithSpaces()
-    }
+    // https://github.com/diffplug/spotless/issues/1795
+    // TODO https://github.com/google/yamlfmt
+    // yaml {
+    //     target '**/*.yml'
+    //     jackson()
+    //     prettier()
+    //     indentWithSpaces()
+    // }
     groovyGradle {
         target '*.gradle','src/gradle/*.gradle'
         greclipse()

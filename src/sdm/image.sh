@@ -1,3 +1,5 @@
+#!/bin/bash
+#
 # https://github.com/gitbls/sdm/blob/master/Docs/Command-Details.md
 # https://github.com/gitbls/sdm/blob/master/Docs/Plugins.md
 # TODO https://github.com/gitbls/sdm/blob/master/Docs/Plugins.md#gadgetmode

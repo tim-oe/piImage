@@ -52,7 +52,8 @@ I used [sdkman](https://sdkman.io/) to setup java and gradle
 - [git bash prompt](https://git-scm.com/book/pl/v2/Appendix-A:-Git-in-Other-Environments-Git-in-Bash)
     - [example 1](https://code.mendhak.com/simple-bash-prompt-for-developers-ps1-git/)
     - [example 2](https://www.baeldung.com/linux/bash-prompt-git)
-
+- gdrive backup
+    - [possible solution](https://github.com/dtsvetkov1/Google-Drive-sync)
 - pi montoring grafana influx telegraf
     - [telegraf setup](https://randomnerdtutorials.com/monitor-raspberry-pi-influxdb-telegraf/)
     - [blog](https://www.kevsrobots.com/blog/telegraf-on-pi.html)

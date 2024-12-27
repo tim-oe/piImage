@@ -66,243 +66,214 @@ tasks.register('sonar-scanner', GradleBuild) {
     tasks = ['playbook']
 }
 
-tasks.register('piUpdate') {
-    description = 'run ansible apt update script on pi instances'
+tasks.register('aptPurge', GradleBuild) {
+    description = 'run ansible aptPurge script'
     group = "ansible"
-    doLast {
-        exec {
-            workingDir '.'
-            commandLine 'bash', '-c',
-                    'ansible-playbook ' +
-                    '-l pi_all ' +
-                    'src/ansible/common/apt-update.yml'
-        }
-    }
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/pi/apt-purge.yml']
+    tasks = ['playbook']
 }
 
-tasks.register('aptPurge') {
-    description = 'run ansible apt purge script'
+tasks.register('brutoof', GradleBuild) {
+    description = 'run ansible brutoof script'
     group = "ansible"
-    doLast {
-        exec {
-            workingDir '.'
-            commandLine 'bash', '-c',
-                    'ansible-playbook ' +
-                    '-i ' +
-                    "${target_host}, " +
-                    'src/ansible/pi/apt-purge.yml'
-        }
-    }
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/pi/brutoof-disable.yml']
+    tasks = ['playbook']
 }
 
-tasks.register('brutoof') {
-    description = 'run ansible disable onboard brutoof script'
+tasks.register('wifi', GradleBuild) {
+    description = 'run ansible wifi script'
     group = "ansible"
-    doLast {
-        exec {
-            workingDir '.'
-            commandLine 'bash', '-c',
-                    'ansible-playbook ' +
-                    '-i ' +
-                    "${target_host}, " +
-                    'src/ansible/pi/brutoof-disable.yml'
-        }
-    }
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/pi/wifi-disable.yml']
+    tasks = ['playbook']
 }
 
-tasks.register('wifi') {
-    description = 'run ansible disable onboard wifi script'
+tasks.register('clones', GradleBuild) {
+    description = 'run ansible wifi script'
     group = "ansible"
-    doLast {
-        exec {
-            workingDir '.'
-            commandLine 'bash', '-c',
-                    'ansible-playbook ' +
-                    '-i ' +
-                    "${target_host}, " +
-                    'src/ansible/pi/wifi-disable.yml'
-        }
-    }
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/common/clones-mnt.yml']
+    tasks = ['playbook']
 }
 
-tasks.register('clones') {
-    description = 'run ansible clones mount script'
+tasks.register('console', GradleBuild) {
+    description = 'run ansible wifi script'
     group = "ansible"
-    doLast {
-        exec {
-            workingDir '.'
-            commandLine 'bash', '-c',
-                    'ansible-playbook ' +
-                    '-i ' +
-                    "${target_host}, " +
-                    'src/ansible/common/clones-mnt.yml'
-        }
-    }
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/pi/console-resize.yml']
+    tasks = ['playbook']
 }
 
-tasks.register('console') {
-    description = 'run ansible console resize script'
-    group = "ansible"
-    doLast {
-        exec {
-            workingDir '.'
-            commandLine 'bash', '-c',
-                    'ansible-playbook ' +
-                    '-i ' +
-                    "${target_host}, " +
-                    'src/ansible/pi/console-resize.yml'
-        }
-    }
-}
-
-tasks.register('ssh') {
+tasks.register('ssh', GradleBuild) {
     description = 'run ansible ssh lockdown script'
     group = "ansible"
-    doLast {
-        exec {
-            workingDir '.'
-            commandLine 'bash', '-c',
-                    'ansible-playbook ' +
-                    '-i ' +
-                    "${target_host}, " +
-                    'src/ansible/common/ssh-lockdown.yml'
-        }
-    }
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/common/ssh-lockdown.yml']
+    tasks = ['playbook']
 }
 
-tasks.register('swap') {
-    description = 'run ansible swap script'
+tasks.register('swap', GradleBuild) {
+    description = 'run ansible dphys-swapfile script'
     group = "ansible"
-    doLast {
-        exec {
-            workingDir '.'
-            commandLine 'bash', '-c',
-                    'ansible-playbook ' +
-                    '-i ' +
-                    "${target_host}, " +
-                    'src/ansible/pi/swap.yml'
-        }
-    }
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/pi/swap.yml']
+    tasks = ['playbook']
 }
 
-tasks.register('log2ram') {
-    description = 'run ansible log2ram script'
-    group = "ansible"
-    doLast {
-        exec {
-            workingDir '.'
-            commandLine 'bash', '-c',
-                    'ansible-playbook ' +
-                    '-i ' +
-                    "${target_host}, " +
-                    'src/ansible/common/log2ram.yml'
-        }
-    }
-}
-
-tasks.register('jimmies') {
+tasks.register('ansible', GradleBuild) {
     description = 'run ansible ansible script'
     group = "ansible"
-    doLast {
-        exec {
-            workingDir '.'
-            commandLine 'bash', '-c',
-                    'ansible-playbook ' +
-                    '-i ' +
-                    "${target_host}, " +
-                    'src/ansible/common/jimmies.yml'
-        }
-    }
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/mgr/ansible.yml']
+    tasks = ['playbook']
 }
 
-tasks.register('ansible') {
-    description = 'run ansible ansible script'
-    group = "ansible"
-    doLast {
-        exec {
-            workingDir '.'
-            commandLine 'bash', '-c',
-                    'ansible-playbook ' +
-                    '-i ' +
-                    "${target_host}, " +
-                    'src/ansible/mgr/ansible.yml'
-        }
-    }
-}
-
-tasks.register('terraform') {
+tasks.register('terraform', GradleBuild) {
     description = 'run ansible terraform script'
     group = "ansible"
-    doLast {
-        exec {
-            workingDir '.'
-            commandLine 'bash', '-c',
-                    'ansible-playbook ' +
-                    '-i ' +
-                    "${target_host}, " +
-                    'src/ansible/mgr/terraform.yml'
-        }
-    }
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/mgr/terraform.yml']
+    tasks = ['playbook']
 }
 
-tasks.register('helm') {
+tasks.register('helm', GradleBuild) {
     description = 'run ansible helm script'
     group = "ansible"
-    doLast {
-        exec {
-            workingDir '.'
-            commandLine 'bash', '-c',
-                    'ansible-playbook ' +
-                    '-i ' +
-                    "${target_host}, " +
-                    'src/ansible/mgr/helm.yml'
-        }
-    }
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/mgr/helm.yml']
+    tasks = ['playbook']
 }
 
-tasks.register('java') {
-    description = 'run ansible java script'
-    group = "ansible"
-    doLast {
-        exec {
-            workingDir '.'
-            commandLine 'bash', '-c',
-                    'ansible-playbook ' +
-                    '-i ' +
-                    "${target_host}, " +
-                    'src/ansible/mgr/java.yml'
-        }
-    }
-}
-
-tasks.register('uptronics') {
+tasks.register('uptronics', GradleBuild) {
     description = 'run ansible uptronics script'
     group = "ansible"
-    doLast {
-        exec {
-            workingDir '.'
-            commandLine 'bash', '-c',
-                    'ansible-playbook ' +
-                    '-i ' +
-                    "${target_host}, " +
-                    'src/ansible/timesrvr/uptronics.yml'
-        }
-    }
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/timesrvr/uptronics.yml']
+    tasks = ['playbook']
 }
 
-tasks.register('adafruit') {
+tasks.register('adafruit', GradleBuild) {
     description = 'run ansible adafruit script'
     group = "ansible"
-    doLast {
-        exec {
-            workingDir '.'
-            commandLine 'bash', '-c',
-                    'ansible-playbook ' +
-                    '-i ' +
-                    "${target_host}, " +
-                    'src/ansible/timesrvr/adafruit.yml'
-        }
-    }
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/timesrvr/adafruit.yml']
+    tasks = ['playbook']
+}
+
+tasks.register('virtbox', GradleBuild) {
+    description = 'run ansible virtbox script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/apps/virtbox.yml']
+    tasks = ['playbook']
+}
+
+tasks.register('chrome', GradleBuild) {
+    description = 'run ansible chrome script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/apps/virtbox.yml']
+    tasks = ['playbook']
+}
+
+tasks.register('dbeaver', GradleBuild) {
+    description = 'run ansible dbeaver script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/apps/dbeaver.yml']
+    tasks = ['playbook']
+}
+
+tasks.register('libreoffice', GradleBuild) {
+    description = 'run ansible libreoffice script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/apps/libreoffice.yml']
+    tasks = ['playbook']
+}
+
+tasks.register('pritunl', GradleBuild) {
+    description = 'run ansible pritunl script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/laptop/work/prit.yml']
+    tasks = ['playbook']
+}
+
+tasks.register('shutter', GradleBuild) {
+    description = 'run ansible shutter script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/apps/shutter.yml']
+    tasks = ['playbook']
+}
+
+tasks.register('ltPrinter', GradleBuild) {
+    description = 'run ansible brother printer script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/laptop/printer.yml']
+    tasks = ['playbook']
+}
+
+tasks.register('dtInit', GradleBuild) {
+    description = 'run ansible desktop init script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/desktop/desktop-init.yml']
+    tasks = ['playbook']
+}
+
+tasks.register('docker', GradleBuild) {
+    description = 'run ansible docker script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/apps/docker.yml']
+    tasks = ['playbook']
+}
+
+tasks.register('pidocker', GradleBuild) {
+    description = 'run ansible pi docker script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/pi/docker.yml']
+    tasks = ['playbook']
+}
+
+tasks.register('gpsd', GradleBuild) {
+    description = 'run ansible gpsd script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/apps/gpsd.yml']
+    tasks = ['playbook']
+}
+
+tasks.register('motd', GradleBuild) {
+    description = 'run ansible motd script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/pi/motd.yml']
+    tasks = ['playbook']
+}
+
+tasks.register('xrdp', GradleBuild) {
+    description = 'run ansible xrdp script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/apps/xrdp.yml']
+    tasks = ['playbook']
+}
+
+tasks.register('wine', GradleBuild) {
+    description = 'run ansible wine script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/apps/wine.yml']
+    tasks = ['playbook']
+}
+
+tasks.register('sdr', GradleBuild) {
+    description = 'run ansible sdr script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/weather/nesdr.yml']
+    tasks = ['playbook']
+}
+
+tasks.register('wPython', GradleBuild) {
+    description = 'run ansible wPython script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/weather/python.yml']
+    tasks = ['playbook']
+}
+
+tasks.register('openvpn', GradleBuild) {
+    description = 'run ansible openvpn script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/laptop/openvpn.yml']
+    tasks = ['playbook']
+}
+
+tasks.register('gdrive', GradleBuild) {
+    description = 'run ansible gdrive script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/apps/gdrive.yml']
+    tasks = ['playbook']
 }
 
 tasks.register('adafruitUsb0') {
@@ -337,277 +308,6 @@ tasks.register('ntpShm') {
     }
 }
 
-tasks.register('virtbox') {
-    description = 'run ansible virtualbox script'
-    group = "ansible"
-    doLast {
-        exec {
-            workingDir '.'
-            commandLine 'bash', '-c',
-                    'ansible-playbook ' +
-                    '-i ' +
-                    "${target_host}, " +
-                    'src/ansible/apps/virtbox.yml'
-        }
-    }
-}
-
-tasks.register('chrome') {
-    description = 'run ansible chrome script'
-    group = "ansible"
-    doLast {
-        exec {
-            workingDir '.'
-            commandLine 'bash', '-c',
-                    'ansible-playbook ' +
-                    '-i ' +
-                    "${target_host}, " +
-                    'src/ansible/apps/chrome.yml'
-        }
-    }
-}
-
-tasks.register('dbeaver') {
-    description = 'run ansible dbeaver script'
-    group = "ansible"
-    doLast {
-        exec {
-            workingDir '.'
-            commandLine 'bash', '-c',
-                    'ansible-playbook ' +
-                    '-i ' +
-                    "${target_host}, " +
-                    'src/ansible/apps/dbeaver.yml'
-        }
-    }
-}
-
-tasks.register('libreoffice') {
-    description = 'run ansible libreoffice script'
-    group = "ansible"
-    doLast {
-        exec {
-            workingDir '.'
-            commandLine 'bash', '-c',
-                    'ansible-playbook ' +
-                    '-i ' +
-                    "${target_host}, " +
-                    'src/ansible/apps/libreoffice.yml'
-        }
-    }
-}
-
-tasks.register('pritunl') {
-    description = 'run ansible pritunl script'
-    group = "ansible"
-    doLast {
-        exec {
-            workingDir '.'
-            commandLine 'bash', '-c',
-                    'ansible-playbook ' +
-                    '-i ' +
-                    "${target_host}, " +
-                    'src/ansible/laptop/work/prit.yml'
-        }
-    }
-}
-
-tasks.register('shutter') {
-    description = 'run ansible shutter script'
-    group = "ansible"
-    doLast {
-        exec {
-            workingDir '.'
-            commandLine 'bash', '-c',
-                    'ansible-playbook ' +
-                    '-i ' +
-                    "${target_host}, " +
-                    'src/ansible/apps/shutter.yml'
-        }
-    }
-}
-
-tasks.register('ltPrinter') {
-    description = 'run ansible laptop printer script'
-    group = "ansible"
-    doLast {
-        exec {
-            workingDir '.'
-            commandLine 'bash', '-c',
-                    'ansible-playbook ' +
-                    '-i ' +
-                    "${target_host}, " +
-                    'src/ansible/laptop/printer.yml'
-        }
-    }
-}
-
-tasks.register('dtInit') {
-    description = 'run ansible desktop init script'
-    group = "ansible"
-    doLast {
-        exec {
-            workingDir '.'
-            commandLine 'bash', '-c',
-                    'ansible-playbook ' +
-                    '-i ' +
-                    "${target_host}, " +
-                    'src/ansible/desktop/desktop-init.yml'
-        }
-    }
-}
-
-tasks.register('docker') {
-    description = 'run ansible docker script'
-    group = "ansible"
-    doLast {
-        exec {
-            workingDir '.'
-            commandLine 'bash', '-c',
-                    'ansible-playbook ' +
-                    '-i ' +
-                    "${target_host}, " +
-                    'src/ansible/apps/docker.yml'
-        }
-    }
-}
-
-tasks.register('pidocker') {
-    description = 'run ansible docker script'
-    group = "ansible"
-    doLast {
-        exec {
-            workingDir '.'
-            commandLine 'bash', '-c',
-                    'ansible-playbook ' +
-                    '-i ' +
-                    "${target_host}, " +
-                    'src/ansible/pi/docker.yml'
-        }
-    }
-}
-
-tasks.register('gpsd') {
-    description = 'run ansible gpsd script'
-    group = "ansible"
-    doLast {
-        exec {
-            workingDir '.'
-            commandLine 'bash', '-c',
-                    'ansible-playbook ' +
-                    '-i ' +
-                    "${target_host}, " +
-                    'src/ansible/apps/gpsd.yml'
-        }
-    }
-}
-
-tasks.register('motd') {
-    description = 'run ansible motd script'
-    group = "ansible"
-    doLast {
-        exec {
-            workingDir '.'
-            commandLine 'bash', '-c',
-                    'ansible-playbook ' +
-                    '-i ' +
-                    "${target_host}, " +
-                    'src/ansible/pi/motd.yml'
-        }
-    }
-}
-
-tasks.register('xrdp') {
-    description = 'run ansible xrdp script'
-    group = "ansible"
-    doLast {
-        exec {
-            workingDir '.'
-            commandLine 'bash', '-c',
-                    'ansible-playbook ' +
-                    '-i ' +
-                    "${target_host}, " +
-                    'src/ansible/apps/xrdp.yml'
-        }
-    }
-}
-
-tasks.register('wine') {
-    description = 'run ansible wine script'
-    group = "ansible"
-    doLast {
-        exec {
-            workingDir '.'
-            commandLine 'bash', '-c',
-                    'ansible-playbook ' +
-                    '-i ' +
-                    "${target_host}, " +
-                    'src/ansible/apps/wine.yml'
-        }
-    }
-}
-
-/** 
- * can't nest GradleBuild tasks so use dependsOn to group
- * to call multiple GradleBuild tasks each thas has to have a unique buildName
- * https://github.com/azlux/log2ram
- */
-tasks.register('piInit') {
-    description = 'run mutiple ansible playbooks for system intialization'
-    group = "ansible"
-    dependsOn 'aptPurge'
-    dependsOn 'brutoof'
-    dependsOn 'clones'
-    dependsOn 'console'
-    dependsOn 'ssh'
-    dependsOn 'swap'
-    dependsOn 'log2ram'
-}
-
-tasks.register('piAptUpdate') {
-    description = 'run ansible apt update script'
-    group = "ansible"
-    doLast {
-        exec {
-            workingDir '.'
-            commandLine 'bash', '-c',
-                    'ansible-playbook ' +
-                    '-l pi-all ' +
-                    'src/ansible/common/apt-update.yml'
-        }
-    }
-}
-
-tasks.register('sdr') {
-    description = 'run ansible apt sdr script'
-    group = "ansible"
-    doLast {
-        exec {
-            workingDir '.'
-            commandLine 'bash', '-c',
-                    'ansible-playbook ' +
-                    '-i ' +
-                    "${target_host}, " +
-                    'src/ansible/weather/nesdr.yml'
-        }
-    }
-}
-
-tasks.register('wPython') {
-    description = 'run ansible apt weather python script'
-    group = "ansible"
-    doLast {
-        exec {
-            workingDir '.'
-            commandLine 'bash', '-c',
-                    'ansible-playbook ' +
-                    '-i ' +
-                    "${target_host}, " +
-                    'src/ansible/weather/python.yml'
-        }
-    }
-}
-
 tasks.register('mysql') {
     description = 'run ansible apt weather python script'
     group = "ansible"
@@ -637,4 +337,35 @@ tasks.register('encrypt') {
                     "${ans_prop} " 
         }
     }
+}
+
+tasks.register('piUpdate') {
+    description = 'run ansible apt update script on pi instances'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                    'ansible-playbook ' +
+                    '-l pi_all ' +
+                    'src/ansible/common/apt-update.yml'
+        }
+    }
+}
+
+/** 
+ * can't nest GradleBuild tasks so use dependsOn to group
+ * to call multiple GradleBuild tasks each thas has to have a unique buildName
+ * https://github.com/azlux/log2ram
+ */
+tasks.register('piInit') {
+    description = 'run mutiple ansible playbooks for system intialization'
+    group = "ansible"
+    dependsOn 'aptPurge'
+    dependsOn 'brutoof'
+    dependsOn 'clones'
+    dependsOn 'console'
+    dependsOn 'ssh'
+    dependsOn 'swap'
+    dependsOn 'log2ram'
 }
