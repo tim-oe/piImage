@@ -276,6 +276,13 @@ tasks.register('gdrive', GradleBuild) {
     tasks = ['playbook']
 }
 
+tasks.register('rclone', GradleBuild) {
+    description = 'run ansible rclone script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/desktop/rclone.yml']
+    tasks = ['playbook']
+}
+
 tasks.register('adafruitUsb0') {
     description = 'run ansible adafruit script for usb'
     group = "ansible"
