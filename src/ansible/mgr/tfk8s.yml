@@ -1,0 +1,33 @@
+# https://github.com/jrhouston/tfk8s/issues/5
+# https://go.dev/wiki/Ubuntu
+---
+- name: "install tfk8s cli"
+  hosts: "all"
+  become: true
+  become_user: "root"
+  vars:
+    version: "1.23.4"
+  tasks:
+    - name: "remove existing"
+      ansible.builtin.file:
+        path: /opt/go
+        state: absent
+    - name: "download n unarchive"
+      ansible.builtin.unarchive:
+        src: "https://go.dev/dl/go{{ version }}.linux-arm64.tar.gz"
+        dest: /opt
+        owner: root
+        group: root
+        remote_src: yes
+    - name: update path.
+      copy:
+        dest: /etc/profile.d/go-path.sh
+        content: 'PATH=$PATH:/opt/go/bin'
+    - name: "install tfk8s"
+      command: "/opt/go/bin/go install github.com/jrhouston/tfk8s@latest"
+    - name: move
+      command: mv /root/go/bin/tfk8s /opt/go/bin/tfk8s
+    - name: "remove cruft"
+      ansible.builtin.file:
+        path: /root/go
+        state: absent
