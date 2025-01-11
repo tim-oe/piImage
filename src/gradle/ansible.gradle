@@ -101,6 +101,13 @@ tasks.register('kompose', GradleBuild) {
     tasks = ['playbook']
 }
 
+tasks.register('k2tf', GradleBuild) {
+    description = 'run ansible k2tf script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/mgr/k2tf.yml']
+    tasks = ['playbook']
+}
+
 tasks.register('helm', GradleBuild) {
     description = 'run ansible helm script'
     group = "ansible"

@@ -1,14 +1,16 @@
+# https://github.com/sl1pm4t/k2tf
+# migth want to build from source
 ---
-- name: "install influx cli"
+- name: "install k2tf cli"
   hosts: "all"
   become: true
   become_user: "root"
   vars:
-    influx_ver: "2.7.5"
+    ver: "0.8.0"
   tasks:
     - name: "download n install"
       ansible.builtin.unarchive:
-        src: "https://dl.influxdata.com/influxdb/releases/influxdb2-client-{{ influx_ver }}-linux-arm64.tar.gz"
+        src: "https://github.com/sl1pm4t/k2tf/releases/download/v{{ ver }}/k2tf_{{ ver }}_Linux_arm64.tar.gz"
         dest: /usr/local/bin
         owner: root
         group: root
