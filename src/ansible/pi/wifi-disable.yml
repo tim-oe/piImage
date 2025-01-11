@@ -20,7 +20,7 @@
         state: "present"
         insertafter: "EOF"
         dest: "{{ config_file }}"
-        marker: "# _WIFI_DISABLE"
+        marker: "# {mark} _WIFI_DISABLE"
         append_newline: true
         prepend_newline: true
         content: "dtoverlay=disable-wifi\n"

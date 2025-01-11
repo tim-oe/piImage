@@ -34,7 +34,7 @@
         state: "present"
         insertafter: "EOF"
         dest: "{{ config_file }}"
-        marker: "# _SEED_SERVERS_"
+        marker: "# {mark} _SEED_SERVERS_"
         append_newline: true
         prepend_newline: true
         content:
@@ -45,7 +45,7 @@
         state: "present"
         insertafter: "EOF"
         dest: "{{ config_file }}"
-        marker: "# _PPS_DRIVER_"
+        marker: "#  {mark} _PPS_DRIVER_"
         append_newline: true
         prepend_newline: true
         content:
@@ -56,7 +56,7 @@
         state: "present"
         insertafter: "EOF"
         dest: "{{ config_file }}"
-        marker: "# _SHM_DRIVER_"
+        marker: "# {mark} _SHM_DRIVER_"
         append_newline: true
         prepend_newline: true
         content:
@@ -68,7 +68,7 @@
         state: "present"
         insertafter: "EOF"
         dest: "{{ config_file }}"
-        marker: "# _NMEA_DRIVER_"
+        marker: "# {mark} _NMEA_DRIVER_"
         append_newline: true
         prepend_newline: true
         content:

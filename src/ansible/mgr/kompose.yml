@@ -1,0 +1,17 @@
+# https://github.com/kubernetes/kompose/blob/main/docs/installation.md#github-release
+---
+- name: "install kompose cli"
+  hosts: "all"
+  become: true
+  become_user: "root"
+  vars:
+    ver: "v1.35.0"
+  tasks:
+    - name: "download n install"
+      ansible.builtin.get_url:
+        url: "https://github.com/kubernetes/kompose/releases/download/{{ ver }}/kompose-linux-arm64"
+        dest: "/usr/local/bin/kompose"
+        mode: "0755"
+        owner: root
+        group: root
+        force: true

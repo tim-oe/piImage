@@ -1,5 +1,6 @@
+# https://www.debian.org/doc/debian-policy/ch-opersys.html#signaling-that-a-reboot-is-required
 ---
-- name: "Update OS packages reboot if kernel update"
+- name: "Update installed packages reboot if needed"
   hosts: "all"
   become: true
   become_user: "root"
@@ -11,12 +12,6 @@
     - name: "Upgrade all packages on servers."
       apt:
         upgrade: "dist"
-    - name: "Remove useless packages from the cache"
-      apt:
-        autoclean: true
-    - name: "Remove dependencies that are no longer required"
-      apt:
-        autoremove: true
     - name: "Check if a reboot is needed on all servers."
       stat:
         path: "/var/run/reboot-required"
@@ -30,3 +25,9 @@
         post_reboot_delay: 10
         test_command: "uptime"
       when: "reboot_required_file.stat.exists"
+    - name: "Remove useless packages from the cache"
+      apt:
+        autoclean: true
+    - name: "Remove dependencies that are no longer required"
+      apt:
+        autoremove: true

@@ -1,0 +1,50 @@
+# https://www.raspberrypi.com/documentation/accessories/ai-kit.html
+# https://www.raspberrypi.com/documentation/computers/ai.html
+# https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#pcie-gen-3-0
+---
+- name: "install software for AI module"
+  hosts: "all"
+  become: true
+  become_user: "root"
+  vars:
+    config_file: "/boot/firmware/config.txt"
+  tasks:
+    - name: "Update apt added repo and cache."
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+    - name: "Install ai dependencies"
+      ansible.builtin.apt:
+        pkg:
+          - "hailo-all"
+        state: "present"
+    - name: "Enable pcie."
+      blockinfile:
+        state: "present"
+        insertafter: "EOF"
+        dest: "{{ config_file }}"
+        marker: "# {mark} _PCIE_ENABLE"
+        append_newline: true
+        prepend_newline: true
+        content: "dtparam=pciex1_gen=3\n"
+      register: pcie_enabled
+    - name: Reboot if pcie enabled
+      ansible.builtin.reboot:
+        msg: "Reboot initiated by Ansible for pcie update"
+        connect_timeout: 5
+        reboot_timeout: 300
+        pre_reboot_delay: 0
+        post_reboot_delay: 10
+        test_command: "uptime"
+      when: pcie_enabled.changed
+    - name: get hailo board
+      ansible.builtin.command: "hailortcli fw-control identify"
+      register: ai_board_name
+      changed_when: false   # Prevents command from always reporting as "changed"
+    - name: verify ai module
+      ansible.builtin.assert:
+        that:
+          - "'Board Name: Hailo-8' in ai_board_name.stdout"
+          - ai_board_name.rc == 0
+        fail_msg: "ai module not loaded"
+        success_msg: "ai module is online"

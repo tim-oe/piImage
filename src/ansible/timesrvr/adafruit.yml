@@ -44,7 +44,7 @@
         state: "present"
         insertafter: "EOF"
         dest: "{{ config_file }}"
-        marker: "# _PPS_ENABLE"
+        marker: "# {mark} _PPS_ENABLE"
         append_newline: true
         prepend_newline: true
         content: "dtoverlay=pps-gpio,gpiopin=4\n"

@@ -1,0 +1,26 @@
+# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/find_module.html
+---
+- name: "clean logs"
+  hosts: "all"
+  become: true
+  become_user: "root"
+  tasks:
+    - name: find old log archives
+      ansible.builtin.find:
+        paths: /var/log
+        age: 30d
+        file_type: file
+        use_regex: yes
+        recurse: yes
+        patterns: 
+          - '.*\.gz$' 
+          - '.*\.[0-9]$'
+      register: old_logs
+    - name: delete old log archives
+      file:
+        path: "{{ item.path }}"
+        state: absent
+      with_items: "{{ old_logs.files }}"
+    - name: "truncate journal"
+      command:
+        "journalctl --vacuum-time=30days"

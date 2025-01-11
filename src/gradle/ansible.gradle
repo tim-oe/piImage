@@ -24,6 +24,13 @@ tasks.register('aptUpdate', GradleBuild) {
     tasks = ['playbook']
 }
 
+tasks.register('logClean', GradleBuild) {
+    description = 'run ansible log clean script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/common/log-clean.yml']
+    tasks = ['playbook']
+}
+
 tasks.register('ntpClient', GradleBuild) {
     description = 'run ansible ntp client script'
     group = "ansible"
@@ -66,52 +73,10 @@ tasks.register('sonar-scanner', GradleBuild) {
     tasks = ['playbook']
 }
 
-tasks.register('aptPurge', GradleBuild) {
-    description = 'run ansible aptPurge script'
-    group = "ansible"
-    startParameter.projectProperties = ['ansible_playbook':'src/ansible/pi/apt-purge.yml']
-    tasks = ['playbook']
-}
-
-tasks.register('brutoof', GradleBuild) {
-    description = 'run ansible brutoof script'
-    group = "ansible"
-    startParameter.projectProperties = ['ansible_playbook':'src/ansible/pi/brutoof-disable.yml']
-    tasks = ['playbook']
-}
-
 tasks.register('wifi', GradleBuild) {
     description = 'run ansible wifi script'
     group = "ansible"
     startParameter.projectProperties = ['ansible_playbook':'src/ansible/pi/wifi-disable.yml']
-    tasks = ['playbook']
-}
-
-tasks.register('clones', GradleBuild) {
-    description = 'run ansible wifi script'
-    group = "ansible"
-    startParameter.projectProperties = ['ansible_playbook':'src/ansible/common/clones-mnt.yml']
-    tasks = ['playbook']
-}
-
-tasks.register('console', GradleBuild) {
-    description = 'run ansible wifi script'
-    group = "ansible"
-    startParameter.projectProperties = ['ansible_playbook':'src/ansible/pi/console-resize.yml']
-    tasks = ['playbook']
-}
-
-tasks.register('ssh', GradleBuild) {
-    description = 'run ansible ssh lockdown script'
-    group = "ansible"
-    startParameter.projectProperties = ['ansible_playbook':'src/ansible/common/ssh-lockdown.yml']
-    tasks = ['playbook']
-}
-
-tasks.register('swap', GradleBuild) {
-    description = 'run ansible dphys-swapfile script'
-    group = "ansible"
-    startParameter.projectProperties = ['ansible_playbook':'src/ansible/pi/swap.yml']
     tasks = ['playbook']
 }
 
@@ -126,6 +91,13 @@ tasks.register('terraform', GradleBuild) {
     description = 'run ansible terraform script'
     group = "ansible"
     startParameter.projectProperties = ['ansible_playbook':'src/ansible/mgr/terraform.yml']
+    tasks = ['playbook']
+}
+
+tasks.register('kompose', GradleBuild) {
+    description = 'run ansible kompose script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/mgr/kompose.yml']
     tasks = ['playbook']
 }
 
@@ -290,6 +262,27 @@ tasks.register('tfk8s', GradleBuild) {
     tasks = ['playbook']
 }
 
+tasks.register('ai', GradleBuild) {
+    description = 'run ansible ai script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/pi/ai/ai.yml']
+    tasks = ['playbook']
+}
+
+tasks.register('aiCamera', GradleBuild) {
+    description = 'run ansible ai camera script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/pi/ai/camera.yml']
+    tasks = ['playbook']
+}
+
+tasks.register('aiPython', GradleBuild) {
+    description = 'run ansible ai python script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/pi/ai/python.yml']
+    tasks = ['playbook']
+}
+
 tasks.register('adafruitUsb0') {
     description = 'run ansible adafruit script for usb'
     group = "ansible"
@@ -367,8 +360,113 @@ tasks.register('piUpdate') {
     }
 }
 
+tasks.register('aptPurge') {
+    description = 'run ansible apt purge script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/pi/apt-purge.yml'
+        }
+    }
+}
+
+tasks.register('brutoof') {
+    description = 'run ansible disable onboard brutoof script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/pi/brutoof-disable.yml'
+        }
+    }
+}
+
+tasks.register('clones') {
+    description = 'run ansible clones mount script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/common/clones-mnt.yml'
+        }
+    }
+}
+
+tasks.register('console') {
+    description = 'run ansible console resize script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/pi/console-resize.yml'
+        }
+    }
+}
+
+tasks.register('ssh') {
+    description = 'run ansible ssh lockdown script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/common/ssh-lockdown.yml'
+        }
+    }
+}
+
+tasks.register('swap') {
+    description = 'run ansible swap script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/pi/swap.yml'
+        }
+    }
+}
+
+tasks.register('log2ram') {
+    description = 'run ansible log2ram script'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/pi/log2ram.yml'
+        }
+    }
+}
+
 /** 
- * can't nest GradleBuild tasks so use dependsOn to group
+ * can't nest or use depends so called tasks cannot be inherent 
  * to call multiple GradleBuild tasks each thas has to have a unique buildName
  * https://github.com/azlux/log2ram
  */

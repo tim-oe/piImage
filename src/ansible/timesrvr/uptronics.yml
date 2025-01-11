@@ -49,7 +49,7 @@
         state: "present"
         insertafter: "EOF"
         dest: "{{ config_file }}"
-        marker: "# _UPTRONICS"
+        marker: "# {mark} _UPTRONICS"
         append_newline: true
         prepend_newline: true
         content: "dtoverlay=i2c-rtc,rv3028\ndtoverlay=pps-gpio,gpiopin=18\n"
@@ -78,7 +78,7 @@
         state: "present"
         insertafter: "EOF"
         dest: "{{ module_file }}"
-        marker: "# _UPTRONICS"
+        marker: "# {mark} _UPTRONICS"
         append_newline: true
         prepend_newline: true
         content: "pps-gpio\n"
@@ -118,7 +118,7 @@
         state: "present"
         insertafter: "EOF"
         dest: "{{ env_file }}"
-        marker: "# _UPTRONICS"
+        marker: "# {mark} _UPTRONICS"
         append_newline: true
         prepend_newline: true
         content: "UBXOPTS=\"-P 18\"\n"

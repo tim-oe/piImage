@@ -1,0 +1,28 @@
+# https://www.raspberrypi.com/documentation/accessories/ai-camera.html
+---
+- name: "install software for AI camera"
+  hosts: "all"
+  become: true
+  become_user: "root"
+  vars:
+    config_file: "/boot/firmware/config.txt"
+  tasks:
+    - name: "Update apt added repo and cache."
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+    - name: "Install ai dependencies"
+      ansible.builtin.apt:
+        pkg:
+          - "imx500-all"
+        state: "present"
+      register: camera_enabled
+    - name: Reboot if camera enabled
+      ansible.builtin.reboot:
+        msg: "Reboot initiated by Ansible for ai camera update"
+        connect_timeout: 5
+        reboot_timeout: 300
+        pre_reboot_delay: 0
+        post_reboot_delay: 10
+        test_command: "uptime"
+      when: camera_enabled.changed
