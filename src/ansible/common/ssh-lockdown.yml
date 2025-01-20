@@ -4,33 +4,26 @@
   become: true
   become_user: "root"
   vars:
-    config_file: "/etc/ssh/sshd_config"
+    config_file: "/etc/ssh/sshd_config.d/lockdown.conf"
+    multiline: |
+          PubkeyAuthentication yes
+          PasswordAuthentication no
+          PermitRootLogin no
+          PermitEmptyPasswords no
+          ChallengeResponseAuthentication yes        
+
   tasks:
-    - name: "Enable public key authentication"
-      ansible.builtin.replace:
-        path: "{{ config_file }}"
-        regexp: "^#PubkeyAuthentication.*$"
-        replace: "PubkeyAuthentication yes"
-    - name: "Disable password authentication"
-      ansible.builtin.replace:
-        path: "{{ config_file }}"
-        regexp: "^#PasswordAuthentication.*$"
-        replace: "PasswordAuthentication no"
-    - name: "Disable root authentication"
-      ansible.builtin.replace:
-        path: "{{ config_file }}"
-        regexp: "^#PermitRootLogin.*$"
-        replace: "PermitRootLogin no"
-    - name: "Disable empty pwd authentication"
-      ansible.builtin.replace:
-        path: "{{ config_file }}"
-        regexp: "^#PermitEmptyPasswords.*$"
-        replace: "PermitEmptyPasswords no"
-    - name: "enable challenge response fix for no auth method"
-      ansible.builtin.replace:
-        path: "{{ config_file }}"
-        regexp: "^#ChallengeResponseAuthentication.*$"
-        replace: "ChallengeResponseAuthentication yes"
+    - name: reset sshd config
+      ansible.builtin.copy:
+        src: /usr/share/openssh/sshd_config
+        dest: /etc/ssh/sshd_config
+        owner: root
+        group: root
+        mode: '0644'
+    - name: "lockdown ssh"
+      copy:
+        dest: "{{ config_file }}"
+        content: "{{ multiline }}"
     - name: "restart  sshd"
       systemd:
         state: "restarted"
