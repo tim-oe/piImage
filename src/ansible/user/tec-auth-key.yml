@@ -1,0 +1,32 @@
+---
+- name: "tec auth key"
+  hosts: "all"
+  become: true
+  become_user: "root"
+  vars:
+    key_file: ".ssh/authorized_keys"
+    auth_key_key: "TEC_AUTH_KEY"
+  tasks:
+    - name: get auth_key
+      ansible.builtin.set_fact:
+        auth_key: "{{ lookup('env', 'TEC_AUTH_KEY') }}"
+      delegate_to: localhost
+    - name: "ansible .ssh"
+      file:
+        path: "/home/tcronin/.ssh"
+        owner: "tcronin"
+        group: "tcronin"
+        mode: "0700"
+        state: "directory"
+    - name: "auth key"
+      copy:
+        dest: "/home/tcronin/{{ key_file }}"
+        content: "{{ auth_key }}"
+        owner: "tcronin"
+        group: "tcronin"
+        mode: "0600"
+    - name: "sudoers file"
+      copy:
+        dest: "/etc/sudoers.d/10-tcronin-sudo"
+        content: "tcronin ALL=(ALL) NOPASSWD:ALL"
+        mode: "0440"
