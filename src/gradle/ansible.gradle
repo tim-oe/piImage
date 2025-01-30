@@ -429,7 +429,7 @@ tasks.register('console') {
                     'ansible-playbook ' +
                     '-i ' +
                     "${target_host}, " +
-                    'src/ansible/pi/console-resize.yml'
+                    'src/ansible/common/console-resize.yml'
         }
     }
 }

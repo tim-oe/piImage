@@ -36,7 +36,7 @@ autoinstall:
         lock_passwd: false
         passwd: ${ANS_PWD_HASH}
         ssh_authorized_keys:
-          - ssh-rsa ${ANS_AUTH_KEY}
+          - ${ANS_AUTH_KEY}
   
   # https://docs.cloud-init.io/en/latest/reference/network-config-format-v2.html
   network:
