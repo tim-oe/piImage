@@ -58,3 +58,4 @@ I used [sdkman](https://sdkman.io/) to setup java and gradle
     - [telegraf setup](https://randomnerdtutorials.com/monitor-raspberry-pi-influxdb-telegraf/)
     - [blog](https://www.kevsrobots.com/blog/telegraf-on-pi.html)
     - [video](https://www.youtube.com/watch?v=CrWh34bQK7M)
+- [unattended-upgrade](https://wiki.debian.org/UnattendedUpgrades)

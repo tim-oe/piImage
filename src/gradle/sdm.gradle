@@ -1,3 +1,15 @@
+tasks.register('sdmUpdate') {
+    description = 'update sdm'
+    group = 'sdm'
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c', "curl -L https://raw.githubusercontent.com/gitbls/sdm/master/EZsdmInstaller | bash"
+        }
+    }
+}
+
+
 // dowload pi image
 // https://downloads.raspberrypi.com/raspios_lite_arm64/images
 tasks.register('imgGet') {

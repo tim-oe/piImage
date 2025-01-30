@@ -1,0 +1,40 @@
+// create custom ubuntu image using cloud-init manifest
+// https://github.com/jjbailey/ubuntu-autoinstall
+tasks.register('isoBuild') {
+    description = 'init user-data.yml for cloud-init install'
+    group = "container"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                "envsubst < src/cloud-init/user-data.yml  > ${iso_project_root}/user-data.yml"
+        }
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                "sed -i 's/__HOSTNAME__/${target_host}/g' ${iso_project_root}/user-data.yml"
+        }
+        exec {
+            workingDir "${iso_project_root}"
+            commandLine 'bash', '-c',
+                "./create-iso.sh"
+        }
+    }
+}
+
+// https://askubuntu.com/questions/1398432/how-to-burn-an-iso-file-to-a-usb
+tasks.register('isoBurn') {
+    description = 'burn custom iso to usb drive'
+    group = "container"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                "sudo dd status=progress if=${iso_project_root}/${iso_img_name} of=${iso_dev}"
+        }
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c', 'sync'
+        }
+    }
+}

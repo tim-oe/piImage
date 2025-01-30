@@ -11,6 +11,7 @@ apply from: 'src/gradle/ansible.gradle'
 apply from: 'src/gradle/kube.gradle'
 apply from: 'src/gradle/sdm.gradle'
 apply from: 'src/gradle/host.gradle'
+apply from: 'src/gradle/cloud-init.gradle'
 
 // https://github.com/diffplug/spotless/tree/main/plugin-gradle
 spotless {

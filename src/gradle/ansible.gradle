@@ -290,10 +290,10 @@ tasks.register('aiPython', GradleBuild) {
     tasks = ['playbook']
 }
 
-tasks.register('tecAuth', GradleBuild) {
-    description = 'run ansible ai tec auth script'
+tasks.register('mgrInit', GradleBuild) {
+    description = 'run ansible mgr apy init script'
     group = "ansible"
-    startParameter.projectProperties = ['ansible_playbook':'src/ansible/user/tec-auth-key.yml']
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/mgr/apt-init.yml']
     tasks = ['playbook']
 }
 
