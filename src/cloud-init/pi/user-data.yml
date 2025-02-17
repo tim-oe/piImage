@@ -1,0 +1,28 @@
+#cloud-config
+hostname: __HOSTNAME__
+manage_etc_hosts: true
+
+apt:
+  conf: |
+    Acquire {
+      Check-Date "false";
+    };
+
+users:
+- name: ansible
+  groups: users,adm,dialout,audio,netdev,video,plugdev,cdrom,games,input,gpio,spi,i2c,render,sudo
+  shell: /bin/bash
+  lock_passwd: false
+  passwd: ${ANS_PWD_HASH}
+  ssh_authorized_keys:
+    - ${ANS_AUTH_KEY}
+  sudo: ALL=(ALL) NOPASSWD:ALL
+- name: tcronin
+  groups: users,adm,dialout,audio,netdev,video,plugdev,cdrom,games,input,gpio,spi,i2c,render,sudo
+  shell: /bin/bash
+  lock_passwd: false
+  passwd: ${TEC_PWD_HASH}
+  ssh_authorized_keys:
+    - ${TEC_AUTH_KEY}
+  sudo: ALL=(ALL) NOPASSWD:ALL
+

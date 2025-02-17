@@ -2,7 +2,6 @@
 - name: "Lockdown ssh configs"
   hosts: "all"
   become: true
-  become_user: "root"
   vars:
     config_file: "/etc/ssh/sshd_config.d/lockdown.conf"
     multiline: |
@@ -28,4 +27,4 @@
       systemd:
         state: "restarted"
         daemon_reload: true
-        name: "sshd"
+        name: "ssh.service"

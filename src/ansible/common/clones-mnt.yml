@@ -2,7 +2,6 @@
 - name: "Initialize kube node"
   hosts: "all"
   become: true
-  become_user: "root"
   tasks:
     - name: "Ansible apt install cifs-utils"
       apt:

@@ -2,67 +2,74 @@
 # https://canonical-subiquity.readthedocs-hosted.com/en/latest/reference/autoinstall-reference.html
 # https://cloudinit.readthedocs.io/en/latest/
 # https://github.com/jjbailey/ubuntu-autoinstall
+# https://www.cyberciti.biz/faq/understanding-etcshadow-file/
 # create seed image with enough setup to be able to configure with ansible
-autoinstall:
-  version: 1
+#autoinstall:
+#  version: 1
+locale: en_US.UTF-8
 
-  locale: en_US.UTF-8
+keyboard:
+  layout: us
 
-  keyboard:
-    layout: us
+identity:
+  hostname: __HOSTNAME__
+  username: tcronin
+  realname: tcronin
+  # Password hash generate using: mkpasswd --method=SHA-512
+  password: ${TEC_PWD_HASH}
 
-  identity:
-    hostname: __HOSTNAME__
-    username: tcronin
-    realname: tcronin
-    # Password hash generate using: mkpasswd --method=SHA-512
-    password: ${TEC_PWD_HASH}
+# https://canonical-subiquity.readthedocs-hosted.com/en/latest/reference/autoinstall-reference.html#ai-user-data
+user-data:
+  users:
+    - default
+    - name: tcronin
+      sudo: ALL=(ALL) NOPASSWD:ALL
+      groups: sudo, adm
+      shell: /bin/bash
+      lock_passwd: false
+      ssh_authorized_keys:
+        - ${TEC_AUTH_KEY}
+    - name: ansible
+      sudo: ALL=(ALL) NOPASSWD:ALL
+      groups: sudo, adm
+      shell: /bin/bash
+      lock_passwd: false
+      passwd: ${ANS_PWD_HASH}
+      ssh_authorized_keys:
+        - ${ANS_AUTH_KEY}
 
-  # https://canonical-subiquity.readthedocs-hosted.com/en/latest/reference/autoinstall-reference.html#ai-user-data
-  user-data:
-    users:
-      - default
-      - name: tcronin
-        sudo: ALL=(ALL) NOPASSWD:ALL
-        groups: sudo, adm
-        shell: /bin/bash
-        lock_passwd: false
-        ssh_authorized_keys:
-          - ${TEC_AUTH_KEY}
-      - name: ansible
-        sudo: ALL=(ALL) NOPASSWD:ALL
-        groups: sudo, adm
-        shell: /bin/bash
-        lock_passwd: false
-        passwd: ${ANS_PWD_HASH}
-        ssh_authorized_keys:
-          - ${ANS_AUTH_KEY}
-  
-  # https://docs.cloud-init.io/en/latest/reference/network-config-format-v2.html
-  network:
-    version: 2
-    ethernets:
-      id0:
-        match:
-          name: enp*
-        dhcp4: true
+# https://docs.cloud-init.io/en/latest/reference/network-config-format-v2.html
+network:
+  version: 2
+  ethernets:
+    id0:
+      match:
+        name: eno*
+      dhcp4: true
+    id1:
+      match:
+        name: enp*
+      dhcp4: true
 
-  ssh:
-    allow-pw: true
-    install-server: true
+ssh:
+  allow-pw: true
+  install-server: true
 
-  apt:
-    geoip: true
-    primary:
-      - arches: [default]
-        uri: http://us.archive.ubuntu.com/ubuntu/
+apt:
+  geoip: true
+  primary:
+    - arches: [default]
+      uri: http://us.archive.ubuntu.com/ubuntu/
 
-  package_update: true
-  package_upgrade: true
+package_update: true
+package_upgrade: true
 
-  # format drive using defaults
-  storage:
-    layout:
-      name: direct
-    swap:
-      size: 8G
+# format drive using defaults
+storage:
+  layout:
+    name: direct
+
+swap:
+  filename: /swap.img
+  size: 8589934592
+  maxsize: 8589934592

@@ -22,6 +22,23 @@ tasks.register('isoBuild') {
     }
 }
 
+tasks.register('piImg') {
+    description = 'init user-data.yml for piimager install'
+    group = "container"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                "envsubst < src/cloud-init/pi/user-data.yml  > /mnt/clones/data/user-data.yml"
+        }
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                "sed -i 's/__HOSTNAME__/${target_host}/g' /mnt/clones/data/user-data.yml"
+        }
+    }
+}
+
 // https://askubuntu.com/questions/1398432/how-to-burn-an-iso-file-to-a-usb
 tasks.register('isoBurn') {
     description = 'burn custom iso to usb drive'
@@ -31,6 +48,23 @@ tasks.register('isoBurn') {
             workingDir '.'
             commandLine 'bash', '-c',
                 "sudo dd status=progress if=${iso_project_root}/${iso_img_name} of=${iso_dev}"
+        }
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c', 'sync'
+        }
+    }
+}
+
+// https://forums.raspberrypi.com/viewtopic.php?t=333804
+tasks.register('imgDump') {
+    description = 'burn usb drive to img file'
+    group = "container"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                "sudo dd status=progress count=${sector_count} if=${iso_dev} of=backup.img"
         }
         exec {
             workingDir '.'

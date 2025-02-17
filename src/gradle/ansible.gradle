@@ -17,6 +17,13 @@ tasks.register('playbook') {
     }
 }
 
+tasks.register('debug', GradleBuild) {
+    description = 'run ansible debug script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/common/debug.yml']
+    tasks = ['playbook']
+}
+
 tasks.register('aptUpdate', GradleBuild) {
     description = 'run ansible apt update script'
     group = "ansible"
@@ -297,6 +304,20 @@ tasks.register('mgrInit', GradleBuild) {
     tasks = ['playbook']
 }
 
+tasks.register('kubeConfig', GradleBuild) {
+    description = 'update kube config from controller node'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/mgr/kubectl.yml']
+    tasks = ['playbook']
+}
+
+tasks.register('swap', GradleBuild) {
+    description = 'create standard swap file'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/x86/swap.yml']
+    tasks = ['playbook']
+}
+
 tasks.register('adafruitUsb0') {
     description = 'run ansible adafruit script for usb'
     group = "ansible"
@@ -369,6 +390,20 @@ tasks.register('piUpdate') {
             commandLine 'bash', '-c',
                     'ansible-playbook ' +
                     '-l pi_all ' +
+                    'src/ansible/common/apt-update.yml'
+        }
+    }
+}
+
+tasks.register('kubeUpdate') {
+    description = 'run ansible apt update script on pi instances'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                    'ansible-playbook ' +
+                    '-l kube_all ' +
                     'src/ansible/common/apt-update.yml'
         }
     }
@@ -449,7 +484,7 @@ tasks.register('ssh') {
     }
 }
 
-tasks.register('swap') {
+tasks.register('piSwap') {
     description = 'run ansible swap script'
     group = "ansible"
     doLast {
@@ -492,6 +527,6 @@ tasks.register('piInit') {
     dependsOn 'clones'
     dependsOn 'console'
     dependsOn 'ssh'
-    dependsOn 'swap'
+    dependsOn 'piSwap'
     dependsOn 'log2ram'
 }

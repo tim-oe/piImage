@@ -1,0 +1,47 @@
+---
+- name: "create swap file"
+  hosts: "all"
+  become: true
+  gather_facts: yes
+  vars:
+    swap_size: 8192
+    swap_file: /swap.img
+  tasks:
+  - name: "check if {{ swap_file }} is present"
+    stat:
+      path: "{{ swap_file }}"
+    register: swap
+  - block:
+      - name: "turn off swap"
+        ansible.builtin.shell:
+          cmd: swapoff -a
+      - name: "delete file"
+        ansible.builtin.file:
+          path: "{{ swap_file }}"
+          state: "absent"
+    when: swap.stat.exists
+  - name: "create {{ swap_file }} file"
+    ansible.builtin.file:
+      path: "{{ swap_file }}"
+      state: "touch"
+      mode: "0600"
+      owner: "root"
+      group: "root"
+  - name: "size {{ swap_file }} file"
+    ansible.builtin.shell:
+      cmd: "dd if=/dev/zero of={{ swap_file }} bs=1M count={{ swap_size }}"
+  - name: "mkswap {{ swap_file }}"
+    ansible.builtin.shell:
+      cmd: "mkswap {{ swap_file }}"
+  - name: "mkswap {{ swap_file }}"
+    ansible.builtin.shell:
+      cmd: "swapon {{ swap_file }}"
+  - name: "mount  {{ swap_file }}"
+    ansible.posix.mount:
+      path: "none"
+      src: "{{ swap_file }}"
+      fstype: "swap"
+      opts: sw
+      passno: '0'
+      dump: '0'
+      state: present

@@ -1,0 +1,28 @@
+---
+- name: "initialize kubectl configuration"
+  hosts: "all"
+  become: true
+  vars:
+    config_file: /home/tcronin/.kube/config
+  tasks:
+    - name: get controller config
+      ansible.builtin.slurp:
+        src: /etc/rancher/k3s/k3s.yaml
+      register: kube_config
+      delegate_to: tec-kube-pi-ctlr
+    - name: "set file access"
+      ansible.builtin.file:
+        path: "{{ config_file }}"
+        state: "touch"
+        owner: tcronin
+        group: tcronin
+        mode: '0600'
+    - name: "write config"
+      copy:
+        dest: "{{ config_file }}"
+        content: "{{ kube_config['content'] | b64decode }}"
+    - name: set host
+      ansible.builtin.replace:
+        path: "{{ config_file }}"
+        regexp: 'server: https://.*:6443'
+        replace: 'server: https://tec-kube-pi-ctlr:6443'

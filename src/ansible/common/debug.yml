@@ -1,0 +1,13 @@
+---
+- name: "dump facts"
+  hosts: "all"
+  become: true
+  gather_facts: yes
+  tasks:
+    - name: arch
+      debug:
+        msg: "{{ ansible_facts['machine'] }}"
+    - name: facts
+      debug:
+        msg: "{{ ansible_facts }}"
+  
