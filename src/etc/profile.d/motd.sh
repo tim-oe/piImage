@@ -14,10 +14,9 @@ let hours=$((${upSeconds}/3600%24))
 let days=$((${upSeconds}/86400))
 
 OSVER=`cat /etc/os-release | egrep -o  PRETTY_NAME=.* | sed -E 's/PRETTY_NAME=\"(.+)\"/\1/'`
-PIVER=`pinout | egrep Description.*:.* | sed -E 's/Description\s+:\s+(.*)/\1/'`
-MEM_TOTAL=`pinout | egrep RAM.*:.* | sed -E 's/RAM\s+:\s+(.*)/total: \1/'`
-MEM=`free -gh --si | egrep -o Mem:.* | sed -E 's/\Mem:\s+([0-9\.]+[GMK]?)\s+([0-9\.]+[GMK]?)\s+([0-9\.]+[GMK]?)\s+([0-9\.]+[GMK]?)\s+([0-9\.]+[GMK]?)\s+([0-9\.]+[GMK]?)/used: \2 free: \3/'`
-DISK=`df -h / | egrep -o /dev/.* | sed -E 's/\/dev\/[^\s]+\s+([0-9]+[GM]?)\s+([0-9\.]+[GM]?)\s+([0-9\.]+[GM]?).*/total: \1 used: \2 free: \3/'`
+PIVER=`cat /proc/cpuinfo | egrep Model.*:.* | sed -E 's/Model\s+:\s+(.*)/\1/'`
+MEM=`free -gh --si | egrep -o Mem:.* | sed -E 's/\Mem:\s+([0-9\.]+[GMK]?)\s+([0-9\.]+[GMK]?)\s+([0-9\.]+[GMK]?)\s+([0-9\.]+[GMK]?)\s+([0-9\.]+[GMK]?)\s+([0-9\.]+[GMK]?)/total: \1 used: \2 free: \3/'`
+DISK=`df -h / | egrep -o '/dev/.*' | sed -E 's/\/dev\/\w+\s+([0-9]+[GM]?)\s+([0-9\.]+[GM]?)\s+([0-9\.]+[GM]?).*/total: \1 used: \2 free: \3/'`
 UPTIME=`printf "%d days, %02dh%02dm%02ds" "$days" "$hours" "$mins" "$secs"`
 
 # get the load averages
@@ -44,7 +43,7 @@ $(tput sgr0)- Uptime.............: ${UPTIME}
 $(tput sgr0)- OS.................: ${OSVER}
 $(tput sgr0)- PI.................: ${PIVER}
 $(tput sgr0)- Disk...............: ${DISK}
-$(tput sgr0)- Memory.............: ${MEM_TOTAL} ${MEM}
+$(tput sgr0)- Memory.............: ${MEM}
 $(tput sgr0)- Load Averages......: ${one}, ${five}, ${fifteen} (1, 5, 15 min)
 $(tput sgr0)- Running Processes..: `ps ax | wc -l | tr -d " "`
 $(tput sgr0)- IP Addresses.......: `hostname -I | /usr/bin/cut -d " " -f 1` and `wget -q -O - http://icanhazip.com/ | tail`
