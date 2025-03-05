@@ -199,6 +199,13 @@ tasks.register('docker', GradleBuild) {
     tasks = ['playbook']
 }
 
+tasks.register('kvm', GradleBuild) {
+    description = 'run ansible kvm script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/apps/kvm.yml']
+    tasks = ['playbook']
+}
+
 tasks.register('pidocker', GradleBuild) {
     description = 'run ansible pi docker script'
     group = "ansible"

@@ -2,7 +2,6 @@
 - name: "resize default console font size"
   hosts: "all"
   become: true
-  become_user: "root"
   vars:
     config_file: "/etc/default/console-setup"
   tasks:

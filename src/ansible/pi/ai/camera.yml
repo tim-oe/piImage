@@ -3,7 +3,6 @@
 - name: "install software for AI camera"
   hosts: "all"
   become: true
-  become_user: "root"
   vars:
     config_file: "/boot/firmware/config.txt"
   tasks:

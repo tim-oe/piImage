@@ -1,22 +1,112 @@
+# https://www.dzombak.com/blog/2024/02/Setting-up-KVM-virtual-machines-using-a-bridged-network.html
+# https://www.linuxtechi.com/how-to-install-kvm-on-ubuntu-22-04/
+# https://libvirt.org/nss.html
+# https://www.cyberciti.biz/faq/install-kvm-server-debian-linux-9-headless-server/
+# https://askubuntu.com/questions/628383/output-only-mac-address-on-ubuntu
+# https://serverfault.com/questions/972264/virt-install-hangs-no-apparent-error-in-logs-and-virsh-list-later-shows-its-run
+# https://www.cyberciti.biz/faq/linux-kvm-stop-start-guest-virtual-machine/
+# https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/7/html/virtualization_deployment_and_administration_guide/sect-managing_guest_virtual_machines_with_virsh-editing_a_guest_virtual_machines_configuration_file
+# setup kvm with bridge network config
 ---
 - name: "install kvm"
   hosts: "all"
   become: true
-  become_user: "root"
+  vars:
+    config_file: /etc/netplan/60-kvm-bridge.yaml 
+    bridge_file: /tmp/kvm-host-bridge.xml 
+    user_name: tcronin
+    net_dev: enp2s0
+    net_dev_id: enp
   tasks:
-    - name: "Update apt repo and cache."
-      apt:
-        update_cache: true
-        cache_valid_time: 3600
-    - name: "install deps"
-      apt:
-        name: "{{ item }}"
-        state: "present"
-      loop:
-        - "cpu-checker"
-        - "qemu-kvm" 
-        - "virt-manager" 
-        - "libvirt-daemon-system" 
-        - "virtinst" 
-        - "libvirt-clients" 
-        - "bridge-utils"
+    - name: "gather service facts"
+      ansible.builtin.service_facts: null
+    - block: # is kvm is not installed
+      - name: "Update apt repo and cache."
+        apt:
+          update_cache: true
+          cache_valid_time: 3600
+      - name: "install deps"
+        apt:
+          name: "{{ item }}"
+          state: "present"
+        loop:
+          - "cpu-checker"
+          - "qemu-kvm" 
+          #- "virt-manager" headless
+          - "libvirt-daemon-system" 
+          - "virtinst" 
+          - "libvirt-clients" 
+          - "bridge-utils"
+          - "openvswitch-switch"
+      - name: "verify virtulization"
+        ansible.builtin.shell: 
+          executable: /bin/bash
+          cmd: "kvm-ok | egrep INFO:.*kvm.* | sed -E 's/INFO:.*kvm\\s+(.*)/\\1/'"
+        register: kvm_ok
+      - name: fail if no virtualization
+        fail:
+          msg: "system doesn't support virtualization"
+        when: kvm_ok.stdout != 'exists'
+      - name: "Enable libvirtd"
+        ansible.builtin.systemd_service:
+          name: "libvirtd"
+          enabled: true
+          masked: false
+      - name: "start libvirtd"
+        ansible.builtin.systemd_service:
+          name: "libvirtd"
+          state: started
+      - name: adding '{{ user_name }}' to kvm groups
+        user:
+          name: '{{ user_name }}'
+          groups: 
+            - libvirt
+            - libvirt-qemu
+            - kvm
+          append: yes
+      - name: deploy netplan bridge config
+        copy:
+          src: "{{ playbook_dir }}/../../etc/netplan/60-kvm-bridge.yaml"
+          dest: "{{ config_file }}" 
+          owner: root
+          group: root
+          mode: 0600
+      - name: "get mac"
+        ansible.builtin.shell: 
+          executable: /bin/bash
+          cmd: "cat /sys/class/net/{{ net_dev }}/address"
+        register: mac_addr
+      - name: set device
+        ansible.builtin.replace:
+          path: "{{ config_file }}"
+          regexp: '_ETH_IFACE_'
+          replace: "{{ net_dev_id }}"
+      - name: set mac
+        ansible.builtin.replace:
+          path: "{{ config_file }}"
+          regexp: '_ETH_MAC_ADDR_'
+          replace: "{{ mac_addr.stdout | trim }}"
+      - name: deploy kvm bridge config
+        copy:
+          src: "{{ playbook_dir }}/../../kvm/kvm-host-bridge.xml"
+          dest: "{{ bridge_file }}" 
+          owner: root
+          group: root
+          mode: 0600
+      - name: "apply bridge config"
+        ansible.builtin.shell: 
+          executable: /bin/bash
+          cmd: "netplan --debug apply"
+      - name: "load kvm bridge config"
+        ansible.builtin.shell: 
+          executable: /bin/bash
+          cmd: "virsh net-define {{ bridge_file }}"
+      - name: "start kvm bridge config"
+        ansible.builtin.shell: 
+          executable: /bin/bash
+          cmd: "virsh net-start host-bridge"
+      - name: "autostart kvm bridge config"
+        ansible.builtin.shell: 
+          executable: /bin/bash
+          cmd: "virsh net-autostart host-bridge"
+      when: ansible_facts.services['libvirtd'] is undefined

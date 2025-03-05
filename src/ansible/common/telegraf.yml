@@ -2,7 +2,6 @@
 - name: "install telegraf"
   hosts: "all"
   become: true
-  become_user: "root"
   vars:
     config_file: "/etc/telegraf/telegraf.conf"
     env_file: "/etc/default/telegraf"

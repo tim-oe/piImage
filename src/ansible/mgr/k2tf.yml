@@ -4,7 +4,6 @@
 - name: "install k2tf cli"
   hosts: "all"
   become: true
-  become_user: "root"
   vars:
     ver: "0.8.0"
   tasks:

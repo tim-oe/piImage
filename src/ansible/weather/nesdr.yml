@@ -2,7 +2,6 @@
 - name: "install sdr dependencies"
   hosts: "all"
   become: true
-  become_user: "root"
   vars:
     blacklist_file: "/etc/modprobe.d/blacklist-dvb.conf"
   tasks:

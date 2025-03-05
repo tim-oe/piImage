@@ -2,7 +2,6 @@
 - name: "setup ntp"
   hosts: "all"
   become: true
-  become_user: "root"
   vars:
     config_file: "/etc/ntpsec/ntp.conf"
     dhcp_config_file: "/etc/dhcp/dhclient.conf"

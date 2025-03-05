@@ -2,7 +2,6 @@
 - name: "set ntp timesyncd"
   hosts: "all"
   become: true
-  become_user: "root"
   tasks:
     - name: "Create dispatcher.d directory if it does not exist"
       ansible.builtin.file:

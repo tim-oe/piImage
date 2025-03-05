@@ -2,7 +2,6 @@
 - name: "tec auth key"
   hosts: "all"
   become: true
-  become_user: "root"
   vars:
     key_file: ".ssh/authorized_keys"
     auth_key_key: "TEC_AUTH_KEY"

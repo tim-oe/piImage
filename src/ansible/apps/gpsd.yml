@@ -2,7 +2,6 @@
 - name: "setup gps"
   hosts: "all"
   become: true
-  become_user: "root"
   vars:
     gpsd_config_file: "/etc/default/gpsd"
     gps_dev: "ttyAMA0"

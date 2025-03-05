@@ -2,7 +2,6 @@
 - name: "install mysql server"
   hosts: "all"
   become: true
-  become_user: "root"
   vars:
     config_file: "/etc/mysql/mariadb.conf.d/50-server.cnf"
     root_pwd: "root"

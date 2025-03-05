@@ -4,7 +4,6 @@
 - name: "install rclone cli"
   hosts: "all"
   become: true
-  become_user: "root"
   vars:
     ver: "v1.68.2"
   tasks:

@@ -5,7 +5,6 @@
 - name: "install software for AI module"
   hosts: "all"
   become: true
-  become_user: "root"
   vars:
     config_file: "/boot/firmware/config.txt"
   tasks:

@@ -2,7 +2,6 @@
 - name: "install influx cli"
   hosts: "all"
   become: true
-  become_user: "root"
   vars:
     influx_ver: "2.7.5"
   tasks:

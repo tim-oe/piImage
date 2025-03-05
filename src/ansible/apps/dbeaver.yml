@@ -2,7 +2,6 @@
 - name: "install dbeaver"
   hosts: "all"
   become: true
-  become_user: "root"
   tasks:
     - name: "add repo"
       ansible.builtin.apt_repository:

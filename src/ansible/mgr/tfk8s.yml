@@ -5,7 +5,6 @@
 - name: "install tfk8s cli"
   hosts: "all"
   become: true
-  become_user: "root"
   vars:
     version: "1.23.4"
   tasks:

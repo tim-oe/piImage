@@ -2,7 +2,6 @@
 - name: "install shutter"
   hosts: "all"
   become: true
-  become_user: "root"
   tasks:
     - name: Enable universe repository
       apt_repository:

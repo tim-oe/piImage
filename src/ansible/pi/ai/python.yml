@@ -3,7 +3,6 @@
 - name: "add python libs and dependencies"
   hosts: "all"
   become: true
-  become_user: "root"
   vars:
     env_file: "/etc/environment"
   tasks:

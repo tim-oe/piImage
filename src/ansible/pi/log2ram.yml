@@ -2,7 +2,6 @@
 - name: "install log2ram"
   hosts: "all"
   become: true
-  become_user: "root"
   vars:
     config_file: "/etc/log2ram.conf"
   tasks:
