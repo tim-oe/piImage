@@ -1,0 +1,6 @@
+[Allow full access for administration]
+Identity=unix-group:adm
+Action=*
+ResultActive=yes
+ResultInactive=yes
+ResultAny=yes

@@ -1,0 +1,9 @@
+[Unit]
+Description=Configure Wake-up on LAN
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/ethtool -s _ETH_DEV_ wol g
+
+[Install]
+WantedBy=basic.target

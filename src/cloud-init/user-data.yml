@@ -29,9 +29,15 @@ autoinstall:
   updates: all
 
   packages:
+    - lshw
     - iputils-ping
+    - net-tools
     - htop
     - nano
+    - curl
+    - gnupg
+    - gpg
+    - wget
 
   ssh:
     install-server: true
@@ -87,3 +93,7 @@ autoinstall:
   swap:
     filename: /swap.img
     size: 8589934592
+
+# kvm dep
+#  late-commands:
+#    - sudo systemctl enable serial-getty@ttyS0.service

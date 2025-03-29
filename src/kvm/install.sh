@@ -1,3 +1,5 @@
+# sudo apt install qemu-guest-agent
+# install the vm commandline
 virt-install \
 	--name _VM_NAME_\
 	--description '_VM_DESC_' \ 

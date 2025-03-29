@@ -206,6 +206,13 @@ tasks.register('kvm', GradleBuild) {
     tasks = ['playbook']
 }
 
+tasks.register('wol', GradleBuild) {
+    description = 'run ansible wake on lan script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/net/wol.yml']
+    tasks = ['playbook']
+}
+
 tasks.register('pidocker', GradleBuild) {
     description = 'run ansible pi docker script'
     group = "ansible"
@@ -322,6 +329,13 @@ tasks.register('swap', GradleBuild) {
     description = 'create standard swap file'
     group = "ansible"
     startParameter.projectProperties = ['ansible_playbook':'src/ansible/x86/swap.yml']
+    tasks = ['playbook']
+}
+
+tasks.register('vmInit', GradleBuild) {
+    description = 'init vm instance'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/vm/apt-init.yml']
     tasks = ['playbook']
 }
 

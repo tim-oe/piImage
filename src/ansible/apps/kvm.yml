@@ -6,6 +6,9 @@
 # https://serverfault.com/questions/972264/virt-install-hangs-no-apparent-error-in-logs-and-virsh-list-later-shows-its-run
 # https://www.cyberciti.biz/faq/linux-kvm-stop-start-guest-virtual-machine/
 # https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/7/html/virtualization_deployment_and_administration_guide/sect-managing_guest_virtual_machines_with_virsh-editing_a_guest_virtual_machines_configuration_file
+# dont put the iso in home dir or gonna have a bad time...
+# https://ostechnix.com/solved-cannot-access-storage-file-permission-denied-error-in-kvm-libvirt/
+#
 # setup kvm with bridge network config
 ---
 - name: "install kvm"

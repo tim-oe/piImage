@@ -1,0 +1,54 @@
+# https://thedarkercorner.com/setting-up-wake-on-lan-on-ubuntu-server-22-04-lts/
+---
+- name: "enable wake on lan"
+  hosts: "all"
+  become: true
+  vars:
+    svc_file: usr/lib/systemd/system/wol.service 
+    net_dev: enp2s0
+  tasks:
+    - name: "Update apt repo and cache."
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+    - name: "install base deps"
+      apt:
+        name: "{{ item }}"
+        state: "present"
+      loop:
+        - "etherwake"
+        - "ethtool"
+    - name: "verify wol"
+      ansible.builtin.shell: 
+        executable: /bin/bash
+        cmd: "ethtool {{ net_dev }} | egrep 'Supports Wake-on:.*' | sed -E 's/Supports Wake-on:\\s+(.*)/\\1/'"
+      register: wol_flags
+    - name: fail if no wol
+      fail:
+        msg: "nic does not support wol"
+      when: '"g" not in wol_flags.stdout'
+    - name: "enable wol"
+      ansible.builtin.shell: 
+        executable: /bin/bash
+        cmd: "ethtool {{ net_dev }} -s wol g"
+    - name: deploy wol service
+      copy:
+        src: "{{ playbook_dir }}/../../{{svc_file}}"
+        dest: "/{{ svc_file }}" 
+        owner: root
+        group: root
+        mode: 0644
+    - name: set device
+      ansible.builtin.replace:
+        path: "/{{ svc_file }}"
+        regexp: '_ETH_DEV_'
+        replace: "{{ net_dev }}"
+    - name: reload systemd configs
+      ansible.builtin.systemd_service:
+        daemon_reload: true
+    - name: "Enable wol.service"
+      ansible.builtin.systemd_service:
+        name: "wol.service"
+        enabled: true
+        masked: false
+        state: started

@@ -1,3 +1,8 @@
+# https://www.voxfor.com/how-to-enable-rdp-access-on-ubuntu-24-using-xrdp/
+# https://askubuntu.com/questions/1524884/how-to-make-polkit-work-with-xrdp
+# https://github.com/neutrinolabs/xrdp/issues/2542
+# https://github.com/flatpak/xdg-desktop-portal/issues/986
+# 
 ---
 - name: "install xrdp"
   hosts: "all"
@@ -11,6 +16,12 @@
       apt:
         name: "xrdp"
         state: "present"
+    - name: "remove conflicting package"
+      apt:
+        name: "{{ item }}"
+        state: "absent"
+      loop:
+        - "xdg-desktop-portal-gnome"
     - name: deploy polkit files
       copy:
         src: "{{ item }}"
@@ -20,3 +31,12 @@
         mode: 0755
       with_fileglob:
         - "{{ playbook_dir }}/../../etc/polkit-1/localauthority/50-local.d/*"
+    - name: "Enable xrdp"
+      ansible.builtin.systemd_service:
+        name: "xrdp"
+        enabled: true
+        masked: false
+    - name: "start xrdp"
+      ansible.builtin.systemd_service:
+        name: "xrdp"
+        state: started
