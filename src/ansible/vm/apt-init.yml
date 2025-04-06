@@ -4,6 +4,8 @@
 - name: "initialize packages for vm"
   hosts: "all"
   become: true
+  vars:
+    exclude_file: /var/lib/AccountsService/users/ansible 
   tasks:
     - name: "Update apt repo and cache."
       apt:
@@ -15,16 +17,18 @@
         state: "present"
       loop:
         - "snapd"
-        - "gdm3"
-        - "gnome-session" 
-        - "gnome-terminal"
+        - "ubuntu-desktop-minimal"
         - "update-manager" 
         - "hardinfo" 
         - "nautilus" 
         - "gedit"
+        - "zerofree"
+        - "make"
+        - "gcc"
     - name: "Install snap deps"
       community.general.snap:
         name:
+          - "snap-store"
           - "firefox"
     - name: "Remove unused packages"
       ansible.builtin.apt:
@@ -39,6 +43,7 @@
         - "modemmanager" 
         - "wpasupplicant" 
         - "avahi-daemon"
+        - "xdg-desktop-portal-gnome"
     - name: "Upgrade all packages on servers."
       apt:
         upgrade: "dist"
@@ -59,6 +64,14 @@
         - "suspend.target"
         - "hibernate.target"
         - "hybrid-sleep.target"
+    # https://askubuntu.com/questions/92349/how-do-i-hide-a-particular-user-from-the-login-screen
+    - name: deploy user exclude file
+      copy:
+        src: "{{ playbook_dir }}/../..{{ exclude_file }}"
+        dest: "{{ exclude_file }}" 
+        owner: root
+        group: root
+        mode: 0600
     - name: "Check if a reboot is needed on all servers."
       stat:
         path: "/var/run/reboot-required"

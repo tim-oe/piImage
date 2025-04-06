@@ -38,6 +38,7 @@ autoinstall:
     - gnupg
     - gpg
     - wget
+    - cifs-utils
 
   ssh:
     install-server: true
@@ -82,7 +83,7 @@ autoinstall:
       # pci mounted nic  
       enp:
         match:
-          name: enp*
+          name:  enp1*
         dhcp4: true
 
   # format drive using defaults

@@ -318,6 +318,13 @@ tasks.register('mgrInit', GradleBuild) {
     tasks = ['playbook']
 }
 
+tasks.register('kubeCtl', GradleBuild) {
+    description = 'install kubectl'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/apps/kube.yml']
+    tasks = ['playbook']
+}
+
 tasks.register('kubeConfig', GradleBuild) {
     description = 'update kube config from controller node'
     group = "ansible"

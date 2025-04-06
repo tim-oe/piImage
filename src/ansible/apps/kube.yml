@@ -1,0 +1,47 @@
+---
+- name: "install kubectl"
+  hosts: "all"
+  become: true
+  vars:
+    kube_ver: "v1.32"
+  tasks:
+    - name: "Update apt repo and cache."
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+    - name: "install deps"
+      apt:
+        name: "{{ item }}"
+        state: "present"
+      loop:
+        - "apt-transport-https"
+        - "ca-certificates"
+        - "gnupg"
+        - "gpg"
+    - name: "add and sign kubectl repo"
+      block:
+        - name: "get repo key"
+          ansible.builtin.get_url:
+            url: "https://pkgs.k8s.io/core:/stable:/{{ kube_ver }}/deb/Release.key"
+            dest: "/tmp/kubectl.key"
+            mode: "0644"
+            force: true
+        - name: "sign key"
+          command:
+            "bash -c 'cat /tmp/kubectl.key | gpg --dearmor --yes --output /usr/share/keyrings/kubernetes-apt-keyring.gpg'"
+        - name: "apt source"
+          ansible.builtin.apt_repository:
+            repo:
+              "deb [arch=amd64 signed-by=/usr/share/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/{{ kube_ver }}/deb/ /" 
+            filename: "kubernetes"
+            state: "present"
+            update_cache: true
+    - name: "Update apt added repo and cache."
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+    - name: "apt install kubectl"
+      apt:
+        name: "kubectl"
+        install_recommends: true
+        state: "present"
