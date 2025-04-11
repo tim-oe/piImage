@@ -1,0 +1,111 @@
+# https://docs.ansible.com/ansible/latest/collections/community/general/filesystem_module.html
+# https://docs.ansible.com/ansible/latest/collections/ansible/posix/mount_module.html
+# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/find_module.html
+# https://stackoverflow.com/questions/69947414/ansible-check-if-disk-is-mounted-if-not-format-it
+# https://docs.ansible.com/ansible/latest/collections/community/general/parted_module.html
+---
+- name: "setup raid storage"
+  hosts: "all"
+  become: true
+  vars:
+    blk_dev: "/dev/md0"
+    fs_type: "ext4"
+    folder: "/mnt/raid"
+    longhorn_folder: "/var/lib/longhorn"
+    docker_folder: "/var/lib/docker"
+    kvm_folder: "/var/lib/libvirt"
+    rancher_folder: "/var/lib/rancher"
+  tasks:
+    - name: "Create mount if it does not exist"
+      ansible.builtin.file:
+        path: "{{ folder }}"
+        state: "directory"
+        mode: "0777"
+    - name: "Fetch the UUID of {{ blk_dev }}"
+      command: "blkid -s UUID -o value {{ blk_dev }}"
+      changed_when: false
+      register: blk_uuid
+    - name: "Mount {{ blk_dev }} by UUID"
+      ansible.posix.mount:
+        path: "{{ folder }}"
+        src: UUID={{ blk_uuid.stdout }}
+        fstype: "{{ fs_type }}"
+        opts: defaults,nofail,discard
+        passno: 2
+        state: mounted
+    - name: "reload fstab"
+      command: "systemctl daemon-reload"
+    - name: "mount"
+      command: "mount -a"
+    - name: "Create longhorn folder if it does not exist"
+      ansible.builtin.file:
+        path: "{{ longhorn_folder }}"
+        state: "directory"
+        mode: "0777"
+    - name: "Create longhorn link if it does not exist"
+      ansible.builtin.file:
+        path: "{{ folder }}/longhorn"
+        state: "directory"
+        mode: "0777"
+    - name: "bind longhorn folder"
+      ansible.posix.mount:
+        path: "{{ longhorn_folder }}"
+        src: "{{ folder }}/longhorn"
+        opts: bind
+        state: mounted
+        fstype: none
+    - name: "Create docker folder if it does not exist"
+      ansible.builtin.file:
+        path: "{{ docker_folder }}"
+        state: "directory"
+        mode: "0777"
+    - name: "Create docker link if it does not exist"
+      ansible.builtin.file:
+        path: "{{ folder }}/docker"
+        state: "directory"
+        mode: "0777"
+    - name: "bind docker folder"
+      ansible.posix.mount:
+        path: "{{ docker_folder }}"
+        src: "{{ folder }}/docker"
+        opts: bind
+        state: mounted
+        fstype: none
+    - name: "Create kvm folder if it does not exist"
+      ansible.builtin.file:
+        path: "{{ kvm_folder }}"
+        state: "directory"
+        mode: "0777"
+    - name: "Create kvm link if it does not exist"
+      ansible.builtin.file:
+        path: "{{ folder }}/libvirt"
+        state: "directory"
+        mode: "0777"
+    - name: "bind kvm folder"
+      ansible.posix.mount:
+        path: "{{ kvm_folder }}"
+        src: "{{ folder }}/libvirt"
+        opts: bind
+        state: mounted
+        fstype: none
+    - name: "Create rancher folder if it does not exist"
+      ansible.builtin.file:
+        path: "{{ rancher_folder }}"
+        state: "directory"
+        mode: "0777"
+    - name: "Create rancher link if it does not exist"
+      ansible.builtin.file:
+        path: "{{ folder }}/rancher"
+        state: "directory"
+        mode: "0777"
+    - name: "bind rancher folder"
+      ansible.posix.mount:
+        path: "{{ rancher_folder }}"
+        src: "{{ folder }}/rancher"
+        opts: bind
+        state: mounted
+        fstype: none
+    - name: "reload fstab"
+      command: "systemctl daemon-reload"
+    - name: "mount"
+      command: "mount -a"

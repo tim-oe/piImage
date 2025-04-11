@@ -12,76 +12,7 @@
         name: "{{ item }}"
         state: "present"
       loop:
-        - "curl"
-        - "gnupg"
-        - "gpg"
-        - "wget"
         - "snapd"
-    - name: "add and sign chrome repo"
-      block:
-        - name: "chrome repo key"
-          ansible.builtin.get_url:
-            url: "https://dl-ssl.google.com/linux/linux_signing_key.pub"
-            dest: "/tmp/google.pub"
-            mode: "0644"
-            force: true
-        - name: "chrome sign key"
-          command:
-            "bash -c 'gpg --no-default-keyring --keyring /etc/apt/keyrings/google-chrome.gpg\
-            \ --import /tmp/google.pub'"
-        - name: "chrome apt source"
-          ansible.builtin.apt_repository:
-            repo:
-              "deb [arch=amd64 signed-by=/etc/apt/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/\
-              \ stable main"
-            filename: "google-chrome"
-            state: "present"
-            update_cache: true
-    - name: "add and sign wine repo"
-      block:
-        - name: "wine repo key"
-          ansible.builtin.get_url:
-            url: "https://dl.winehq.org/wine-builds/winehq.key"
-            dest: "/etc/apt/keyrings/winehq-archive.key"
-            mode: "0644"
-            force: true
-        - name: "wine repo source"
-          ansible.builtin.get_url:
-            url:
-              "https://dl.winehq.org/wine-builds/ubuntu/dists/{{ ansible_distribution_release\
-              \ }}/winehq-{{ ansible_distribution_release }}.sources"
-            dest: "/etc/apt/sources.list.d/winehq-{{ ansible_distribution_release }}.sources"
-            mode: "0644"
-            force: true
-        - name: "Update apt repo and cache."
-          apt:
-            update_cache: true
-            cache_valid_time: 3600
-    - name: "add and sign virtualbox repo"
-      block:
-        - name: "virtualbox repo key"
-          ansible.builtin.get_url:
-            url: "https://www.virtualbox.org/download/oracle_vbox_2016.asc"
-            dest: "/tmp/oracle_vbox_2016.asc"
-            mode: "0644"
-            force: true
-        - name: "virtualbox sign key"
-          command:
-            "bash -c 'cat /tmp/oracle_vbox_2016.asc | gpg --dearmor --yes --output\
-            \ /usr/share/keyrings/oracle-virtualbox-2016.gpg'"
-        - name: "virtualbox apt source"
-          ansible.builtin.apt_repository:
-            repo:
-              "deb [arch=amd64 signed-by=/usr/share/keyrings/oracle-virtualbox-2016.gpg]\
-              \ http://download.virtualbox.org/virtualbox/debian {{ ansible_distribution_release\
-              \ }} contrib"
-            filename: "virtualbox"
-            state: "present"
-            update_cache: true
-    - name: "Update apt added repo and cache."
-      apt:
-        update_cache: true
-        cache_valid_time: 3600
     - name: "apt install deps"
       apt:
         name: "{{ item }}"
@@ -90,9 +21,7 @@
       loop:
         - "filezilla"
         - "gnome-tweaks"
-        - "google-chrome-stable"
         - "gparted"
-        - "htop"
         - "libreoffice-gnome"
         - "libreoffice-calc"
         - "libreoffice-writer"
@@ -102,8 +31,8 @@
         - "putty-tools"
         - "remmina"
         - "shutter"
-        - "virtualbox-7.0"
         - "xrdp"
+        - "nvme-cli"
     - name: "get puttygen.exe"
       ansible.builtin.get_url:
         url: "https://the.earth.li/~sgtatham/putty/latest/w64/puttygen.exe"
@@ -131,7 +60,6 @@
     - name: "Install snap deps"
       community.general.snap:
         name:
-          - "dbeaver-ce"
           - "notepad-plus-plus"
           - "simple-scan"
           - "spotify"

@@ -59,3 +59,4 @@ I used [sdkman](https://sdkman.io/) to setup java and gradle
     - [blog](https://www.kevsrobots.com/blog/telegraf-on-pi.html)
     - [video](https://www.youtube.com/watch?v=CrWh34bQK7M)
 - [unattended-upgrade](https://wiki.debian.org/UnattendedUpgrades)
+- ```WARN[0000] Unable to read /etc/rancher/k3s/k3s.yaml, please start server with --write-kubeconfig-mode or --write-kubeconfig-group to modify kube config permissions```

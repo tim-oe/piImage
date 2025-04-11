@@ -192,6 +192,13 @@ tasks.register('dtInit', GradleBuild) {
     tasks = ['playbook']
 }
 
+tasks.register('dtMount', GradleBuild) {
+    description = 'run ansible desktop init script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/desktop/raid-mnt.yml']
+    tasks = ['playbook']
+}
+
 tasks.register('docker', GradleBuild) {
     description = 'run ansible docker script'
     group = "ansible"

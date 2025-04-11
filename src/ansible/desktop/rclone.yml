@@ -4,8 +4,6 @@
 - name: "install rclone cli"
   hosts: "all"
   become: true
-  vars:
-    ver: "v1.68.2"
   tasks:
     - name: "add go repo"
       ansible.builtin.apt_repository:
@@ -16,43 +14,23 @@
         cache_valid_time: 3600
     - name: "install"
       apt:
-        name: "golang-go"
+        name: "{{ item }}"
         state: "present"
-    - name: remove symlink
-      ansible.builtin.file:
-        path: /opt/rclone
-        state: absent
-    - name: find old sonar dirs
-      find:
-        paths: /opt/
-        patterns: "rclone*"
-        use_regex: true
-        file_type: directory
-      register: folders_to_delete
-    - name: Delete old sonar dirs
-      file:
-        path: "{{ item.path }}"
-        state: absent
-      with_items: "{{ folders_to_delete.files }}"
-      become: yes
-    - name: "download n install"
-      ansible.builtin.unarchive:
-        src: "https://downloads.rclone.org/{{ ver }}/rclone-{{ ver }}-linux-amd64.zip"
-        dest: /opt
-        owner: root
-        group: root
-        mode: 0755
-        remote_src: yes
-    - name: link
-      ansible.builtin.file:      
-        src: "/opt/rclone-{{ ver }}-linux-amd64"
-        dest: /opt/rclone
-        owner: root
-        group: root
-        state: link
-        mode: 0755
+      loop:
+        - "golang-go"
+        - "unzip"
+    - name: "get rclone installer"
+      ansible.builtin.get_url:
+        url: "https://rclone.org/install.sh"
+        dest: "/tmp/rclone-install.sh"
+        mode: "0700"
+        force: true
+    - name: "install rclone"
+      ansible.builtin.shell: 
+        executable: /bin/bash
+        cmd: "/tmp/rclone-install.sh"
     # https://www.jeffgeerling.com/blog/2017/add-path-global-path-ansible
-    - name: update path.
-      copy:
-        dest: /etc/profile.d/rclone-path.sh
-        content: 'PATH=$PATH:/opt/rclone'
+    # - name: update path.
+    #   copy:
+    #     dest: /etc/profile.d/rclone-path.sh
+    #     content: 'PATH=$PATH:/opt/rclone'

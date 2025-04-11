@@ -18,7 +18,7 @@
     config_file: /etc/netplan/60-kvm-bridge.yaml 
     bridge_file: /tmp/kvm-host-bridge.xml 
     user_name: tcronin
-    net_dev: enp2s0
+    net_dev: enp1s0
     net_dev_id: enp
   tasks:
     - name: "gather service facts"

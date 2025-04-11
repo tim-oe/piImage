@@ -25,6 +25,7 @@
         - "zerofree"
         - "make"
         - "gcc"
+        - "qemu-guest-agent"
     - name: "Install snap deps"
       community.general.snap:
         name:

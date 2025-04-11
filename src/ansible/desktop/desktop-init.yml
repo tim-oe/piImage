@@ -2,6 +2,9 @@
 - name: "initialize packages for tec-desktop"
   hosts: "all"
   become: true
+  vars:
+    blk_dev: "/dev/md0"
+    mdadm_conf: "/etc/mdadm/mdadm.conf"
   tasks:
     - name: "Update apt repo and cache."
       apt:
@@ -12,36 +15,20 @@
         name: "{{ item }}"
         state: "present"
       loop:
-        - "curl"
-        - "gnupg"
-        - "gpg"
-        - "wget"
-        - "snapd"
-    - name: "Update apt added repo and cache."
-      apt:
-        update_cache: true
-        cache_valid_time: 3600
-    - name: "apt install deps"
-      apt:
-        name: "{{ item }}"
-        install_recommends: true
-        state: "present"
-      loop:
-        - "mdadm"
-        - "cifs-utils"
-        - "gnome-tweaks"
-        - "gparted"
-        - "htop"
-        - "p7zip-full"
+        - "smartmontools"
+        - "nvme-cli"        
     - name: "Remove unused packages"
       ansible.builtin.apt:
         name: "{{ item }}"
         state: "absent"
       loop:
         - "ed"
-        - "thunderbird"
         - "vim-tiny"
         - "vim-common"
+        - "network-manager" 
+        - "modemmanager" 
+        - "wpasupplicant" 
+        - "avahi-daemon"
     - name: "Upgrade all packages on servers."
       apt:
         upgrade: "dist"
