@@ -1,0 +1,76 @@
+# https://arnaudr.io/2020/08/24/send-emails-from-your-terminal-with-msmtp/
+# https://askubuntu.com/questions/878288/msmtp-cannot-write-to-var-log-msmtp-msmtp-log
+# https://arnaudr.io/2020/08/24/send-emails-from-your-terminal-with-msmtp/
+# https://marlam.de/msmtp/msmtp.html#Configuration-files
+---
+- name: "install msmtp"
+  hosts: "all"
+  become: true
+  vars:
+    config_file: "/etc/msmtprc"
+  tasks:
+    - name: get host
+      ansible.builtin.set_fact:
+        smtp_host: "{{ lookup('env', 'SMTP_HOST') }}"
+      delegate_to: localhost
+    - name: get user
+      ansible.builtin.set_fact:
+        smtp_user: "{{ lookup('env', 'SMTP_USER') }}"
+      delegate_to: localhost
+    - name: get pwd
+      ansible.builtin.set_fact:
+        smtp_pwd: "{{ lookup('env', 'SMTP_PWD') }}"
+      delegate_to: localhost
+    - name: "install deps"
+      apt:
+        name: "{{ item }}"
+        state: "present"
+      loop:
+        - "msmtp"
+        - "msmtp-mta"
+    - name: Remove old msmtprc
+      ansible.builtin.file:
+        path: "{{ config_file }}"
+        state: absent
+    - name: deploy msmtprc
+      copy:
+        src: "{{ playbook_dir }}/../../etc/msmtprc"
+        dest: "{{ config_file }}"
+        owner: root
+        group: msmtp
+        mode: 0640
+    - name: "set host"
+      ansible.builtin.replace:
+        path: "{{ config_file }}"
+        regexp: "__HOST__"
+        replace: "{{ smtp_host }}"
+    - name: "set user"
+      ansible.builtin.replace:
+        path: "{{ config_file }}"
+        regexp: "__USER__"
+        replace: "{{ smtp_user }}"
+    - name: "set pwd"
+      ansible.builtin.replace:
+        path: "{{ config_file }}"
+        regexp: "__PWD__"
+        replace: "{{ smtp_pwd }}"
+    - name: "add nobody to mail"
+      ansible.builtin.shell: 
+        executable: /bin/bash
+        cmd: "sudo adduser nobody mail"
+    - name: "remove apparmor profile"
+      ansible.builtin.file:
+        path: "/etc/apparmor.d/usr.bin.msmtp"
+        state: "absent"
+    - name: "restart appArmor"
+      systemd:
+        state: "restarted"
+        daemon_reload: true
+        name: "apparmor.service"
+    - name: "log folder"
+      ansible.builtin.file:
+        path: "/var/log/msmtp"
+        state: "directory"
+        owner: msmtp
+        group: mail
+        mode: "0777"

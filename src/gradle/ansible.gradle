@@ -213,6 +213,20 @@ tasks.register('kvm', GradleBuild) {
     tasks = ['playbook']
 }
 
+tasks.register('msmtp', GradleBuild) {
+    description = 'run ansible msmtp script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/apps/msmtp.yml']
+    tasks = ['playbook']
+}
+
+tasks.register('smart', GradleBuild) {
+    description = 'run ansible smart script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/apps/smart.yml']
+    tasks = ['playbook']
+}
+
 tasks.register('wol', GradleBuild) {
     description = 'run ansible wake on lan script'
     group = "ansible"

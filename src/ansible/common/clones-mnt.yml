@@ -3,9 +3,9 @@
   hosts: "all"
   become: true
   tasks:
-    - name: "Ansible apt install cifs-utils"
+    - name: "clones mount deps"
       apt:
-        name: "cifs-utils"
+        name: "nfs-cleant"
         state: "present"
     - name: "create mount point"
       file:
@@ -15,9 +15,9 @@
     - name: "add mount"
       ansible.posix.mount:
         path: "/mnt/clones"
-        src: "//tec-nas/clones"
+        src: "tec-truenas:/mnt/main/clones"
         fstype: "cifs"
-        opts: "guest,iocharset=utf8,file_mode=0777,dir_mode=0777,noperm"
+        opts: "defaults"
         state: "present"
     - name: "reload fstab"
       command: "systemctl daemon-reload"

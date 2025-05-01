@@ -1,0 +1,61 @@
+# https://unix.stackexchange.com/questions/92655/monitor-disk-health-using-smartd-in-smartmontools-on-a-high-availability-softw/92663#92663
+# https://linux.die.net/man/5/smartd.conf
+# email test
+# /dev/sda -H -m tecronin@gmail.com -M test -M exec /usr/share/smartmontools/msmtp_mailer.sh
+# this relies on the msmtp being installed 
+- name: "install smart tools"
+  hosts: "all"
+  become: true
+  vars:
+    config_file: "/etc/smartd.conf"
+    mail_addr: "tecronin@gmail.com"
+    mailer_file: "/usr/share/smartmontools/msmtp_mailer.sh"
+    drives:
+      - "/dev/sda" 
+      - "/dev/sdb" 
+      - "/dev/sdc" 
+      - "/dev/sdd" 
+      - "/dev/sde" 
+  tasks:
+    - name: "install deps"
+      apt:
+        name: "{{ item }}"
+        state: "present"
+      loop:
+        - "nvme-cli"
+        - "smartmontools"
+    - name: "enable smart monitoring"
+      ansible.builtin.shell: 
+        executable: /bin/bash
+        cmd: "smartctl -s on -S on {{ item }}"
+      loop: "{{ drives }}"
+    - name: deploy mail script
+      copy:
+        src: "{{ playbook_dir }}/../..{{ mailer_file }}"
+        dest: "{{ mailer_file }}"
+        owner: root
+        group: root
+        mode: 0755
+    - name: comment out devicesscan
+      ansible.builtin.lineinfile:
+        path: "{{ config_file }}"
+        regexp: '^(DEVICESCAN.*)$'
+        line: '#\1'
+        backrefs: yes
+        backup: true
+    - name: comment out devicesscan
+      ansible.builtin.lineinfile:
+        path: "{{ config_file }}"
+        line: "{{ item }} -a -I 194 -W 4,45,55 -R 5 -s S/../../{{drive_idx + 1}}/01 -m {{ mail_addr }} -M exec {{ mailer_file }}"
+      loop: "{{ drives }}"
+      loop_control:
+        index_var: drive_idx
+    - name: "enable and start smartmontools"
+      systemd:
+        enabled: true
+        daemon_reload: true
+        name: "smartmontools.service"
+    - name: "enable and start smartd"
+      systemd:
+        state: "restarted"
+        name: "smartd.service"
