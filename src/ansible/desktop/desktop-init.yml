@@ -15,8 +15,7 @@
         name: "{{ item }}"
         state: "present"
       loop:
-        - "smartmontools"
-        - "nvme-cli"        
+        - "nano"
     - name: "Remove unused packages"
       ansible.builtin.apt:
         name: "{{ item }}"

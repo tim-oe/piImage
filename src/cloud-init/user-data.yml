@@ -38,6 +38,7 @@ autoinstall:
     - gnupg
     - gpg
     - wget
+    - fwupd
 
   ssh:
     install-server: true

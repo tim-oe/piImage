@@ -1,4 +1,5 @@
 # https://unix.stackexchange.com/questions/92655/monitor-disk-health-using-smartd-in-smartmontools-on-a-high-availability-softw/92663#92663
+# https://linuxconfig.org/how-to-configure-smartd-and-be-notified-of-hard-disk-problems-via-email
 # https://linux.die.net/man/5/smartd.conf
 # email test
 # /dev/sda -H -m tecronin@gmail.com -M test -M exec /usr/share/smartmontools/msmtp_mailer.sh
@@ -8,9 +9,13 @@
   become: true
   vars:
     config_file: "/etc/smartd.conf"
-    mail_addr: "tecronin@gmail.com"
+    env_file: "/etc/default/smartmontools"
     mailer_file: "/usr/share/smartmontools/msmtp_mailer.sh"
     drives:
+      # laptop    
+      #- "/dev/nvme0n1"
+      #- "/dev/nvme1n1"
+      # desktop
       - "/dev/sda" 
       - "/dev/sdb" 
       - "/dev/sdc" 
@@ -36,6 +41,10 @@
         owner: root
         group: root
         mode: 0755
+    - name: get email
+      ansible.builtin.set_fact:
+        mail_addr: "{{ lookup('env', 'SMTP_USER') }}"
+      delegate_to: localhost
     - name: comment out devicesscan
       ansible.builtin.lineinfile:
         path: "{{ config_file }}"
@@ -50,6 +59,15 @@
       loop: "{{ drives }}"
       loop_control:
         index_var: drive_idx
+    - name: "set email address"
+      blockinfile:
+        state: "present"
+        insertafter: "EOF"
+        dest: "{{ env_file }}"
+        marker: "# {mark} _sender_email"
+        append_newline: true
+        prepend_newline: true
+        content: "SMARTD_ADDRESS={{ mail_addr }}\n"
     - name: "enable and start smartmontools"
       systemd:
         enabled: true

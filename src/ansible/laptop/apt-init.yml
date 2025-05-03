@@ -7,12 +7,6 @@
       apt:
         update_cache: true
         cache_valid_time: 3600
-    - name: "Ansible apt install base deps"
-      apt:
-        name: "{{ item }}"
-        state: "present"
-      loop:
-        - "snapd"
     - name: "apt install deps"
       apt:
         name: "{{ item }}"
@@ -21,6 +15,8 @@
       loop:
         - "filezilla"
         - "gnome-tweaks"
+        - "gnome-software"
+        - "gnome-firmware"
         - "gparted"
         - "libreoffice-gnome"
         - "libreoffice-calc"
@@ -32,7 +28,7 @@
         - "remmina"
         - "shutter"
         - "xrdp"
-        - "nvme-cli"
+        - "snapd"
     - name: "get puttygen.exe"
       ansible.builtin.get_url:
         url: "https://the.earth.li/~sgtatham/putty/latest/w64/puttygen.exe"

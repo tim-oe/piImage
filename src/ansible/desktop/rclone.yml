@@ -29,8 +29,3 @@
       ansible.builtin.shell: 
         executable: /bin/bash
         cmd: "/tmp/rclone-install.sh"
-    # https://www.jeffgeerling.com/blog/2017/add-path-global-path-ansible
-    # - name: update path.
-    #   copy:
-    #     dest: /etc/profile.d/rclone-path.sh
-    #     content: 'PATH=$PATH:/opt/rclone'

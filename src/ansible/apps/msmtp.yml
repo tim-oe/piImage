@@ -2,6 +2,7 @@
 # https://askubuntu.com/questions/878288/msmtp-cannot-write-to-var-log-msmtp-msmtp-log
 # https://arnaudr.io/2020/08/24/send-emails-from-your-terminal-with-msmtp/
 # https://marlam.de/msmtp/msmtp.html#Configuration-files
+# https://help.ubuntu.com/community/AppArmor#Disable_one_profile
 ---
 - name: "install msmtp"
   hosts: "all"
@@ -54,14 +55,15 @@
         path: "{{ config_file }}"
         regexp: "__PWD__"
         replace: "{{ smtp_pwd }}"
-    - name: "add nobody to mail"
+    - name: disable apparmor profile
+      ansible.builtin.file:
+        src: '/etc/apparmor.d/usr.bin.msmtp'
+        dest: '/etc/apparmor.d/disable/usr.bin.msmtp'
+        state: link
+    - name: "reload parser"
       ansible.builtin.shell: 
         executable: /bin/bash
-        cmd: "sudo adduser nobody mail"
-    - name: "remove apparmor profile"
-      ansible.builtin.file:
-        path: "/etc/apparmor.d/usr.bin.msmtp"
-        state: "absent"
+        cmd: "apparmor_parser -r /etc/apparmor.d/usr.bin.msmtp"
     - name: "restart appArmor"
       systemd:
         state: "restarted"
