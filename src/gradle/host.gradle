@@ -14,3 +14,39 @@ tasks.register('resetHost') {
         }
     }
 }
+
+tasks.register('wakeKubeNode1') {
+    description = 'wake tec-kube-node1 via wakeonlan'
+    group = "hosts"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                    "sudo etherwake 98:b7:85:21:bc:5e"
+        }
+    }
+}
+
+tasks.register('wakeKubeNode2') {
+    description = 'wake tec-kube-node2 via wakeonlan'
+    group = "hosts"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                    "sudo etherwake 98:b7:85:21:b2:5c"
+        }
+    }
+}
+
+tasks.register('wakeDesktop') {
+    description = 'wake desktop via wakeonlan'
+    group = "hosts"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                    "sudo etherwake 80:ee:73:f0:a9:a9"
+        }
+    }
+}

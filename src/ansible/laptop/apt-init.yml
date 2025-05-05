@@ -1,3 +1,5 @@
+# laptop with gnome desktop
+# todo base os should be base on server cloud-init image
 ---
 - name: "initialize packages for laptop"
   hosts: "all"
@@ -18,6 +20,10 @@
         - "gnome-software"
         - "gnome-firmware"
         - "gparted"
+        - "gpart"
+        - "dosfstools"
+        - "mtools"
+        - "zerofree"
         - "libreoffice-gnome"
         - "libreoffice-calc"
         - "libreoffice-writer"
