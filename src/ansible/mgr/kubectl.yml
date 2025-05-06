@@ -4,12 +4,13 @@
   become: true
   vars:
     config_file: /home/tcronin/.kube/config
+    kube_master_host: tec-desktop
   tasks:
     - name: get controller config
       ansible.builtin.slurp:
         src: /etc/rancher/k3s/k3s.yaml
       register: kube_config
-      delegate_to: tec-kube-pi-ctlr
+      delegate_to: "{{ kube_master_host }}"
     - name: "set file access"
       ansible.builtin.file:
         path: "{{ config_file }}"
@@ -25,4 +26,4 @@
       ansible.builtin.replace:
         path: "{{ config_file }}"
         regexp: 'server: https://.*:6443'
-        replace: 'server: https://tec-kube-pi-ctlr:6443'
+        replace: 'server: https://{{ kube_master_host }}:6443'
