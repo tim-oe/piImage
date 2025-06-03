@@ -17,7 +17,10 @@ OSVER=`cat /etc/os-release | egrep -o  PRETTY_NAME=.* | sed -E 's/PRETTY_NAME=\"
 PIVER=`cat /proc/cpuinfo | egrep Model.*:.* | sed -E 's/Model\s+:\s+(.*)/\1/'`
 MEM=`free -gh --si | egrep -o Mem:.* | sed -E 's/\Mem:\s+([0-9\.]+[GMK]?)\s+([0-9\.]+[GMK]?)\s+([0-9\.]+[GMK]?)\s+([0-9\.]+[GMK]?)\s+([0-9\.]+[GMK]?)\s+([0-9\.]+[GMK]?)/total: \1 used: \2 free: \3/'`
 DISK=`df -h / | egrep -o '/dev/.*' | sed -E 's/\/dev\/\w+\s+([0-9]+[GM]?)\s+([0-9\.]+[GM]?)\s+([0-9\.]+[GM]?).*/total: \1 used: \2 free: \3/'`
-UPTIME=`printf "%d days, %02dh%02dm%02ds" "$days" "$hours" "$mins" "$secs"`
+UPTIME=`printf "%d days, %02d:%02d:%02d" "$days" "$hours" "$mins" "$secs"`
+PROC_CNT=`ps -e | wc -l`
+INT_IP_ADDR=`hostname -I | /usr/bin/cut -d " " -f 1`
+EXT_IP_ADDR=`wget -q -O - http://icanhazip.com/ | tail`
 
 # get the load averages
 read one five fifteen rest < /proc/loadavg
@@ -36,8 +39,8 @@ echo "    '~ .~~~. ~'"
 echo "        '~'"
 echo "$(tput sgr0)"
 echo "$(tput setaf 2)
-`date +"%A, %e %B %Y, %r"`
-`uname -srmo`
+`date +"%A, %e %B %Y, %R %Z"`
+`uname -rm`
 
 $(tput sgr0)- Uptime.............: ${UPTIME}
 $(tput sgr0)- OS.................: ${OSVER}
@@ -45,7 +48,7 @@ $(tput sgr0)- PI.................: ${PIVER}
 $(tput sgr0)- Disk...............: ${DISK}
 $(tput sgr0)- Memory.............: ${MEM}
 $(tput sgr0)- Load Averages......: ${one}, ${five}, ${fifteen} (1, 5, 15 min)
-$(tput sgr0)- Running Processes..: `ps ax | wc -l | tr -d " "`
-$(tput sgr0)- IP Addresses.......: `hostname -I | /usr/bin/cut -d " " -f 1` and `wget -q -O - http://icanhazip.com/ | tail`
+$(tput sgr0)- Running Processes..: ${PROC_CNT}
+$(tput sgr0)- IP Addresses.......: ${INT_IP_ADDR}
 
 $(tput sgr0)"

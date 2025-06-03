@@ -5,6 +5,7 @@
   hosts: "all"
   become: true
   vars:
+    user: tcronin
     exclude_file: /var/lib/AccountsService/users/ansible 
   tasks:
     - name: "Update apt repo and cache."
@@ -73,6 +74,11 @@
         owner: root
         group: root
         mode: 0600
+    - name: adding existing user '{{ user }}' to group sudo
+      user:
+        name: "{{ user }}"
+        groups: vboxfs
+        append: yes
     - name: "Check if a reboot is needed on all servers."
       stat:
         path: "/var/run/reboot-required"

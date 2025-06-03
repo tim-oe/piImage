@@ -1,0 +1,48 @@
+# it also makes sure SSH is running
+# TODO check for netmanager is present...
+# https://askubuntu.com/questions/1217252/boot-process-hangs-at-systemd-networkd-wait-online/1501504#1501504
+---
+- name: "Hack systemd-networkd-wait-online to use eth0."
+  hosts: "all"
+  become: true
+  vars: 
+    svc: "systemd-networkd-wait-online"
+    device: enp2s0
+    # kvm bridge device
+    # device: kvmbr0
+  tasks:
+    - name: "Create override directory."
+      file:
+        owner: "root"
+        group: "root"
+        mode: "0755"
+        path: "/etc/systemd/system/{{ svc }}.service.d"
+        state: "directory"
+    - name: "Create override file."
+      community.general.ini_file:
+        dest: "/etc/systemd/system/{{ svc }}.service.d/override.conf"
+        owner: "root"
+        group: "root"
+        mode: 644
+        section: "Service"
+        option: "ExecStart"
+        value: ""
+        exclusive: false
+    - name: "Set exec start full command."
+      community.general.ini_file:
+        dest: "/etc/systemd/system/{{ svc }}.service.d/override.conf"
+        mode: 644
+        section: "Service"
+        option: "ExecStart"
+        value: "/usr/lib/systemd/{{ svc }} --interface={{ device }}"
+        exclusive: false
+    - name: "Gather service facts."
+      ansible.builtin.service_facts: null
+    - name: "Start and enable ssh."
+      systemd:
+        name: "ssh"
+        state: "started"
+        enabled: true
+      when:
+        "ansible_facts.services['ssh.service'] is defined and ansible_facts.services['ssh.service'].state\
+        \ != 'running'"

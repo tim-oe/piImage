@@ -24,6 +24,13 @@ tasks.register('debug', GradleBuild) {
     tasks = ['playbook']
 }
 
+tasks.register('fixWait', GradleBuild) {
+    description = 'fix wait online issue...'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/common/systemd-networkd-wait-online.yml']
+    tasks = ['playbook']
+}
+
 tasks.register('aptUpdate', GradleBuild) {
     description = 'run ansible apt update script'
     group = "ansible"
@@ -70,6 +77,20 @@ tasks.register('certbot', GradleBuild) {
     description = 'run ansible certbot script'
     group = "ansible"
     startParameter.projectProperties = ['ansible_playbook':'src/ansible/mgr/certbot.yml']
+    tasks = ['playbook']
+}
+
+tasks.register('nodejs', GradleBuild) {
+    description = 'run ansible nodejs script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/dev/nodejs.yml']
+    tasks = ['playbook']
+}
+
+tasks.register('vscode', GradleBuild) {
+    description = 'run ansible vscode script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/dev/vscode.yml']
     tasks = ['playbook']
 }
 

@@ -75,3 +75,18 @@ tasks.register('sdmBurn') {
         }
     }
 }
+
+tasks.register('sdWipe') {
+    description = 'wipe sd card'
+    group = 'sdm'
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c', "sudo wipefs --all --force ${smd_dev}?; sudo wipefs --all --force ${smd_dev}"
+        }
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c', "sudo dd if=/dev/urandom of=${smd_dev} bs=1M status=progress"
+        }
+    }
+}

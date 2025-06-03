@@ -1,0 +1,48 @@
+---
+- name: "install vscode"
+  hosts: "all"
+  become: true
+  tasks:
+    - name: "Update apt repo and cache."
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+    - name: "install deps"
+      apt:
+        name: "{{ item }}"
+        state: "present"
+      loop:
+        - "curl"
+        - "gnupg"
+        - "gpg"
+        - "wget"
+        - "apt-transport-https"
+    - name: "add and sign vscode repo"
+      block:
+        - name: "vscode repo key"
+          ansible.builtin.get_url:
+            url: "https://packages.microsoft.com/keys/microsoft.asc"
+            dest: "/tmp/microsoft.asc"
+            mode: "0644"
+            force: true
+        - name: "vscode sign key"
+          command:
+            "bash -c 'cat /tmp/microsoft.asc | gpg --dearmor --yes --output\
+            \ /usr/share/keyrings/microsoft.gpg'"
+        - name: "vscode apt source"
+          ansible.builtin.apt_repository:
+            repo:
+              "deb [arch=amd64,arm64,armhf signed-by=/usr/share/keyrings/microsoft.gpg]\
+              \ https://packages.microsoft.com/repos/code stable main"
+            filename: "vscode"
+            state: "present"
+            update_cache: true
+    - name: "Update apt added repo and cache."
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+    - name: "apt install vscode"
+      apt:
+        name: "code"
+        install_recommends: true
+        state: "present"

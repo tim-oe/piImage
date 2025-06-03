@@ -29,9 +29,11 @@ autoinstall:
   updates: all
 
   packages:
+    - cron
     - lshw
     - iputils-ping
     - net-tools
+    - parted
     - htop
     - nano
     - curl
@@ -83,7 +85,7 @@ autoinstall:
       # pci mounted nic  
       enp:
         match:
-          name:  enp1*
+          name:  enp*
         dhcp4: true
 
   # format drive using defaults

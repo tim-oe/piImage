@@ -5,7 +5,7 @@
   tasks:
     - name: "clones mount deps"
       apt:
-        name: "nfs-cleant"
+        name: "nfs-client"
         state: "present"
     - name: "create mount point"
       file:
@@ -16,7 +16,7 @@
       ansible.posix.mount:
         path: "/mnt/clones"
         src: "tec-truenas:/mnt/main/clones"
-        fstype: "cifs"
+        fstype: "nfs"
         opts: "defaults"
         state: "present"
     - name: "reload fstab"
