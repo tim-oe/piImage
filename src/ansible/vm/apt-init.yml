@@ -24,6 +24,7 @@
         - "nautilus" 
         - "gedit"
         - "zerofree"
+        - "bzip2"
         - "make"
         - "gcc"
         - "qemu-guest-agent"
@@ -41,7 +42,6 @@
         - "thunderbird"
         - "vim-tiny"
         - "vim-common"
-        - "network-manager" 
         - "modemmanager" 
         - "wpasupplicant" 
         - "avahi-daemon"
@@ -66,6 +66,8 @@
         - "suspend.target"
         - "hibernate.target"
         - "hybrid-sleep.target"
+        - "systemd-networkd-wait-online.service"
+        - "sssd.service"
     # https://askubuntu.com/questions/92349/how-do-i-hide-a-particular-user-from-the-login-screen
     - name: deploy user exclude file
       copy:
@@ -74,6 +76,10 @@
         owner: root
         group: root
         mode: 0600
+    - name: Ensure group "vboxfs" exists
+      ansible.builtin.group:
+        name: vboxfs
+        state: present
     - name: adding existing user '{{ user }}' to group sudo
       user:
         name: "{{ user }}"

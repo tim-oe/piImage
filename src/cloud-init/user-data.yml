@@ -33,6 +33,7 @@ autoinstall:
     - lshw
     - iputils-ping
     - net-tools
+    - ethtool
     - parted
     - htop
     - nano
