@@ -19,6 +19,7 @@ MEM=`free -gh --si | egrep -o Mem:.* | sed -E 's/\Mem:\s+([0-9\.]+[GMK]?)\s+([0-
 DISK=`df -h / | egrep -o '/dev/.*' | sed -E 's/\/dev\/\w+\s+([0-9]+[GM]?)\s+([0-9\.]+[GM]?)\s+([0-9\.]+[GM]?).*/total: \1 used: \2 free: \3/'`
 UPTIME=`printf "%d days, %02d:%02d:%02d" "$days" "$hours" "$mins" "$secs"`
 PROC_CNT=`ps -e | wc -l`
+KERNVER=`uname -rm`
 INT_IP_ADDR=`hostname -I | /usr/bin/cut -d " " -f 1`
 EXT_IP_ADDR=`wget -q -O - http://icanhazip.com/ | tail`
 
@@ -40,10 +41,10 @@ echo "        '~'"
 echo "$(tput sgr0)"
 echo "$(tput setaf 2)
 `date +"%A, %e %B %Y, %R %Z"`
-`uname -rm`
 
 $(tput sgr0)- Uptime.............: ${UPTIME}
 $(tput sgr0)- OS.................: ${OSVER}
+$(tput sgr0)- KERNAL.............: ${KERNVER}
 $(tput sgr0)- PI.................: ${PIVER}
 $(tput sgr0)- Disk...............: ${DISK}
 $(tput sgr0)- Memory.............: ${MEM}
