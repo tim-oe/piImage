@@ -1,0 +1,31 @@
+# 
+---
+- name: "eclipse j2ee install"
+  hosts: "all"
+  become: true
+  vars:
+    eclipse_url: "https://mirror.cs.odu.edu/eclipse/technology/epp/downloads/release/2025-06/R/eclipse-cpp-2025-06-R-linux-gtk-x86_64.tar.gz"
+    desktop_file: "/usr/share/applications/eclipse.desktop"
+    multiline: |
+      [Desktop Entry]
+      Name=Eclipse
+      Exec=/opt/eclipse/eclipse
+      Icon=/opt/eclipse/icon.xpm
+      Type=Application
+      Categories=Development;
+  tasks:
+    - name: "get package"
+      ansible.builtin.get_url:
+        url: "{{ eclipse_url }}"
+        dest: "/tmp/eclipse-j2ee.tar.gz"
+        mode: "0600"
+        force: true
+    - name: Extract
+      ansible.builtin.unarchive:
+        src: /tmp/eclipse-j2ee.tar.gz
+        dest: /opt
+        remote_src: yes
+    - name: "create desktop file"
+      copy:
+        dest: "{{ desktop_file }}"
+        content: "{{ multiline }}"

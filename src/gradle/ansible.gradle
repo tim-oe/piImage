@@ -31,6 +31,13 @@ tasks.register('aliases', GradleBuild) {
     tasks = ['playbook']
 }
 
+tasks.register('needrestart', GradleBuild) {
+    description = 'run ansible needrestart script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/common/needrestart.yml']
+    tasks = ['playbook']
+}
+
 tasks.register('fixWait', GradleBuild) {
     description = 'fix wait online issue...'
     group = "ansible"
@@ -98,6 +105,20 @@ tasks.register('vscode', GradleBuild) {
     description = 'run ansible vscode script'
     group = "ansible"
     startParameter.projectProperties = ['ansible_playbook':'src/ansible/dev/vscode.yml']
+    tasks = ['playbook']
+}
+
+tasks.register('cursor', GradleBuild) {
+    description = 'run ansible cursor script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/dev/cursor.yml']
+    tasks = ['playbook']
+}
+
+tasks.register('eclipse', GradleBuild) {
+    description = 'run ansible eclipse script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/dev/eclipse.yml']
     tasks = ['playbook']
 }
 
@@ -516,6 +537,21 @@ tasks.register('brutoof') {
     }
 }
 
+tasks.register('piinit') {
+    description = 'run ansible pi initialization playbook'
+    group = "ansible"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                    'ansible-playbook ' +
+                    '-i ' +
+                    "${target_host}, " +
+                    'src/ansible/pi/pi-init.yml'
+        }
+    }
+}
+
 tasks.register('clones') {
     description = 'run ansible clones mount script'
     group = "ansible"
@@ -606,4 +642,5 @@ tasks.register('piInit') {
     dependsOn 'ssh'
     dependsOn 'piSwap'
     dependsOn 'log2ram'
+    dependsOn 'piinit'
 }

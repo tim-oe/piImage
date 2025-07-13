@@ -1,0 +1,45 @@
+---
+- name: "cursor install"
+  hosts: "all"
+  become: true
+  vars:
+    # s3 link...
+    cursor_url: "https://downloads.cursor.com/production/031e7e0ff1e2eda9c1a0f5df67d44053b059c5df/linux/x64/Cursor-1.2.1-x86_64.AppImage"
+    cursor_file: 'Cursor.AppImage'
+    icon_url: "https://registry.npmmirror.com/@lobehub/icons-static-png/latest/files/dark/cursor.png"
+    desktop_file: "/usr/share/applications/cursor.desktop"
+    multiline: |
+      [Desktop Entry]
+      Name=Cursor
+      Exec=/usr/local/bin/Cursor.AppImage --no-sandbox
+      Icon=/usr/share/icons/cursor.png
+      Type=Application
+      Categories=Development;
+  tasks:
+    - name: "Update apt repo and cache."
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+    - name: "install cursor deps"
+      apt:
+        name: "{{ item }}"
+        state: "present"
+      loop:
+        - "curl"
+        - "libfuse2"
+    - name: "get cursor appimage"
+      ansible.builtin.get_url:
+        url: "{{ cursor_url }}"
+        dest: "/usr/local/bin/{{ cursor_file }}"
+        mode: "0755"
+        force: true
+    - name: "add icon"
+      ansible.builtin.get_url:
+        url: "{{ icon_url }}"
+        dest: "/usr/share/icons/cursor.png"
+        mode: "0666"
+        force: true
+    - name: "create cursor desktop file"
+      copy:
+        dest: "{{ desktop_file }}"
+        content: "{{ multiline }}"

@@ -5,11 +5,11 @@
   vars:
     config_file: "/etc/ssh/sshd_config.d/lockdown.conf"
     multiline: |
-          PubkeyAuthentication yes
-          PasswordAuthentication no
-          PermitRootLogin no
-          PermitEmptyPasswords no
-          ChallengeResponseAuthentication yes        
+      PubkeyAuthentication yes
+      PasswordAuthentication no
+      PermitRootLogin no
+      PermitEmptyPasswords no
+      ChallengeResponseAuthentication yes        
 
   tasks:
     - name: reset sshd config

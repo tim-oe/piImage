@@ -42,7 +42,8 @@ autoinstall:
     - gpg
     - wget
     - fwupd
-
+    - unattended-upgrades
+    
   ssh:
     install-server: true
     allow-pw: false

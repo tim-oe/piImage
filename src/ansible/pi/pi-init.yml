@@ -1,5 +1,5 @@
 ---
-- name: "initialize packages for desktop"
+- name: "initialize packages for pi"
   hosts: "all"
   become: true
   vars:
@@ -14,6 +14,8 @@
         state: "present"
       loop:
         - "nano"
+        - "unattended-upgrades"
+        - "needrestart"
     - name: "Remove unused packages"
       ansible.builtin.apt:
         name: "{{ item }}"

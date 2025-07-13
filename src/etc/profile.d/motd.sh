@@ -22,6 +22,8 @@ PROC_CNT=`ps -e | wc -l`
 KERNVER=`uname -rm`
 INT_IP_ADDR=`hostname -I | /usr/bin/cut -d " " -f 1`
 EXT_IP_ADDR=`wget -q -O - http://icanhazip.com/ | tail`
+#UPGRADE_CNT=`sudo apt update &> /dev/null && apt list --upgradable 2>/dev/null | grep -c upgradable`
+UPGRADE_CNT=`apt list --upgradable 2>/dev/null | grep -c upgradable`
 
 # get the load averages
 read one five fifteen rest < /proc/loadavg
@@ -44,12 +46,13 @@ echo "$(tput setaf 2)
 
 $(tput sgr0)- Uptime.............: ${UPTIME}
 $(tput sgr0)- OS.................: ${OSVER}
-$(tput sgr0)- KERNAL.............: ${KERNVER}
+$(tput sgr0)- Kernal.............: ${KERNVER}
 $(tput sgr0)- PI.................: ${PIVER}
+$(tput sgr0)- Updates............: ${UPGRADE_CNT}
 $(tput sgr0)- Disk...............: ${DISK}
 $(tput sgr0)- Memory.............: ${MEM}
 $(tput sgr0)- Load Averages......: ${one}, ${five}, ${fifteen} (1, 5, 15 min)
 $(tput sgr0)- Running Processes..: ${PROC_CNT}
-$(tput sgr0)- IP Addresses.......: ${INT_IP_ADDR}
+$(tput sgr0)- IP Address.........: ${INT_IP_ADDR}
 
 $(tput sgr0)"

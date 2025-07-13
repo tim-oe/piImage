@@ -17,6 +17,7 @@ users:
   ssh_authorized_keys:
     - ${ANS_AUTH_KEY}
   sudo: ALL=(ALL) NOPASSWD:ALL
+
 - name: tcronin
   groups: users,adm,dialout,audio,netdev,video,plugdev,cdrom,games,input,gpio,spi,i2c,render,sudo
   shell: /bin/bash
