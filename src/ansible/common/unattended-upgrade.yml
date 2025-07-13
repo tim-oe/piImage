@@ -18,6 +18,15 @@
       loop:
         - "unattended-upgrades"
         - "needrestart"
+    - name: deploy upgrade files
+      copy:
+        src: "{{ item }}"
+        dest: /etc/apt/apt.conf.d/
+        owner: root
+        group: root
+        mode: 0755
+      with_fileglob:
+        - "{{ playbook_dir }}/../..//etc/apt/apt.conf.d/*"
     - name: deploy auto resrtart conf
       copy:
         src: "{{ playbook_dir }}/../../etc/needrestart/conf.d/auto.conf"

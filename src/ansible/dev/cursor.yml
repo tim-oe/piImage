@@ -1,3 +1,5 @@
+# https://dev.to/mhbaando/how-to-install-cursor-the-ai-editor-on-linux-41dm
+# https://gist.github.com/evgenyneu/5c5c37ca68886bf1bea38026f60603b6 
 ---
 - name: "cursor install"
   hosts: "all"

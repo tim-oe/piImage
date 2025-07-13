@@ -31,10 +31,10 @@ tasks.register('aliases', GradleBuild) {
     tasks = ['playbook']
 }
 
-tasks.register('needrestart', GradleBuild) {
-    description = 'run ansible needrestart script'
+tasks.register('unUpgrade', GradleBuild) {
+    description = 'run ansible unattended upgrades script'
     group = "ansible"
-    startParameter.projectProperties = ['ansible_playbook':'src/ansible/common/needrestart.yml']
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/common/unattended-upgrade.yml']
     tasks = ['playbook']
 }
 
@@ -195,7 +195,7 @@ tasks.register('virtbox', GradleBuild) {
 tasks.register('chrome', GradleBuild) {
     description = 'run ansible chrome script'
     group = "ansible"
-    startParameter.projectProperties = ['ansible_playbook':'src/ansible/apps/virtbox.yml']
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/apps/chrome.yml']
     tasks = ['playbook']
 }
 

@@ -21,7 +21,6 @@
         - "apt-utils"
         - "ubuntu-desktop-minimal"
         - "update-manager" 
-        - "hardinfo" 
         - "nautilus" 
         - "gedit"
         - "zerofree"
@@ -38,15 +37,23 @@
       ansible.builtin.apt:
         name: "{{ item }}"
         state: "absent"
+        purge: yes
+        autoremove: yes
       loop:
         - "ed"
         - "thunderbird"
-        - "vim-tiny"
-        - "vim-common"
         - "modemmanager" 
         - "wpasupplicant" 
         - "avahi-daemon"
         - "xdg-desktop-portal-gnome"
+        - "vim*"
+        - "alsa*"
+        - "bluez*"
+        - "cups*"
+        - "printer-driver*"
+        - "speech*"
+        - "sssd*"
+        - "wireless*"
     - name: "Upgrade all packages on servers."
       apt:
         upgrade: "dist"
