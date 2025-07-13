@@ -5,9 +5,11 @@
   hosts: "all"
   become: true
   tasks:
+    # the built in apt_repository uses the legacy keyring
     - name: "add go repo"
-      ansible.builtin.apt_repository:
-        repo: ppa:longsleep/golang-backports
+      ansible.builtin.command: add-apt-repository -y ppa:longsleep/golang-backports
+      args:
+        creates: /etc/apt/sources.list.d/longsleep-ubuntu-golang-backports-{{ ansible_distribution_release }}.list
     - name: "Update apt repo and cache."
       apt:
         update_cache: true
