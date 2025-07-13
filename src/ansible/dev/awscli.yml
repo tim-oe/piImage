@@ -1,0 +1,23 @@
+# https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html 
+---
+- name: "aws cli install"
+  hosts: "all"
+  become: true
+  vars:
+    aws_url: "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"
+  tasks:
+    - name: "get package"
+      ansible.builtin.get_url:
+        url: "{{ aws_url }}"
+        dest: "/tmp/awscli.zip"
+        mode: "0600"
+        force: true
+    - name: Extract
+      ansible.builtin.unarchive:
+        src: /tmp/awscli.zip
+        dest: /tmp
+        remote_src: yes
+    - name: "install"
+      ansible.builtin.shell: 
+        executable: /bin/bash
+        cmd: "/tmp/aws/install"
