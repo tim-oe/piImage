@@ -20,7 +20,7 @@
         - name: "docker repo key"
           ansible.builtin.get_url:
             url: "https://download.docker.com/linux/debian/gpg"
-            dest: "/etc/apt/keyrings/docker.asc"
+            dest: "/etc/apt/trusted.gpg.d/docker.asc"
             mode: "0644"
             force: true
         - name: Get pi architecture
@@ -30,7 +30,7 @@
         - name: "docker apt source {{ pi_architecture }} {{ ansible_distribution_release }}"
           ansible.builtin.apt_repository:
             repo:
-              "deb [arch={{ pi_architecture }} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian\
+              "deb [arch={{ pi_architecture }} signed-by=/etc/apt/trusted.gpg.d/docker.asc] https://download.docker.com/linux/debian\
               \ {{ ansible_distribution_release }} stable"
             filename: "docker"
             state: "present"

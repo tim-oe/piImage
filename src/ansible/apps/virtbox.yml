@@ -43,6 +43,6 @@
         cache_valid_time: 3600
     - name: "apt install virtualbox"
       apt:
-        name: "virtualbox-7.0"
+        name: "virtualbox-7.1"
         install_recommends: true
         state: "present"

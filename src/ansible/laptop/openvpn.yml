@@ -1,3 +1,4 @@
+
 ---
 - name: "initialize packages for openvpn client"
   hosts: "all"
@@ -8,13 +9,13 @@
         - name: "repo key"
           ansible.builtin.get_url:
             url: "https://packages.openvpn.net/packages-repo.gpg"
-            dest: "/etc/apt/keyrings/openvpn.asc"
+            dest: "/etc/apt/trusted.gpg.d/openvpn.asc"
             mode: "0644"
             force: true
         - name: "apt source"
           ansible.builtin.apt_repository:
             repo:
-              "deb [signed-by=/etc/apt/keyrings/openvpn.asc] https://packages.openvpn.net/openvpn3/debian\
+              "deb [arch=amd64 signed-by=/etc/apt/trusted.gpg.d/openvpn.asc] https://packages.openvpn.net/openvpn3/debian\
               \ {{ ansible_distribution_release }} main"
             filename: "openvpn"
             state: "present"
