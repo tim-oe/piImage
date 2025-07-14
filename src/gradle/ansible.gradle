@@ -202,7 +202,7 @@ tasks.register('chrome', GradleBuild) {
 tasks.register('dbeaver', GradleBuild) {
     description = 'run ansible dbeaver script'
     group = "ansible"
-    startParameter.projectProperties = ['ansible_playbook':'src/ansible/apps/dbeaver.yml']
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/dev/dbeaver.yml']
     tasks = ['playbook']
 }
 
@@ -258,14 +258,14 @@ tasks.register('awscli', GradleBuild) {
 tasks.register('docker', GradleBuild) {
     description = 'run ansible docker script'
     group = "ansible"
-    startParameter.projectProperties = ['ansible_playbook':'src/ansible/apps/docker.yml']
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/dev/docker.yml']
     tasks = ['playbook']
 }
 
 tasks.register('kvm', GradleBuild) {
     description = 'run ansible kvm script'
     group = "ansible"
-    startParameter.projectProperties = ['ansible_playbook':'src/ansible/apps/kvm.yml']
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/desktop/kvm.yml']
     tasks = ['playbook']
 }
 
@@ -398,7 +398,7 @@ tasks.register('mgrInit', GradleBuild) {
 tasks.register('kubeCtl', GradleBuild) {
     description = 'install kubectl'
     group = "ansible"
-    startParameter.projectProperties = ['ansible_playbook':'src/ansible/apps/kube.yml']
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/dev/kube.yml']
     tasks = ['playbook']
 }
 
@@ -465,7 +465,7 @@ tasks.register('mysql') {
                     'ansible-playbook ' +
                     '-i ' +
                     "${target_host}, " +
-                    'src/ansible/apps/mysql.yml'
+                    'src/ansible/weather/mysql.yml'
                     "-e '{\"root_pwd\":\"${mysql_root_pwd}\"}'"
         }
     }
