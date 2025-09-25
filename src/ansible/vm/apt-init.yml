@@ -77,6 +77,8 @@
         - "hybrid-sleep.target"
         - "systemd-networkd-wait-online.service"
         - "sssd.service"
+        - "multipathd.service"
+        - "multipathd.socket"
     # https://askubuntu.com/questions/92349/how-do-i-hide-a-particular-user-from-the-login-screen
     - name: deploy user exclude file
       copy:

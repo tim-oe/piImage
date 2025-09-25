@@ -1,0 +1,95 @@
+# https://forums.raspberrypi.com/viewtopic.php?t=291640
+# https://raspberrytips.com/disable-leds-on-raspberry-pi/
+# https://lindevs.com/turn-off-built-in-leds-on-raspberry-pi/
+---
+- name: "disable pi leds"
+  hosts: "all"
+  become: true
+  vars:
+    config_file: "/boot/firmware/config.txt"
+    disable_pwr_tgr: "dtparam=pwr_led_trigger=default-on"
+    disable_pwr_led: "dtparam=pwr_led_activelow=off"
+    disable_act_tgr: "dtparam=act_led_trigger=none"
+    disable_act_low: "dtparam=act_led_activelow=off"
+    disable_eth_led0: "dtparam=eth_led0=14"
+    disable_eth_led1: "dtparam=eth_led1=14"
+  tasks:
+    - name: fail if not pi
+      fail:
+        msg: "{{ansible_facts['machine']}} not a pi!!!!"
+      when: ansible_facts['machine'] != 'aarch64'
+    - name: "Disble power led."
+      blockinfile:
+        state: "present"
+        insertafter: "EOF"
+        dest: "{{ config_file }}"
+        marker: "# {mark} _PWR_LED_DISABLE"
+        append_newline: true
+        prepend_newline: true
+        content: "{{ disable_pwr_led }}"
+      register: "pwr_led"
+    - name: "Disble power trigger."
+      blockinfile:
+        state: "present"
+        insertafter: "EOF"
+        dest: "{{ config_file }}"
+        marker: "# {mark} _PWR_TGR_DISABLE"
+        append_newline: true
+        prepend_newline: true
+        content: "{{ disable_pwr_tgr }}"
+      register: "pwr_tgr"
+    - name: "Disble activity trigger."
+      blockinfile:
+        state: "present"
+        insertafter: "EOF"
+        dest: "{{ config_file }}"
+        marker: "# {mark} _ACT_TGR_DISABLE"
+        append_newline: true
+        prepend_newline: true
+        content: "{{ disable_act_tgr }}"
+      register: "act_tgr"
+    - name: "Disble activity low."
+      blockinfile:
+        state: "present"
+        insertafter: "EOF"
+        dest: "{{ config_file }}"
+        marker: "# {mark} _ACT_LOW_DISABLE"
+        append_newline: true
+        prepend_newline: true
+        content: "{{ disable_act_low }}"
+      register: "act_low"
+    - name: "Disble eth 0 led."
+      blockinfile:
+        state: "present"
+        insertafter: "EOF"
+        dest: "{{ config_file }}"
+        marker: "# {mark} _ETH_LED0_DISABLE"
+        append_newline: true
+        prepend_newline: true
+        content: "{{ disable_eth_led0 }}"
+      register: "eth0_led"
+    - name: "Disble eth 1 led."
+      blockinfile:
+        state: "present"
+        insertafter: "EOF"
+        dest: "{{ config_file }}"
+        marker: "# {mark} _ETH_LED1_DISABLE"
+        append_newline: true
+        prepend_newline: true
+        content: "{{ disable_eth_led1 }}"
+      register: "eth1_led"
+    - name: "Reboot the box if changes applied."
+      reboot:
+        msg: "Reboot initiated by Ansible for firmware changes"
+        connect_timeout: 5
+        reboot_timeout: 300
+        pre_reboot_delay: 0
+        post_reboot_delay: 10
+        test_command: "uptime"
+      when:
+        "pwr_led.changed or \
+        \ pwr_tgr.changed or \ 
+        \ act_tgr.changed or \
+        \ act_low.changed or \ 
+        \ eth0_led.changed or \
+        \ eth1_led.changed"

@@ -136,6 +136,20 @@ tasks.register('wifi', GradleBuild) {
     tasks = ['playbook']
 }
 
+tasks.register('hdmi-disable', GradleBuild) {
+    description = 'run ansible hdmi disable script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/pi/hdmi-disable.yml']
+    tasks = ['playbook']
+}
+
+tasks.register('led-disable', GradleBuild) {
+    description = 'run ansible led disable script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/pi/led-disable.yml']
+    tasks = ['playbook']
+}
+
 tasks.register('ansible', GradleBuild) {
     description = 'run ansible ansible script'
     group = "ansible"

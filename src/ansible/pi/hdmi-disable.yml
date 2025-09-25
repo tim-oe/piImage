@@ -1,0 +1,18 @@
+---
+- name: "turn off hdmi"
+  hosts: "all"
+  become: true
+  vars:
+    config_file: "/boot/firmware/config.txt"
+  tasks:
+    - name: "turn off hdmi"
+      command: "vcgencmd display_power 0"
+    - name: "Disble hdmi."
+      blockinfile:
+        state: "present"
+        insertafter: "EOF"
+        dest: "{{ config_file }}"
+        marker: "# {mark} _HDMI_DISABLE"
+        append_newline: true
+        prepend_newline: true
+        content: "hdmi_ignore_hotplug=1\n"

@@ -1,3 +1,7 @@
+# lockdown sftp
+# https://www.cyberciti.biz/faq/rhel-centos-debian-unix-turnoff-sftp-server/
+# Subsystem sftp /bin/false
+
 ---
 - name: "Lockdown ssh configs"
   hosts: "all"
@@ -9,7 +13,7 @@
       PasswordAuthentication no
       PermitRootLogin no
       PermitEmptyPasswords no
-      ChallengeResponseAuthentication yes        
+      ChallengeResponseAuthentication yes
 
   tasks:
     - name: reset sshd config

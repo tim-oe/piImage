@@ -1,3 +1,5 @@
+# todo install via pipx
+# pipx install --include-deps ansible
 ---
 - name: "install ansible"
   hosts: "all"
