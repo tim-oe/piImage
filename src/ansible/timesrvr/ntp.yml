@@ -1,4 +1,17 @@
----
+# https://gist.github.com/edro15/c3fbaaabfe31ecb799363ffab587f336
+# https://blog.thelifeofkenneth.com/2020/03/building-raspberry-pi-stratum-1-ntp.html
+# https://linlog.blogspot.com/2009/07/synchronizing-ntp-server-to-gpspps.html
+# seed servers
+# https://support.ntp.org/Servers/NTPPoolServers
+# pps driver
+# https://www.eecis.udel.edu/~mills/ntp/html/drivers/driver22.html
+# https://www.ntp.org/documentation/drivers/driver22/
+# shm driver
+# https://www.ntp.org/documentation/drivers/driver28/
+# https://www.eecis.udel.edu/~mills/ntp/html/drivers/driver28.html
+# nmea driver
+# https://www.eecis.udel.edu/~mills/ntp/html/drivers/driver20.html
+# https://www.ntp.org/documentation/drivers/driver20/---
 - name: "setup ntp"
   hosts: "all"
   become: true

@@ -1,3 +1,16 @@
+# this is gps setup that works for uptronics usb hat
+# hat https://store.uputronics.com/index.php?route=product/product&product_id=81
+# dev aliases
+# https://unix.stackexchange.com/questions/385749/preventing-udev-symlink-overwrite
+# enable serial interface
+# https://www.raspberrypi.com/documentation/computers/configuration.html#serial-nonint
+# disable serial console
+# https://www.raspberrypi.com/documentation/computers/configuration.html#serial-console-nonint
+# enable i2c
+# https://www.raspberrypi.com/documentation/computers/configuration.html#i2c-nonint
+#
+# sudo ppstest /dev/pps0
+# sudo hwclock -r
 ---
 - name: "setup uptronics gps hat"
   hosts: "all"
