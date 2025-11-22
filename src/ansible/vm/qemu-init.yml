@@ -1,0 +1,46 @@
+# kvm vm initialization
+# https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/7/html/virtualization_deployment_and_administration_guide/index
+# https://ravada.readthedocs.io/en/latest/docs/config_console.html
+# https://ravada.readthedocs.io/en/latest/docs/qemu_ga.html
+---
+- name: "initialize kvm specific settings"
+  hosts: "all"
+  become: true
+  tasks:
+    - name: "Update apt repo and cache."
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: "install base deps"
+      apt: 
+        name: "{{ item }}"
+        state: "present"
+      loop:
+        - tuned
+        - qemu-guest-agent
+
+    - name: "Enable tuned"
+      ansible.builtin.systemd_service:
+        name: "tuned"
+        enabled: true
+        masked: false
+
+    - name: "start tuned"
+      ansible.builtin.systemd_service:
+        name: "tuned"
+        state: restarted
+
+    - name: "set tuned profile"
+      shell: 'tuned-adm profile virtual-guest'
+
+    - name: "Enable serial-getty@ttyS0"
+      ansible.builtin.systemd_service:
+        name: "serial-getty@ttyS0"
+        enabled: true
+        masked: false
+
+    - name: "start serial-getty@ttyS0"
+      ansible.builtin.systemd_service:
+        name: "serial-getty@ttyS0"
+        state: restarted

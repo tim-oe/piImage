@@ -1,0 +1,83 @@
+---
+- name: "install firefox"
+  hosts: "all"
+  become: true
+  tasks:
+    - name: "create keyrings directory"
+      file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: "download Mozilla GPG key"
+      get_url:
+        url: https://packages.mozilla.org/apt/repo-signing-key.gpg
+        dest: /etc/apt/keyrings/packages.mozilla.org.asc
+        mode: '0644'
+
+    - name: "add Mozilla repository"
+      apt_repository:
+        repo: "deb [signed-by=/etc/apt/keyrings/packages.mozilla.org.asc] https://packages.mozilla.org/apt mozilla main"
+        state: present
+        filename: mozilla
+
+    - name: "set Firefox to prefer Mozilla PPA"
+      copy:
+        content: |
+          Package: firefox*
+          Pin: origin packages.mozilla.org
+          Pin-Priority: 1000
+        dest: /etc/apt/preferences.d/mozilla-firefox
+
+    - name: "Update apt repo and cache."
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: "install"
+      apt:
+        name: "firefox"
+        state: "present"
+
+    - name: "check if favorites file exists"
+      stat:
+        path: /etc/dconf/db/local.d/03-favorites
+      register: favorites_file
+
+    - name: "read existing favorites"
+      shell: grep "favorite-apps=" /etc/dconf/db/local.d/03-favorites | grep -o "\[.*\]" || echo "[]"
+      register: existing_favorites
+      when: favorites_file.stat.exists
+      changed_when: false
+
+    - name: "set default if no favorites exist"
+      set_fact:
+        favorites_list: "[]"
+      when: not favorites_file.stat.exists
+
+    - name: "use existing favorites"
+      set_fact:
+        favorites_list: "{{ existing_favorites.stdout }}"
+      when: favorites_file.stat.exists
+
+    - name: "add firefox to favorites"
+      shell: |
+        python3 -c "
+        import ast
+        apps = {{ favorites_list }}
+        if 'firefox.desktop' not in apps:
+            apps.insert(0, 'firefox.desktop')
+        print(str(apps))
+        "
+      register: new_favorites
+      changed_when: false
+
+    - name: "write updated favorites"
+      copy:
+        content: |
+          [org/gnome/shell]
+          favorite-apps={{ new_favorites.stdout }}
+        dest: /etc/dconf/db/local.d/03-favorites
+
+    - name: "update dconf database"
+      shell: dconf update

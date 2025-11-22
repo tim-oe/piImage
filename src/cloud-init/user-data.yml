@@ -43,6 +43,7 @@ autoinstall:
     - wget
     - fwupd
     - unattended-upgrades
+    - tmux
     
   ssh:
     install-server: true

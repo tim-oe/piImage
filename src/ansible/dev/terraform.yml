@@ -1,0 +1,47 @@
+# https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli
+---
+- name: Install latest Terraform on Ubuntu
+  hosts: all
+  become: yes
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install required packages
+      apt:
+        name:
+          - gnupg
+          - software-properties-common
+          - curl
+        state: present
+
+    - name: Add HashiCorp GPG key
+      apt_key:
+        url: https://apt.releases.hashicorp.com/gpg
+        state: present
+
+    - name: Add HashiCorp repository
+      apt_repository:
+        repo: "deb [arch=amd64] https://apt.releases.hashicorp.com {{ ansible_distribution_release }} main"
+        state: present
+        filename: hashicorp
+
+    - name: Update apt cache after adding repository
+      apt:
+        update_cache: yes
+
+    - name: Install Terraform
+      apt:
+        name: terraform
+        state: latest
+
+    - name: Verify Terraform installation
+      command: terraform version
+      register: terraform_version
+      changed_when: false
+
+    - name: Display Terraform version
+      debug:
+        msg: "{{ terraform_version.stdout }}"

@@ -1,0 +1,48 @@
+---
+- name: "initialize virtualbox specific settings"
+  hosts: "all"
+  become: true
+  vars:
+    user: tcronin
+  tasks:
+    - name: "Update apt repo and cache."
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: "install base deps"
+      apt:
+        name: "{{ item }}"
+        state: "present"
+      loop:
+        - apt-utils
+        - zerofree
+        - bzip2
+        - make
+        - gcc
+        - tuned
+
+    - name: Ensure group "vboxsf" exists
+      ansible.builtin.group:
+        name: vboxsf
+        state: present
+
+    - name: adding existing user '{{ user }}' to group vboxsf
+      user:
+        name: "{{ user }}"
+        groups: vboxsf
+        append: yes
+
+    - name: "Enable tuned"
+      ansible.builtin.systemd_service:
+        name: "tuned"
+        enabled: true
+        masked: false
+
+    - name: "start tuned"
+      ansible.builtin.systemd_service:
+        name: "tuned"
+        state: restarted
+
+    - name: "set tuned profile"
+      shell: 'tuned-adm profile virtual-guest'

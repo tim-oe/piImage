@@ -8,20 +8,52 @@
   hosts: "all"
   become: true
   tasks:
+    - name: "Check if GDM config exists"
+      stat:
+        path: /etc/gdm3/custom.conf
+      register: gdm_config
+
+    - name: "Fail if GDM config not found"
+      fail:
+        msg: "ERROR: /etc/gdm3/custom.conf not found. GDM may not be installed."
+      when: not gdm_config.stat.exists  
+
+    - name: "Verify Wayland is disabled in GDM config"
+      shell: |
+        python3 -c "
+        import configparser
+        config = configparser.ConfigParser()
+        config.read('/etc/gdm3/custom.conf')
+        value = config.get('daemon', 'WaylandEnable', fallback='not-set')
+        if value.strip().lower() != 'false':
+            exit(1)
+        exit(0)
+        "
+      register: wayland_check
+      failed_when: wayland_check.rc != 0
+      changed_when: false
+
     - name: "Update apt repo and cache."
       apt:
         update_cache: true
         cache_valid_time: 3600
     - name: "install xrdp"
       apt:
-        name: "xrdp"
+      apt:
+        name: "{{ item }}"
         state: "present"
+      loop:
+        - xrdp
+        - xorgxrdp
+        - dbus-x11  # Important for GNOME session        
     - name: "remove conflicting package"
       apt:
         name: "{{ item }}"
         state: "absent"
       loop:
         - "xdg-desktop-portal-gnome"
+        - "gnome-remote-desktop"
+
     - name: deploy polkit files
       copy:
         src: "{{ item }}"
@@ -31,12 +63,89 @@
         mode: 0755
       with_fileglob:
         - "{{ playbook_dir }}/../../etc/polkit-1/localauthority/50-local.d/*"
+
+    - name: "Configure xrdp for GNOME"
+      lineinfile:
+        path: /etc/xrdp/startwm.sh
+        insertbefore: '^test -x /etc/X11/Xsession'
+        line: |
+          unset DBUS_SESSION_BUS_ADDRESS
+          unset XDG_RUNTIME_DIR
+
+    - name: "Configure xrdp startwm.sh for GNOME"
+      blockinfile:
+        path: /etc/xrdp/startwm.sh
+        marker: "# {mark} ANSIBLE MANAGED - GNOME Session Fix"
+        insertbefore: '^test -x /etc/X11/Xsession'
+        block: |
+          unset DBUS_SESSION_BUS_ADDRESS
+          unset XDG_RUNTIME_DIR
+          export XDG_CURRENT_DESKTOP=ubuntu:GNOME
+          export GNOME_SHELL_SESSION_MODE=ubuntu
+          export XDG_CONFIG_DIRS=/etc/xdg/xdg-ubuntu:/etc/xdg
+
+    - name: "Add xrdp user to ssl-cert group"
+      user:
+        name: xrdp
+        groups: ssl-cert
+        append: yes
+
+    - name: "Configure xrdp session policy"
+      lineinfile:
+        path: /etc/xrdp/sesman.ini
+        regexp: '^Policy='
+        line: 'Policy=Default'
+        insertafter: '^\[Sessions\]'
+
+    - name: "Configure xrdp max sessions"
+      lineinfile:
+        path: /etc/xrdp/sesman.ini
+        regexp: '^MaxSessions='
+        line: 'MaxSessions=2'
+        insertafter: '^\[Sessions\]'
+
+    - name: "Configure xrdp kill disconnected"
+      lineinfile:
+        path: /etc/xrdp/sesman.ini
+        regexp: '^KillDisconnected='
+        line: 'KillDisconnected=false'
+        insertafter: '^\[Sessions\]'
+
+    - name: "Configure xrdp disconnected timeout"
+      lineinfile:
+        path: /etc/xrdp/sesman.ini
+        regexp: '^DisconnectedTimeLimit='
+        line: 'DisconnectedTimeLimit=0'
+        insertafter: '^\[Sessions\]'
+
+    - name: "Configure xrdp idle timeout"
+      lineinfile:
+        path: /etc/xrdp/sesman.ini
+        regexp: '^IdleTimeLimit='
+        line: 'IdleTimeLimit=0'
+        insertafter: '^\[Sessions\]'
+
+    # TODO: test this
+    # - name: "Configure xrdp session settings"
+    #   ini_file:
+    #     path: /etc/xrdp/sesman.ini
+    #     section: Sessions
+    #     option: "{{ item.option }}"
+    #     value: "{{ item.value }}"
+    #   loop:
+          # - { option: 'Policy', value: 'Default' }
+          # - { option: 'MaxSessions', value: '10' }
+          # - { option: 'KillDisconnected', value: 'false' }
+          # - { option: 'DisconnectedTimeLimit', value: '0' }
+          # - { option: 'IdleTimeLimit', value: '0' }
+
     - name: "Enable xrdp"
       ansible.builtin.systemd_service:
         name: "xrdp"
         enabled: true
         masked: false
+
     - name: "start xrdp"
       ansible.builtin.systemd_service:
         name: "xrdp"
-        state: started
+        state: restarted

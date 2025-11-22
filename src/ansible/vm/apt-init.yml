@@ -1,5 +1,13 @@
 # https://www.tecmint.com/disable-suspend-and-hibernation-in-linux/
 # vm stuff
+# todo
+## Disable compositor permanently
+#gsettings set org.mate.Marco.general compositing-manager false
+## Disable some problematic indicators
+# dconf write /org/ayatana/indicator/sound/visible false
+# copy ~/.xsession
+# copy /etc/xrdp/startwm.sh
+#
 ---
 - name: "initialize packages for vm"
   hosts: "all"
@@ -12,27 +20,22 @@
       apt:
         update_cache: true
         cache_valid_time: 3600
-    - name: "install base deps"
+
+    - name: "install gnome components without snap"
       apt:
         name: "{{ item }}"
         state: "present"
       loop:
-        - "snapd"
-        - "apt-utils"
-        - "ubuntu-desktop-minimal"
-        - "update-manager" 
-        - "nautilus" 
-        - "gedit"
-        - "zerofree"
-        - "bzip2"
-        - "make"
-        - "gcc"
-        - "qemu-guest-agent"
-    - name: "Install snap deps"
-      community.general.snap:
-        name:
-          - "snap-store"
-          - "firefox"
+        - gnome-shell
+        - gnome-session
+        - gnome-terminal
+        - gnome-system-monitor
+        - gnome-shell-extension-ubuntu-dock
+        - ubuntu-settings
+        - nautilus
+        - update-manager
+        - gedit
+
     - name: "Remove unused packages"
       ansible.builtin.apt:
         name: "{{ item }}"
@@ -45,7 +48,6 @@
         - "modemmanager" 
         - "wpasupplicant" 
         - "avahi-daemon"
-        - "xdg-desktop-portal-gnome"
         - "vim*"
         - "alsa*"
         - "bluez*"
@@ -54,15 +56,27 @@
         - "speech*"
         - "sssd*"
         - "wireless*"
+        - libreoffice-common
+        - snapd"
+        - ubuntu-server-minimal
+        - xdg-desktop-portal-gnome
+        - gnome-remote-desktop
+        - multipath-tools
+        - multipath-tools-boot 
+        - kpartx
+
     - name: "Upgrade all packages on servers."
       apt:
         upgrade: "dist"
+
     - name: "Remove useless packages from the cache"
       apt:
         autoclean: true
+
     - name: "Remove dependencies that are no longer required"
       apt:
         autoremove: true
+
     # TODO sudo nano  /usr/share/polkit-1/actions/org.gnome.settings-daemon.plugins.power.policy    
     - name: "stop n mask power targets"
       ansible.builtin.systemd_service:
@@ -76,9 +90,9 @@
         - "hibernate.target"
         - "hybrid-sleep.target"
         - "systemd-networkd-wait-online.service"
-        - "sssd.service"
         - "multipathd.service"
         - "multipathd.socket"
+
     # https://askubuntu.com/questions/92349/how-do-i-hide-a-particular-user-from-the-login-screen
     - name: deploy user exclude file
       copy:
@@ -87,20 +101,97 @@
         owner: root
         group: root
         mode: 0600
-    - name: Ensure group "vboxfs" exists
-      ansible.builtin.group:
-        name: vboxfs
-        state: present
-    - name: adding existing user '{{ user }}' to group sudo
-      user:
-        name: "{{ user }}"
-        groups: vboxfs
-        append: yes
-    - name: "Check if a reboot is needed on all servers."
-      stat:
-        path: "/var/run/reboot-required"
-      register: "reboot_required_file"
-    - name: "Reboot the box if kernel updated"
+
+    - name: Set default systemd target to graphical.target
+      ansible.builtin.command: systemctl set-default graphical.target
+      changed_when: true  
+
+    - name: "Disable Wayland in GDM"
+      lineinfile:
+        path: /etc/gdm3/custom.conf
+        regexp: '^#?WaylandEnable='
+        line: 'WaylandEnable=false'
+        insertafter: '^\[daemon\]'
+
+    - name: "Set default X11 session"
+      lineinfile:
+        path: /etc/gdm3/custom.conf
+        regexp: '^#?DefaultSession='
+        line: 'DefaultSession=ubuntu-xorg.desktop'
+        insertafter: '^\[daemon\]'
+
+    - name: "Configure logind to kill user processes on logout"
+      lineinfile:
+        path: /etc/systemd/logind.conf
+        regexp: '^#?KillUserProcesses='
+        line: 'KillUserProcesses=yes'
+
+    - name: "ensure AccountsService directory exists"
+      file:
+        path: /var/lib/AccountsService/users
+        state: directory
+        mode: '0755'
+
+    - name: "set default session to ubuntu for user"
+      copy:
+        content: |
+          [User]
+          Language=
+          XSession=ubuntu
+          SystemAccount=false
+        dest: "/var/lib/AccountsService/users/{{ user }}"
+        mode: '0644'
+
+    - name: "get default gnome terminal profile"
+      shell: gsettings get org.gnome.Terminal.ProfilesList default | tr -d \'
+      register: terminal_profile
+      changed_when: false
+
+    - name: "create dconf directories"
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - /etc/dconf/db/local.d
+        - /etc/dconf/profile
+
+    - name: "create dconf user profile"
+      copy:
+        content: |
+          user-db:user
+          system-db:local
+        dest: /etc/dconf/profile/user
+
+    - name: "set gnome defaults - background"
+      copy:
+        content: |
+          [org/gnome/desktop/background]
+          picture-uri=''
+          picture-uri-dark=''
+          primary-color='#000000'
+          color-shading-type='solid'
+        dest: /etc/dconf/db/local.d/01-background
+
+    - name: "set gnome defaults - terminal"
+      copy:
+        content: |
+          [org/gnome/terminal/legacy/profiles:/:b1dcc9dd-5262-4d8d-a863-c897e6d979b9]
+          use-system-font=false
+          font='Monospace Bold 14'
+        dest: /etc/dconf/db/local.d/02-terminal
+
+    - name: "set gnome dock favorites"
+      copy:
+        content: |
+          [org/gnome/shell]
+          favorite-apps=['org.gnome.Nautilus.desktop', 'org.gnome.Terminal.desktop', 'update-manager.desktop']
+        dest: /etc/dconf/db/local.d/03-favorites
+
+    - name: "update dconf database"
+      shell: dconf update
+
+    - name: "Reboot the box"
       reboot:
         msg: "Reboot initiated by Ansible for kernel updates"
         connect_timeout: 5
@@ -108,4 +199,3 @@
         pre_reboot_delay: 0
         post_reboot_delay: 10
         test_command: "uptime"
-      when: "reboot_required_file.stat.exists"

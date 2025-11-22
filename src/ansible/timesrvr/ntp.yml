@@ -50,8 +50,10 @@
         append_newline: true
         prepend_newline: true
         content:
-          "server 0.north-america.pool.ntp.org\nserver 1.north-america.pool.ntp.org\n\
-          server 2.north-america.pool.ntp.org\nserver 3.north-america.pool.ntp.org\n"
+          "server 0.north-america.pool.ntp.org\n\
+          server 1.north-america.pool.ntp.org\n\
+          server 2.north-america.pool.ntp.org\n\
+          server 3.north-america.pool.ntp.org\n"
     - name: "add pps driver"
       blockinfile:
         state: "present"

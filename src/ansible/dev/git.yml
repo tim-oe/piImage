@@ -1,0 +1,51 @@
+---
+- name: "install git and configure"
+  hosts: "all"
+  become: true
+  tasks:
+    - name: "Update apt repo and cache."
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+    - name: "install"
+      apt:
+        name: "git"
+        state: "present"
+    - name: "Set git global user.name"
+      ansible.builtin.git_config:
+        name: user.name
+        value: "{{ git_user_name | default('tim-oe') }}"
+        scope: global
+        state: present
+      become_user: "{{ git_user | default('tcronin') }}"
+    - name: "Set git global user.email"
+      ansible.builtin.git_config:
+        name: user.email
+        value: "{{ git_user_email | default('tecronin@gmail.com') }}"
+        scope: global
+        state: present
+      become_user: "{{ git_user | default('tcronin') }}"
+    - name: "Add git prompt to .bashrc"
+      ansible.builtin.blockinfile:
+        path: "/home/{{ git_user | default('tcronin') }}/.bashrc"
+        block: |
+          
+          # Source git prompt function
+          # Check direct git-core location (Ubuntu 24, Debian-based systems)
+          if [ -f /usr/lib/git-core/git-sh-prompt ]; then
+            source /usr/lib/git-core/git-sh-prompt
+          # Check bash-completion wrapper (Ubuntu/Debian with bash-completion package)
+          elif [ -f /etc/bash_completion.d/git-prompt ]; then
+            source /etc/bash_completion.d/git-prompt
+          fi
+          
+          # Git prompt configuration
+          export GIT_PS1_SHOWDIRTYSTATE=1
+          # Update PS1 to include git branch
+          export PS1='\[\e[1;34m\]\u\[\e[37m\]:\[\e[1;34m\]\h\[\e[1;32m\] \w\[\e[1;33m\]$(__git_ps1)\[\e[00m\]: '
+
+        marker: "# {mark} ANSIBLE MANAGED BLOCK - git prompt"
+        create: true
+        owner: "{{ git_user | default('tcronin') }}"
+        group: "{{ git_user | default('tcronin') }}"
+        mode: '0644'

@@ -1,7 +1,7 @@
 // create custom ubuntu image using cloud-init manifest
 // https://github.com/jjbailey/ubuntu-autoinstall
 tasks.register('isoBuild') {
-    description = 'init user-data.yml for cloud-init install'
+    description = 'create cloud-init iso install'
     group = "container"
     doLast {
         exec {
@@ -17,7 +17,41 @@ tasks.register('isoBuild') {
         exec {
             workingDir "${iso_project_root}"
             commandLine 'bash', '-c',
-                "./create-iso.sh"
+                "make"
+        }
+    }
+}
+
+// create custom ubuntu image using cloud-init manifest
+// https://github.com/jjbailey/ubuntu-autoinstall
+tasks.register('cidataBuild') {
+    description = 'create cloud-init cidata iso'
+    group = "container"
+    doLast {
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                "envsubst < src/cloud-init/user-data.yml  > ${iso_project_root}/user-data.yml"
+        }
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                "sed -i 's/__HOSTNAME__/${target_host}/g' ${iso_project_root}/user-data.yml"
+        }
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                "cp ${iso_project_root}/user-data.yml  ${iso_project_root}/user-data"
+        }
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                "cp ${iso_project_root}/meta-data.yml  ${iso_project_root}/meta-data"
+        }
+        exec {
+            workingDir "${iso_project_root}"
+            commandLine 'bash', '-c',
+                "sudo genisoimage -output cidata.iso -volid cidata -rational-rock -joliet -joliet-long user-data meta-data"
         }
     }
 }

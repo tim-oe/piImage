@@ -5,7 +5,7 @@
   tasks:
     - name: deploy .bash_aliases
       copy:
-        src: "{{ playbook_dir }}/../../home/.bash_aliases"
+        src: "{{ playbook_dir }}/../../home/dev/.bash_aliases"
         dest: /home/tcronin/.bash_aliases
         owner: tcronin
         group: tcronin

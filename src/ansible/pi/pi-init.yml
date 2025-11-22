@@ -16,6 +16,7 @@
         - "nano"
         - "unattended-upgrades"
         - "needrestart"
+        - "tmux"
     - name: "Remove unused packages"
       ansible.builtin.apt:
         name: "{{ item }}"

@@ -1,0 +1,37 @@
+---
+- name: "install circuitpython dependencies"
+  hosts: "all"
+  become: true
+  vars:
+    blinka_install_script: "raspi-blinka.py"
+    blinka_install_url: "https://raw.githubusercontent.com/adafruit/Raspberry-Pi-Installer-Scripts/master/{{ blinka_install_script }}"
+  tasks:
+    - name: "Update apt repo and cache."
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+    - name: "get blinka install script"
+      ansible.builtin.get_url:
+        url: "{{ blinka_install_url }}"
+        dest: "/tmp/{{ blinka_install_script }}"
+        mode: "0700"
+        force: true
+    - name: "fix global install of blinka"
+      ansible.builtin.replace:
+        path: "/tmp/{{ blinka_install_script }}"
+        regexp: '^(\s*)pip_command =.*$'
+        replace: '\1pip_command = "sudo pip3 install --upgrade --break-system-packages"'
+    - name: "fix global install of blinka"
+      ansible.builtin.replace:
+        path: "/tmp/{{ blinka_install_script }}"
+        regexp: '^(\s*shell.prompt_reboot\(\)).*$'
+        replace: '# \1'
+    - name: Install adafruit-python-shell
+      ansible.builtin.pip:
+        name: adafruit-python-shell
+        break_system_packages: true
+    - name: "install blinka"
+      ansible.builtin.shell: 
+        executable: /bin/bash
+        cmd: "python3 /tmp/{{ blinka_install_script }}"
+

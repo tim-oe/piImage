@@ -115,6 +115,13 @@ tasks.register('cursor', GradleBuild) {
     tasks = ['playbook']
 }
 
+tasks.register('git', GradleBuild) {
+    description = 'run ansible git script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/dev/git.yml']
+    tasks = ['playbook']
+}
+
 tasks.register('eclipse', GradleBuild) {
     description = 'run ansible eclipse script'
     group = "ansible"
@@ -210,6 +217,13 @@ tasks.register('chrome', GradleBuild) {
     description = 'run ansible chrome script'
     group = "ansible"
     startParameter.projectProperties = ['ansible_playbook':'src/ansible/apps/chrome.yml']
+    tasks = ['playbook']
+}
+
+tasks.register('firefox', GradleBuild) {
+    description = 'run ansible firefox script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/apps/firefox.yml']
     tasks = ['playbook']
 }
 
@@ -353,6 +367,13 @@ tasks.register('wPython', GradleBuild) {
     tasks = ['playbook']
 }
 
+tasks.register('circuitPython', GradleBuild) {
+    description = 'run ansible circuitPython script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/pi/circuit-python.yml']
+    tasks = ['playbook']
+}
+
 tasks.register('openvpn', GradleBuild) {
     description = 'run ansible openvpn script'
     group = "ansible"
@@ -434,6 +455,20 @@ tasks.register('vmInit', GradleBuild) {
     description = 'init vm instance'
     group = "ansible"
     startParameter.projectProperties = ['ansible_playbook':'src/ansible/vm/apt-init.yml']
+    tasks = ['playbook']
+}
+
+tasks.register('vbInit', GradleBuild) {
+    description = 'init virtualbox vm instance'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/vm/vb-init.yml']
+    tasks = ['playbook']
+}
+
+tasks.register('kvmInit', GradleBuild) {
+    description = 'init kvm/qemu vm instance'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/vm/qemu-init.yml']
     tasks = ['playbook']
 }
 
