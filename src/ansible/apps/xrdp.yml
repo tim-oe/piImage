@@ -39,13 +39,13 @@
         cache_valid_time: 3600
     - name: "install xrdp"
       apt:
-      apt:
         name: "{{ item }}"
         state: "present"
       loop:
         - xrdp
         - xorgxrdp
         - dbus-x11  # Important for GNOME session        
+
     - name: "remove conflicting package"
       apt:
         name: "{{ item }}"
@@ -64,13 +64,6 @@
       with_fileglob:
         - "{{ playbook_dir }}/../../etc/polkit-1/localauthority/50-local.d/*"
 
-    - name: "Configure xrdp for GNOME"
-      lineinfile:
-        path: /etc/xrdp/startwm.sh
-        insertbefore: '^test -x /etc/X11/Xsession'
-        line: |
-          unset DBUS_SESSION_BUS_ADDRESS
-          unset XDG_RUNTIME_DIR
 
     - name: "Configure xrdp startwm.sh for GNOME"
       blockinfile:
@@ -124,6 +117,25 @@
         regexp: '^IdleTimeLimit='
         line: 'IdleTimeLimit=0'
         insertafter: '^\[Sessions\]'
+
+    - name: "Configure PAM to NOT start systemd user instance for xrdp"
+      lineinfile:
+        path: /etc/pam.d/xrdp-sesman
+        regexp: '^session.*pam_systemd.so'
+        line: '#session optional pam_systemd.so'
+        backrefs: yes
+
+    - name: "Ensure systemd user instance is properly configured"
+      lineinfile:
+        path: /etc/systemd/logind.conf
+        regexp: '^#?KillUserProcesses='
+        line: 'KillUserProcesses=no'
+        insertafter: '^\[Login\]'
+
+    - name: "start systemd-logind"
+      ansible.builtin.systemd_service:
+        name: "systemd-logind"
+        state: restarted
 
     # TODO: test this
     # - name: "Configure xrdp session settings"

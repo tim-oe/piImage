@@ -8,25 +8,34 @@
       apt:
         update_cache: true
         cache_valid_time: 3600
-    - name: "Ansible apt install base deps"
+    - name: "install base deps"
       apt:
         name: "{{ item }}"
         state: "present"
       loop:
-        - "nano"
-        - "unattended-upgrades"
-        - "needrestart"
-        - "tmux"
+        - nano
+        - raspi-config
+        - iputils-ping
+        - dnsutils
+        - net-tools
+        - ethtool
+        - traceroute  
+        - unattended-upgrades
+        - needrestart
+        - tmux
+        - apt-transport-https
+
     - name: "Remove unused packages"
       ansible.builtin.apt:
         name: "{{ item }}"
         state: "absent"
       loop:
         - "ed"
-        - "vim-tiny"
-        - "vim-common"
+        - "vim*"
+        - "alsa*"
         - "modemmanager" 
-        - "avahi-daemon"
+        - "avahi*"
+
     - name: "Upgrade all packages on servers."
       apt:
         upgrade: "dist"

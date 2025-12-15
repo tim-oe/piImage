@@ -2,6 +2,8 @@
 - name: "install firefox"
   hosts: "all"
   become: true
+  vars:
+    user: tcronin
   tasks:
     - name: "create keyrings directory"
       file:
@@ -36,48 +38,51 @@
 
     - name: "install"
       apt:
-        name: "firefox"
+        name: "{{ item }}"
         state: "present"
+      loop:
+        - firefox
+        - ffmpeg
+        - libavcodec-extra 
+        - ubuntu-restricted-extras
 
-    - name: "check if favorites file exists"
-      stat:
-        path: /etc/dconf/db/local.d/03-favorites
-      register: favorites_file
 
-    - name: "read existing favorites"
-      shell: grep "favorite-apps=" /etc/dconf/db/local.d/03-favorites | grep -o "\[.*\]" || echo "[]"
-      register: existing_favorites
-      when: favorites_file.stat.exists
+    - name: "get user's dbus session address"
+      shell: |
+        ps e -u {{ user }} | grep -o 'DBUS_SESSION_BUS_ADDRESS=[^ ]*' | head -1 | cut -d= -f2-
+      register: user_dbus
+      changed_when: false
+      failed_when: user_dbus.stdout == ""
+
+    - name: "get current user favorites"
+      become: yes
+      become_user: "{{ user }}"
+      shell: |
+        export DBUS_SESSION_BUS_ADDRESS="{{ user_dbus.stdout }}"
+        dconf read /org/gnome/shell/favorite-apps
+      register: current_favorites
       changed_when: false
 
-    - name: "set default if no favorites exist"
-      set_fact:
-        favorites_list: "[]"
-      when: not favorites_file.stat.exists
-
-    - name: "use existing favorites"
-      set_fact:
-        favorites_list: "{{ existing_favorites.stdout }}"
-      when: favorites_file.stat.exists
-
-    - name: "add firefox to favorites"
+    - name: "add firefox to favorites list"
       shell: |
         python3 -c "
         import ast
-        apps = {{ favorites_list }}
-        if 'firefox.desktop' not in apps:
+        apps = {{ current_favorites.stdout }}
+        if 'firefox.desktop' not in apps and 'firefox_firefox.desktop' not in apps:
             apps.insert(0, 'firefox.desktop')
         print(str(apps))
         "
       register: new_favorites
       changed_when: false
 
-    - name: "write updated favorites"
-      copy:
-        content: |
-          [org/gnome/shell]
-          favorite-apps={{ new_favorites.stdout }}
-        dest: /etc/dconf/db/local.d/03-favorites
+    - name: "check if favorites changed"
+      set_fact:
+        favorites_changed: "{{ current_favorites.stdout != new_favorites.stdout }}"
 
-    - name: "update dconf database"
-      shell: dconf update
+    - name: "update user favorites with firefox"
+      become: yes
+      become_user: "{{ user }}"
+      shell: |
+        export DBUS_SESSION_BUS_ADDRESS="{{ user_dbus.stdout }}"
+        dconf write /org/gnome/shell/favorite-apps "{{ new_favorites.stdout }}"
+      when: favorites_changed | bool

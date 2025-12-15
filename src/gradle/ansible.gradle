@@ -325,6 +325,13 @@ tasks.register('pidocker', GradleBuild) {
     tasks = ['playbook']
 }
 
+tasks.register('pihole', GradleBuild) {
+    description = 'run ansible pihole script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/pi/pihole.yml']
+    tasks = ['playbook']
+}
+
 tasks.register('gpsd', GradleBuild) {
     description = 'run ansible gpsd script'
     group = "ansible"
@@ -424,9 +431,16 @@ tasks.register('aiPython', GradleBuild) {
 }
 
 tasks.register('mgrInit', GradleBuild) {
-    description = 'run ansible mgr apy init script'
+    description = 'run ansible mgr apt init script'
     group = "ansible"
     startParameter.projectProperties = ['ansible_playbook':'src/ansible/mgr/apt-init.yml']
+    tasks = ['playbook']
+}
+
+tasks.register('workInit', GradleBuild) {
+    description = 'run ansible work apt init script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/laptop/work/apt-init.yml']
     tasks = ['playbook']
 }
 
@@ -593,7 +607,7 @@ tasks.register('brutoof') {
     }
 }
 
-tasks.register('piinit') {
+tasks.register('piAptInit') {
     description = 'run ansible pi initialization playbook'
     group = "ansible"
     doLast {

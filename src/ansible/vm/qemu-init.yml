@@ -6,6 +6,8 @@
 - name: "initialize kvm specific settings"
   hosts: "all"
   become: true
+  vars:
+    user: tcronin
   tasks:
     - name: "Update apt repo and cache."
       apt:
@@ -44,3 +46,22 @@
       ansible.builtin.systemd_service:
         name: "serial-getty@ttyS0"
         state: restarted
+
+    # usb generating crash reports on vm
+    - name: "Mask gsd-usb-protection service for user {{ user }}"
+      ansible.builtin.systemd:
+        name: gsd-usb-protection
+        masked: yes
+        state: stopped
+        scope: user
+      become: yes
+      become_user: "{{ user }}"
+
+    - name: "Mask org.gnome.SettingsDaemon.UsbProtection service for user {{ user }}"
+      ansible.builtin.systemd:
+        name: org.gnome.SettingsDaemon.UsbProtection
+        masked: yes
+        state: stopped
+        scope: user
+      become: yes
+      become_user: "{{ user }}"      

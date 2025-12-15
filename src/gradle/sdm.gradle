@@ -4,7 +4,7 @@ tasks.register('sdmUpdate') {
     doLast {
         exec {
             workingDir '.'
-            commandLine 'bash', '-c', "curl -L https://raw.githubusercontent.com/gitbls/sdm/master/EZsdmInstaller | bash"
+            commandLine 'bash', '-c', "curl -L https://raw.githubusercontent.com/gitbls/sdm/master/install-sdm | bash"
         }
     }
 }
@@ -29,8 +29,8 @@ tasks.register('imgGet') {
 }
 
 // copy fresh image to build dir
-tasks.register('imgInit') {
-    description = 'copy clean image to target'
+tasks.register('sdmInit') {
+    description = 'initialize sdm resources'
     group = 'sdm'
     doLast {
         delete files("${project.buildDir}/*")
@@ -38,6 +38,16 @@ tasks.register('imgInit') {
             from layout.projectDirectory.dir('img')
             into layout.buildDirectory
             include "${pi_img}"
+        }
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                "envsubst < src/cloud-init/pi/user-data.yml  > ${project.buildDir}/user-data"
+        }
+        exec {
+            workingDir '.'
+            commandLine 'bash', '-c',
+                "sed -i 's/__HOSTNAME__/${target_host}/g' ${project.buildDir}/user-data"
         }
     }
 }
@@ -49,9 +59,9 @@ tasks.register('sdmImage') {
     description = 'build customized rpi image'
     group = 'sdm'
     doLast {
-        exec {
+        exec { // ${project.buildDir}/user-data.yml
             workingDir '.'
-            commandLine 'bash', '-c', "src/sdm/image.sh ${project.buildDir}/${pi_img}"
+            commandLine 'bash', '-c', "src/sdm/image.sh ${project.buildDir}/${pi_img} ${project.buildDir}/user-data"
         }
     }
 }

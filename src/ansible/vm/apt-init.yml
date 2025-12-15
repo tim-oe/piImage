@@ -11,6 +11,7 @@
 ---
 - name: "initialize packages for vm"
   hosts: "all"
+  gather_facts: true 
   become: true
   vars:
     user: tcronin
@@ -35,6 +36,7 @@
         - nautilus
         - update-manager
         - gedit
+        - "linux-modules-extra-{{ ansible_kernel }}"
 
     - name: "Remove unused packages"
       ansible.builtin.apt:
@@ -43,21 +45,21 @@
         purge: yes
         autoremove: yes
       loop:
-        - "ed"
-        - "thunderbird"
-        - "modemmanager" 
-        - "wpasupplicant" 
-        - "avahi-daemon"
-        - "vim*"
-        - "alsa*"
-        - "bluez*"
-        - "cups*"
-        - "printer-driver*"
-        - "speech*"
-        - "sssd*"
-        - "wireless*"
+        - ed
+        - thunderbird
+        - modemmanager 
+        - wpasupplicant 
+        - avahi-daemon
+        - vim*
+        - alsa*
+        - bluez*
+        - cups*
+        - printer-driver*
+        - speech*
+        - sssd*
+        - wireless*
         - libreoffice-common
-        - snapd"
+        - snapd
         - ubuntu-server-minimal
         - xdg-desktop-portal-gnome
         - gnome-remote-desktop
@@ -67,7 +69,7 @@
 
     - name: "Upgrade all packages on servers."
       apt:
-        upgrade: "dist"
+        upgrade: dist
 
     - name: "Remove useless packages from the cache"
       apt:
@@ -85,13 +87,11 @@
         masked: true
         state: stopped
       loop:
-        - "sleep.target"
-        - "suspend.target"
-        - "hibernate.target"
-        - "hybrid-sleep.target"
-        - "systemd-networkd-wait-online.service"
-        - "multipathd.service"
-        - "multipathd.socket"
+        - sleep.target
+        - suspend.target
+        - hibernate.target
+        - hybrid-sleep.target
+        - systemd-networkd-wait-online.service
 
     # https://askubuntu.com/questions/92349/how-do-i-hide-a-particular-user-from-the-login-screen
     - name: deploy user exclude file
@@ -190,6 +190,9 @@
 
     - name: "update dconf database"
       shell: dconf update
+
+    - name: "update initramfs"
+      shell: update-initramfs -u
 
     - name: "Reboot the box"
       reboot:

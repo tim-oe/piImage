@@ -1,87 +1,33 @@
 #cloud-config
-# https://canonical-subiquity.readthedocs-hosted.com/en/latest/reference/autoinstall-reference.html
-# https://github.com/jjbailey/ubuntu-autoinstall
-# https://curtin.readthedocs.io/en/latest/topics/storage.html
-# https://www.cyberciti.biz/faq/understanding-etcshadow-file/
-# create seed image with enough setup to be able to configure with ansible
-autoinstall:
-  version: 1
+hostname: __HOSTNAME__
+manage_etc_hosts: true
+packages:
+- htop
+apt:
+  conf: |
+    Acquire {
+      Check-Date "false";
+    };
+timezone: Etc/UTC
+keyboard:
+  model: pc105
+  layout: "us"
+enable_ssh: true
+users:
+  - name: tcronin
+    groups: users,adm,dialout,audio,netdev,video,plugdev,cdrom,games,input,gpio,spi,i2c,render,sudo
+    shell: /bin/bash
+    lock_passwd: false
+    passwd: ${TEC_PWD_HASH}
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    ssh_authorized_keys:
+      - ${TEC_AUTH_KEY}
 
-  refresh-installer:
-    update: true
-
-  locale: en_US.UTF-8
-
-  keyboard:
-    layout: us
-
-  timezone: "Etc/UTC"
-
-  apt:
-    geoip: true
-
-  updates: all
-
-  packages:
-    - cron
-    - htop
-    - nano
-    - curl
-    - gnupg
-    - gpg
-    - wget
-    - iputils-ping
-    - net-tools
-    - ethtool
-    - traceroute
-    - bzip2
-    - tmux
-    - unattended-upgrades
-    - apt-transport-https
-    - apt-utils
-    - bash-completion
-    
-  ssh:
-    install-server: true
-    allow-pw: false
-
-  identity:
-    hostname: __HOSTNAME__
-    username: tcronin
-    realname: tcronin
-    # Password hash generate using: mkpasswd --method=SHA-512
-    password: ${TEC_PWD_HASH}
-
-  # https://canonical-subiquity.readthedocs-hosted.com/en/latest/reference/autoinstall-reference.html#ai-user-data
-  user-data:
-    users:
-      - default
-      - name: tcronin
-        sudo: ALL=(ALL) NOPASSWD:ALL
-        groups: users,sudo,adm,dialout,audio,netdev,video,plugdev,cdrom,games,input,gpio,spi,i2c,render,sudo
-        shell: /bin/bash
-        lock_passwd: false
-        ssh_authorized_keys:
-          - ${TEC_AUTH_KEY}
-      - name: ansible
-        sudo: ALL=(ALL) NOPASSWD:ALL
-        groups: sudo, adm
-        shell: /bin/bash
-        lock_passwd: false
-        passwd: ${ANS_PWD_HASH}
-        ssh_authorized_keys:
-          - ${ANS_AUTH_KEY}
-
-  # https://docs.cloud-init.io/en/latest/reference/network-config-format-v2.html
-  network:
-    version: 2
-    ethernets:
-      eth:
-        match:
-          name:  eth*
-        dhcp4: true
-
-  # format drive using defaults
-  storage:
-    layout:
-      name: direct
+  - name: ansible
+    groups: users,adm,sudo
+    shell: /bin/bash
+    lock_passwd: true
+    passwd: ${ANS_PWD_HASH}
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    ssh_authorized_keys:
+      - ${ANS_AUTH_KEY}

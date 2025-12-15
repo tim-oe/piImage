@@ -38,7 +38,6 @@ autoinstall:
     - wget
     - lshw
     - fwupd
-    - dnsutils
     - iputils-ping
     - net-tools
     - ethtool
@@ -51,7 +50,6 @@ autoinstall:
     - tmux
     - unattended-upgrades
     - apt-transport-https
-    - apt-utils
     - bash-completion
     
   ssh:
@@ -90,11 +88,10 @@ autoinstall:
     version: 2
     ethernets:
       # wireless nic
-      # board mounted nic
-      # eno:
-      #   match:
-      #     name: eno*
-      #   dhcp4: true
+      wlan:
+        match:
+          name: wlp*
+        dhcp4: true
       # pci mounted nic  
       enp:
         match:

@@ -3,22 +3,39 @@
 ---
 - name: "initialize packages for laptop"
   hosts: "all"
+  gather_facts: true 
   become: true
   tasks:
     - name: "Update apt repo and cache."
       apt:
         update_cache: true
         cache_valid_time: 3600
+
+    - name: "install gnome components"
+      apt:
+        name: "{{ item }}"
+        state: "present"
+      loop:
+        - gnome-shell
+        - gnome-session
+        - gnome-terminal
+        - gnome-system-monitor
+        - gnome-shell-extension-ubuntu-dock
+        - ubuntu-settings
+        - nautilus
+        - update-manager
+        - gedit
+        - "linux-modules-extra-{{ ansible_facts.kernelrelease }}"
+
     - name: "apt install deps"
       apt:
         name: "{{ item }}"
         install_recommends: true
         state: "present"
       loop:
+        - "snapd"
         - "filezilla"
         - "gnome-tweaks"
-        - "gnome-software"
-        - "gnome-firmware"
         - "gparted"
         - "gpart"
         - "dosfstools"
@@ -33,14 +50,15 @@
         - "putty-tools"
         - "remmina"
         - "shutter"
-        - "xrdp"
-        - "snapd"
+        - "linux-modules-extra-{{ ansible_facts.kernelrelease }}"
+
     - name: "get puttygen.exe"
       ansible.builtin.get_url:
         url: "https://the.earth.li/~sgtatham/putty/latest/w64/puttygen.exe"
         dest: "/usr/local/bin/puttygen.exe"
         mode: "0777"
         force: true
+
     - name: "shutter compatability fix"
       block:
         - name: "revert gdm back to x11"
@@ -50,6 +68,7 @@
             replace: "WaylandEnable=false"
         - name: "restart display service"
           command: "bash -c 'systemctl restart gdm3'"
+
     - name: "apt install wine deps"
       apt:
         name: "{{ item }}"
@@ -59,6 +78,7 @@
         - "wine"
         - "wine-stable"
         - "winetricks"
+
     - name: "Install snap deps"
       community.general.snap:
         name:

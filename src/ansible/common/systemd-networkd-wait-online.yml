@@ -7,7 +7,9 @@
   become: true
   vars: 
     svc: "systemd-networkd-wait-online"
-    device: enp2s0
+    #device: enp2s0
+    # work laptop old
+    device: enp0s31f6
     # vm possible conflict with nm
     #device: enp3s0
     # kvm bridge device
