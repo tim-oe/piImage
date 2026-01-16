@@ -1,0 +1,7 @@
+# /etc/cron.d/network-monitor
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+# Network connectivity monitor
+# Checks every 15 minutes, recovers if down
+*/15 * * * * root /usr/local/bin/wlan-monit >/dev/null 2>&1

@@ -1,0 +1,11 @@
+# Network monitor log rotation
+# Managed by Ansible - do not edit manually
+
+{{ log_file }} {
+    weekly
+    rotate 4
+    compress
+    missingok
+    notifempty
+    create 0644 root root
+}

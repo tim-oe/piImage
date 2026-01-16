@@ -318,6 +318,13 @@ tasks.register('wol', GradleBuild) {
     tasks = ['playbook']
 }
 
+tasks.register('wlanmonit', GradleBuild) {
+    description = 'run ansible wlan monitor script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/net/wlan-monit.yml']
+    tasks = ['playbook']
+}
+
 tasks.register('pidocker', GradleBuild) {
     description = 'run ansible pi docker script'
     group = "ansible"

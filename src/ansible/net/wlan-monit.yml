@@ -1,0 +1,86 @@
+# check wlan ap signal strength
+# sudo nmcli device wifi list
+# turn off wifi power management
+# sudo iw dev wlan0 set power_save off
+---
+- name: Install WLAN Monitor
+  hosts: all
+  become: yes
+  
+  vars:
+    monitor_script: wlan-monit
+    log_file: /var/log/wlan-monit.log
+    wlan_ssid: tec-wan
+    wlan_bssid: 84:78:48:36:5B:C8
+  
+  tasks:
+    - name: "Update apt repo and cache."
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+    - name: "install logrotate"
+      apt:
+        name: "logrotate"
+        state: "present"
+    - name: Install WLAN monitoring script
+      copy:
+        src: "{{ playbook_dir }}/../../usr/local/bin/{{ monitor_script }}"
+        dest: "/usr/local/bin/{{ monitor_script }}"
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Create log file
+      file:
+        path: "{{ log_file }}"
+        state: touch
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Install logrotate configuration
+      template:
+        src: "{{ playbook_dir }}/../../etc/logrotate.d/wlan-monit.logrotate.j2"
+        dest: /etc/logrotate.d/wlan-monit.logrotate
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Install cron job
+      copy:
+        src: "{{ playbook_dir }}/../../etc/cron.d/wlan-monit"
+        dest: /etc/cron.d/wlan-monit
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Ensure NetworkManager is running
+      systemd:
+        name: NetworkManager
+        state: started
+        enabled: yes
+
+    - name: Disable WiFi power management in NetworkManager
+      copy:
+        dest: /etc/NetworkManager/conf.d/wifi-powersave.conf
+        content: |
+          [connection]
+          wifi.powersave = 2
+        owner: root
+        group: root
+        mode: '0644'
+      notify: restart NetworkManager
+
+    - name: Configure WiFi connection for optimal 2.4GHz performance
+      shell: |
+        nmcli connection modify {{ wlan_ssid }} 802-11-wireless.band bg
+        nmcli connection modify {{ wlan_ssid }} 802-11-wireless.bssid {{ wlan_bssid }}
+        nmcli connection up {{ wlan_ssid }}
+      args:
+        executable: /bin/bash
+
+  handlers:
+    - name: restart NetworkManager
+      systemd:
+        name: NetworkManager
+        state: restarted
