@@ -1,3 +1,5 @@
+# for trixie new swap impl
+# https://forums.raspberrypi.com/viewtopic.php?t=390708
 ---
 - name: "increase swap space"
   hosts: "all"

@@ -1,0 +1,61 @@
+---
+- name: "install and enable i2c interface"
+  hosts: "all"
+  become: true
+  vars:
+    local_user: "tcronin"
+  tasks:
+    - name: "Update apt repo and cache."
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+    - name: "install mysql"
+      apt:
+        name: "{{ item }}"
+        state: "present"
+      loop:
+        - "i2c-tools"
+        - "libi2c0"
+    - name: Enable I2C in /boot/config.txt
+      ansible.builtin.lineinfile:
+        path: /boot/config.txt
+        regexp: '^#?dtparam=i2c_arm='
+        line: 'dtparam=i2c_arm=on'
+        state: present
+      become: yes
+      register: boot_config
+
+    - name: Enable I2C kernel modules to load at boot
+      ansible.builtin.lineinfile:
+        path: /etc/modules
+        line: "{{ item }}"
+        state: present
+      become: yes
+      loop:
+        - i2c-dev
+        - i2c-bcm2835
+      register: modules_config
+
+    - name: Load I2C kernel modules immediately
+      community.general.modprobe:
+        name: "{{ item }}"
+        state: present
+      become: yes
+      loop:
+        - i2c-dev
+        - i2c-bcm2835
+      ignore_errors: yes
+
+    - name: Add user to i2c group
+      ansible.builtin.user:
+        name: "{{ local_user }}"
+        groups: i2c
+        append: yes
+      become: yes
+
+    - name: Reboot if configuration changed
+      ansible.builtin.reboot:
+        msg: "Rebooting to apply I2C configuration changes"
+        reboot_timeout: 300
+      become: yes
+      when: boot_config.changed or modules_config.changed

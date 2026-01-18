@@ -1,0 +1,30 @@
+---
+- name: "install poetry"
+  hosts: "all"
+  become: true
+  tasks:
+    - name: "Update apt repo and cache."
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+    
+    - name: "install pipx deps"
+      apt:
+        name:
+          - "python3-pip"
+          - "pipx"
+        state: "present"
+
+    - name: "upgrade pipx via pipx if available"
+      community.general.pipx:
+        name: pipx
+        state: latest
+        global: true
+        install_deps: true
+
+    - name: "Install poetry via pipx"
+      community.general.pipx:
+        name: poetry
+        state: latest
+        global: true
+        install_deps: true

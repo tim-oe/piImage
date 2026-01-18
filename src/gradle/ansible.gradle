@@ -353,6 +353,13 @@ tasks.register('motd', GradleBuild) {
     tasks = ['playbook']
 }
 
+tasks.register('piAliases', GradleBuild) {
+    description = 'run ansible aliases script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/pi/aliases.yml']
+    tasks = ['playbook']
+}
+
 tasks.register('xrdp', GradleBuild) {
     description = 'run ansible xrdp script'
     group = "ansible"
@@ -374,10 +381,24 @@ tasks.register('sdr', GradleBuild) {
     tasks = ['playbook']
 }
 
+tasks.register('i2c', GradleBuild) {
+    description = 'run ansible sdr script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/weather/i2c.yml']
+    tasks = ['playbook']
+}
+
 tasks.register('wPython', GradleBuild) {
     description = 'run ansible wPython script'
     group = "ansible"
     startParameter.projectProperties = ['ansible_playbook':'src/ansible/weather/python.yml']
+    tasks = ['playbook']
+}
+
+tasks.register('poetry', GradleBuild) {
+    description = 'run ansible poetry script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/dev/poetry.yml']
     tasks = ['playbook']
 }
 
@@ -674,8 +695,9 @@ tasks.register('ssh') {
     }
 }
 
+// for newer rpi-swap package
 tasks.register('piSwap') {
-    description = 'run ansible swap script'
+    description = 'run ansible rpi swap script'
     group = "ansible"
     doLast {
         exec {
@@ -684,7 +706,7 @@ tasks.register('piSwap') {
                     'ansible-playbook ' +
                     '-i ' +
                     "${target_host}, " +
-                    'src/ansible/pi/swap.yml'
+                    'src/ansible/pi/rpi-swap.yml'
         }
     }
 }

@@ -1,0 +1,12 @@
+---
+- name: "copy pi bash aliases script"
+  hosts: "all"
+  become: true
+  tasks:
+    - name: deploy .bash_aliases
+      copy:
+        src: "{{ playbook_dir }}/../../home/pi/.bash_aliases"
+        dest: /home/tcronin/.bash_aliases
+        owner: tcronin
+        group: tcronin
+        mode: 0600
