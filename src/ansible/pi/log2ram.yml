@@ -5,6 +5,7 @@
   become: true
   vars:
     config_file: "/etc/log2ram.conf"
+    log2ram_size: 64
   tasks:
     - name: "Update apt repo and cache."
       apt:
@@ -12,13 +13,13 @@
         cache_valid_time: 3600
     - name: "Ansible apt install base deps"
       apt:
-        name: "{{ item }}"
-        state: "present"
-      loop:
+        name:
         - "curl"
         - "gnupg"
         - "gpg"
         - "wget"
+        state: "present"
+
     - name: "add and sign log2ram repo"
       block:
         - name: "log2ram repo key"
@@ -34,19 +35,76 @@
             filename: "log2ram-{{ ansible_distribution_release }}"
             state: "present"
             update_cache: true
+
     - name: "Update apt added repo and cache."
       apt:
         update_cache: true
         cache_valid_time: 3600
+
     - name: "apt install deps"
       apt:
-        name: "{{ item }}"
+        name: "log2ram"
         install_recommends: true
         state: "present"
-      loop:
-        - "log2ram"
+
     - name: "increase initial ram size"
       ansible.builtin.replace:
         path: "{{ config_file }}"
         regexp: "^SIZE=.*$"
-        replace: "SIZE=256M"
+        replace: "SIZE={{ log2ram_size }}M"
+
+    - name: Create systemd timer override directory
+      ansible.builtin.file:
+        path: /etc/systemd/system/log2ram-daily.timer.d
+        state: directory
+        mode: '0755'
+
+    - name: Override log2ram timer to hourly
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/log2ram-daily.timer.d/override.conf
+        content: |
+          [Timer]
+          OnCalendar=
+          OnCalendar=hourly
+        mode: '0644'
+
+    - name: reload systemd and restart timer
+      ansible.builtin.systemd:
+        daemon_reload: true
+        name: log2ram-daily.timer
+        state: restarted
+
+    - name: Ensure /tmp tmpfs mount in fstab
+      ansible.posix.mount:
+        path: /tmp
+        src: tmpfs
+        fstype: tmpfs
+        opts: defaults,noatime,nosuid,size=64M
+        state: mounted
+        dump: '0'
+        passno: '0'
+
+    - name: Ensure /var/tmp tmpfs mount in fstab
+      ansible.posix.mount:
+        path: /var/tmp
+        src: tmpfs
+        fstype: tmpfs
+        opts: defaults,noatime,nosuid,size=32M
+        state: mounted
+        dump: '0'
+        passno: '0'
+
+    - name: "reload fstab"
+      command: "systemctl daemon-reload"
+
+    - name: "mount"
+      command: "mount -a"
+
+    - name: "Reboot the box if kernel updated"
+      reboot:
+        msg: "Reboot initiated by Ansible for kernel updates"
+        connect_timeout: 5
+        reboot_timeout: 300
+        pre_reboot_delay: 0
+        post_reboot_delay: 10
+        test_command: "uptime"
