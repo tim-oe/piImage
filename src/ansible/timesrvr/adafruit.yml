@@ -12,7 +12,10 @@
   become: true
   vars:
     gpsd_config_file: "/etc/default/gpsd"
-    gps_dev: "ttyAMA0"
+    # default when blutooth is disabled
+    #gps_dev: "ttyAMA0"
+    # default when blutooth is enabled
+    gps_dev: "ttyS0"
     config_file: "/boot/firmware/config.txt"
     udev_file: "/etc/udev/rules.d/100-nmea.rules"
   tasks:
@@ -67,9 +70,9 @@
           gps0\", GROUP=\"tty\"\nACTION==\"add\", SUBSYSTEM==\"pps\", KERNEL==\"pps0\"\
           , SYMLINK+=\"gpspps0\"\n"
     - name: "enable serial interface"
-      command: "raspi-config nonint do_serial_hw=0"
+      command: "raspi-config nonint do_serial_hw 0"
     - name: "disable serial console"
-      command: "raspi-config nonint do_serial_cons=1"
+      command: "raspi-config nonint do_serial_cons 1"
     - name: "Enable gpsd.service"
       ansible.builtin.systemd_service:
         name: "gpsd.service"

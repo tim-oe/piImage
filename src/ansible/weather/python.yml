@@ -1,3 +1,5 @@
+# camere perms issue
+# https://github.com/raspberrypi/rpicam-apps/issues/809
 ---
 - name: "add python libs and dependencies"
   hosts: "all"
@@ -25,6 +27,9 @@
           - "python3-setuptools"
           - "python3-wheel"
           - "python3-pip"
+          - "python3-libcamera"
+          - "libcamera0"
+          - "libcamera-apps"
           - "i2c-tools"
           - "libgpiod-dev"
           - "pipx"
@@ -47,13 +52,17 @@
           - "libx264-dev" 
           - "libssl-dev" 
           - "ffmpeg"
+          - "raspberrypi-sys-mods"
         state: "present"
-
+ 
     - name: "install picamera2"
       ansible.builtin.apt:
-        name: python3-picamera2
+      apt:
+        name:
+          - python3-picamera2
         state: latest
         install_recommends: no
+
     - name: "add poetry envars"
       blockinfile:
         state: "present"

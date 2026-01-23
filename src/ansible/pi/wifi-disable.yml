@@ -6,14 +6,14 @@
     config_file: "/boot/firmware/config.txt"
   tasks:
     - name: "Remove unused wifi packages"
-      ansible.builtin.apt:
-        name: "{{ item }}"
+      apt:
+        name:
+          - "firmware-atheros"
+          - "firmware-libertas"
+          - "firmware-misc-nonfree"
+          - "firmware-mediatek"
         state: "absent"
-      loop:
-        - "firmware-brcm80211"
-        - "firmware-atheros"
-        - "firmware-libertas"
-        - "firmware-misc-nonfree"
+
     - name: "Disble onboard wifi."
       blockinfile:
         state: "present"

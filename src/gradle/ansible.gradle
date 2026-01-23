@@ -136,21 +136,21 @@ tasks.register('sonar-scanner', GradleBuild) {
     tasks = ['playbook']
 }
 
-tasks.register('wifi', GradleBuild) {
-    description = 'run ansible wifi script'
+tasks.register('disWifi', GradleBuild) {
+    description = 'run ansible disable wifi on pi script'
     group = "ansible"
     startParameter.projectProperties = ['ansible_playbook':'src/ansible/pi/wifi-disable.yml']
     tasks = ['playbook']
 }
 
-tasks.register('hdmi-disable', GradleBuild) {
+tasks.register('disHdmi', GradleBuild) {
     description = 'run ansible hdmi disable script'
     group = "ansible"
     startParameter.projectProperties = ['ansible_playbook':'src/ansible/pi/hdmi-disable.yml']
     tasks = ['playbook']
 }
 
-tasks.register('led-disable', GradleBuild) {
+tasks.register('disLed', GradleBuild) {
     description = 'run ansible led disable script'
     group = "ansible"
     startParameter.projectProperties = ['ansible_playbook':'src/ansible/pi/led-disable.yml']
@@ -530,8 +530,8 @@ tasks.register('adafruitUsb0') {
     }
 }
 
-tasks.register('ntpShm') {
-    description = 'run ansible gpsd script'
+tasks.register('ntp') {
+    description = 'run ansible ntp script'
     group = "ansible"
     doLast {
         exec {
@@ -540,8 +540,7 @@ tasks.register('ntpShm') {
                     'ansible-playbook ' +
                     '-i ' +
                     "${target_host}, " +
-                    'src/ansible/timesrvr/ntp.yml ' +
-                    '-e \'{"use_shm":true}\''
+                    'src/ansible/timesrvr/ntp.yml'
         }
     }
 }
@@ -605,7 +604,7 @@ tasks.register('kubeUpdate') {
     }
 }
 
-tasks.register('aptPurge') {
+tasks.register('aptPiPurge') {
     description = 'run ansible apt purge script'
     group = "ansible"
     doLast {

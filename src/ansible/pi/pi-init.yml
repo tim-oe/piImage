@@ -24,6 +24,7 @@
           - tmux
           - acl
           - apt-transport-https
+          - raspi-config
         state: "present"
 
     - name: "Remove unused packages"
@@ -34,7 +35,7 @@
           - "alsa*"
           - "modemmanager" 
           - "avahi*"
-        state: "present"
+        state: "absent"
 
     - name: "Upgrade all packages on servers."
       apt:
