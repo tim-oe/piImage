@@ -1,0 +1,52 @@
+---
+- name: "install and enable 1-wire interface"
+  hosts: "all"
+  become: true
+  vars:
+    onewire_gpio_pin: 17
+    config_txt_path: "/boot/firmware/config.txt"
+    local_user: "tcronin"
+  tasks:
+    - name: "Update apt repo and cache."
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: "Enable 1-Wire overlay in config.txt"
+      ansible.builtin.lineinfile:
+        path: "{{ config_txt_path }}"
+        regexp: '^#?dtoverlay=w1-gpio'
+        line: "dtoverlay=w1-gpio,gpiopin={{ onewire_gpio_pin }}"
+        state: present
+      register: boot_config
+
+    - name: "Enable 1-Wire kernel modules to load at boot"
+      ansible.builtin.lineinfile:
+        path: /etc/modules
+        line: "{{ item }}"
+        state: present
+      loop:
+        - w1-gpio
+        - w1-therm
+      register: modules_config
+
+    - name: "Load 1-Wire kernel modules immediately"
+      community.general.modprobe:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - w1-gpio
+        - w1-therm
+      ignore_errors: true
+
+    - name: "Add user to gpio group"
+      ansible.builtin.user:
+        name: "{{ local_user }}"
+        groups: gpio
+        append: true
+
+    - name: "Reboot if configuration changed"
+      ansible.builtin.reboot:
+        msg: "Rebooting to apply 1-Wire configuration changes"
+        reboot_timeout: 300
+      when: boot_config.changed or modules_config.changed

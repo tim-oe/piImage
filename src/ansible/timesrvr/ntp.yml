@@ -1,6 +1,8 @@
 # https://gist.github.com/edro15/c3fbaaabfe31ecb799363ffab587f336
 # https://blog.thelifeofkenneth.com/2020/03/building-raspberry-pi-stratum-1-ntp.html
 # https://linlog.blogspot.com/2009/07/synchronizing-ntp-server-to-gpspps.html
+# ntpd config options
+# https://docs.ntpsec.org/latest/ntp_conf.html
 # seed servers
 # https://support.ntp.org/Servers/NTPPoolServers
 # pps driver
@@ -14,6 +16,12 @@
 # nmea driver
 # https://www.eecis.udel.edu/~mills/ntp/html/drivers/driver20.html
 # https://www.ntp.org/documentation/drivers/driver20/---
+#
+# get ntp time sources
+# ntpq -pnu
+# get ntp system variables
+# ntpq -c rv
+#
 - name: "setup ntp"
   hosts: "all"
   become: true
@@ -61,7 +69,7 @@
           server amazon.pool.ntp.org
           server north-america.pool.ntp.org
 
-    - name: "add hardware pps driver (primary course precision)"
+    - name: "add Kernel PPS driver"
       blockinfile:
         state: "present"
         insertafter: "EOF"
@@ -70,10 +78,11 @@
         append_newline: true
         prepend_newline: true
         content: |
-          server 127.127.22.0 minpoll 4 maxpoll 4
+          #  kernal level PPS (primary precision timing) 
+          server 127.127.22.0 minpoll 4 maxpoll 4 prefer true
           fudge 127.127.22.0 refid PPSH flag3 1
 
-    - name: "shm pps driver (primary fine precision)"
+    - name: "gpsd pps driver"
       blockinfile:
         state: "present"
         insertafter: "EOF"
@@ -82,10 +91,11 @@
         append_newline: true
         prepend_newline: true
         content: |
-          server 127.127.28.2 minpoll 4 maxpoll 4 prefer
+          # pps via gpsd (backup precision timing)
+          server 127.127.28.2 minpoll 4 maxpoll 4
           fudge 127.127.28.2 refid PPS time1 0.000 flag1 1
 
-    - name: "shm gps driver (backup coarse precision)"
+    - name: "gpsd serial time driver"
       blockinfile:
         state: "present"
         insertafter: "EOF"
@@ -94,6 +104,7 @@
         append_newline: true
         prepend_newline: true
         content: |
+          #  gps serialtime (date hh:mm:ss reference)
           server 127.127.28.0 minpoll 4 maxpoll 4
           fudge 127.127.28.0 refid GPS time1 {{ offset }} stratum 3
 

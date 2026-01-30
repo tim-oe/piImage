@@ -1,0 +1,23 @@
+# TODO
+# Realtek RTL8812BU USB Wireless Adapter driver
+# https://www.amazon.com/dp/B078NSSM7W
+# /etc/NetworkManager/system-connections
+#
+# sudo apt update
+# sudo apt install -y dkms git bc
+#
+# via kernal 6.12 > 
+# lsmod | grep rtw88
+#
+# alternate driver
+# git clone https://github.com/morrownr/88x2bu-20210702.git
+# cd 88x2bu-20210702
+# sudo ./install-driver.sh
+#
+# sudo reboot
+#
+# lsmod | grep 88x2bu
+#
+# sudo nmcli device wifi connect {{ wifi_sidd }} password {{ wifi_wpd }}
+#
+# sudo reboot

@@ -374,6 +374,13 @@ tasks.register('wine', GradleBuild) {
     tasks = ['playbook']
 }
 
+tasks.register('1wire', GradleBuild) {
+    description = 'run ansible 1wire script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/pi/1-wire.yml']
+    tasks = ['playbook']
+}
+
 tasks.register('sdr', GradleBuild) {
     description = 'run ansible sdr script'
     group = "ansible"

@@ -13,6 +13,7 @@
         name:
           - "python3-pip"
           - "pipx"
+          - "libenchant-2-dev"
         state: "present"
 
     - name: "upgrade pipx via pipx if available"
