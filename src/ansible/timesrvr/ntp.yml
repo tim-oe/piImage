@@ -106,7 +106,7 @@
         content: |
           #  gps serialtime (date hh:mm:ss reference)
           server 127.127.28.0 minpoll 4 maxpoll 4
-          fudge 127.127.28.0 refid GPS time1 {{ offset }} stratum 3
+          fudge 127.127.28.0 refid GPS time1 {{ shm_offset }} stratum 3
 
     # no longer present in trixie
     - name: Check if file exists

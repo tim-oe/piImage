@@ -136,6 +136,20 @@ tasks.register('sonar-scanner', GradleBuild) {
     tasks = ['playbook']
 }
 
+tasks.register('disCamera', GradleBuild) {
+    description = 'run ansible disable camera on pi script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/pi/camera-disable.yml']
+    tasks = ['playbook']
+}
+
+tasks.register('disSound', GradleBuild) {
+    description = 'run ansible disable sound on pi script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/pi/sound-disable.yml']
+    tasks = ['playbook']
+}
+
 tasks.register('disWifi', GradleBuild) {
     description = 'run ansible disable wifi on pi script'
     group = "ansible"
@@ -611,7 +625,7 @@ tasks.register('kubeUpdate') {
     }
 }
 
-tasks.register('aptPiPurge') {
+tasks.register('piAptPurge') {
     description = 'run ansible apt purge script'
     group = "ansible"
     doLast {

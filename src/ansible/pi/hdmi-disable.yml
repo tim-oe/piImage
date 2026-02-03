@@ -1,3 +1,5 @@
+# https://www.raspberrypi.com/documentation/computers/config_txt.html
+# https://www.raspberrypi.com/documentation/computers/config_txt.html#advanced-features
 ---
 - name: "turn off hdmi"
   hosts: "all"
@@ -5,8 +7,8 @@
   vars:
     config_file: "/boot/firmware/config.txt"
   tasks:
-    - name: "turn off hdmi"
-      command: "vcgencmd display_power 0"
+#    - name: "turn off hdmi"
+#      command: "vcgencmd display_power 0"
     - name: "Disble hdmi."
       blockinfile:
         state: "present"
@@ -16,3 +18,30 @@
         append_newline: true
         prepend_newline: true
         content: "hdmi_ignore_hotplug=1\n"
+
+    - name: Disable display (replace any existing setting or add if missing)
+      lineinfile:
+        path: "{{ config_file }}"
+        regexp: '^#?\s*display_auto_detect=.*'
+        line: 'display_auto_detect=0'
+        state: present
+
+    - name: remove vc4-kms-v3d overlay (replace any existing setting or add if missing)
+      lineinfile:
+        path: "{{ config_file }}"
+        regexp: '^^#?\s*dtoverlay=vc4-kms-v3d'
+        line: 'dtoverlay=vc4-kms-v3d,nohdmi'
+
+    - name: 0 framebuffer (replace any existing setting or add if missing)
+      lineinfile:
+        path: "{{ config_file }}"
+        regexp: '^max_framebuffers=.*'
+        line: 'max_framebuffers=0'
+        state: present
+
+    - name: reduce gpu memory (replace any existing setting or add if missing)
+      lineinfile:
+        path: "{{ config_file }}"
+        regexp: '^gpu_mem=.*'
+        line: 'gpu_mem=16'
+        state: present

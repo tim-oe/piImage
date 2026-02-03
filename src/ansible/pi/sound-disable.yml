@@ -1,0 +1,16 @@
+---
+- name: "disable onboard sound"
+  hosts: "all"
+  become: true
+  vars:
+    config_file: "/boot/firmware/config.txt"
+  tasks:
+
+    - name: Disable audio (replace any existing setting or add if missing)
+      lineinfile:
+        path: "{{ config_file }}"
+        regexp: '^#?\s*dtparam=audio=.*'
+        line: 'dtparam=audio=off'
+        state: present
+      register: audio_disabled
+      

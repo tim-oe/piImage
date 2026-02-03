@@ -1,0 +1,27 @@
+---
+- name: "disable onboard wifi"
+  hosts: "all"
+  become: true
+  vars:
+    config_file: "/boot/firmware/config.txt"
+  tasks:
+    - name: "Remove unused wifi packages"
+      apt:
+        name:
+          - "rpicam-apps-core"
+          - "v4l-utils"
+        state: "absent"
+
+    - name: Disable camera (replace any existing setting or add if missing)
+      lineinfile:
+        path: "{{ config_file }}"
+        regexp: '^#?\s*camera_auto_detect=.*'
+        line: 'camera_auto_detect=0'
+        state: present
+
+    - name: Disable camera led (replace any existing setting or add if missing)
+      lineinfile:
+        path: "{{ config_file }}"
+        regexp: '^#?\s*disable_camera_led=.*'
+        line: 'disable_camera_led=1'
+        state: present

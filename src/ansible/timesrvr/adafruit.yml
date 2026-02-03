@@ -24,13 +24,13 @@
         update_cache: true
         cache_valid_time: 3600
     - name: "install gpsd"
-      ansible.builtin.apt:
-        name: "{{ item }}"
+      apt:
+        name:
+          - "raspi-config"
+          - "gpsd"
+          - "gpsd-tools"
+          - "gpsd-clients"
         state: "present"
-      loop:
-        - "gpsd"
-        - "gpsd-tools"
-        - "gpsd-clients"
     - name: "configure gps devices"
       ansible.builtin.replace:
         path: "{{ gpsd_config_file }}"
@@ -42,13 +42,12 @@
         regexp: "^GPSD_OPTIONS=.*$"
         replace: 'GPSD_OPTIONS="-n"'
     - name: "install pps"
-      ansible.builtin.apt:
-        name: "{{ item }}"
+      apt:
+        name:
+          - "libcap-dev"
+          - "libssl-dev"
+          - "pps-tools"
         state: "present"
-      loop:
-        - "libcap-dev"
-        - "libssl-dev"
-        - "pps-tools"
     - name: "enable pps channel."
       blockinfile:
         state: "present"

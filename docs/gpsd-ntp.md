@@ -37,6 +37,20 @@ Complete guide for setting up a Stratum 1 NTP server using GPS with PPS (Pulse P
 ---
 
 ## Initial Setup
+TODO point to ansible scripts for detailed steps
+piAptInit
+console
+ssh
+motd
+log2ram
+piSwap
+disWifi
+disLed
+disHdmi
+disCamera
+piAptPurge 
+adafruit
+ntp
 
 ### 1. Enable UART and PPS
 

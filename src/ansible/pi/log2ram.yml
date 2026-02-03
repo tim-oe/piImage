@@ -31,7 +31,7 @@
         - name: "log2ram apt source"
           ansible.builtin.apt_repository:
             repo:
-              "deb [signed-by=/usr/share/keyrings/azlux-archive-keyring.gpg] http://packages.azlux.fr/debian/ bookworm main"
+              "deb [signed-by=/usr/share/keyrings/azlux-archive-keyring.gpg] http://packages.azlux.fr/debian/ {{ ansible_distribution_release }} main"
             filename: "log2ram-{{ ansible_distribution_release }}"
             state: "present"
             update_cache: true
@@ -80,16 +80,6 @@
         src: tmpfs
         fstype: tmpfs
         opts: defaults,noatime,nosuid,size=64M
-        state: mounted
-        dump: '0'
-        passno: '0'
-
-    - name: Ensure /var/tmp tmpfs mount in fstab
-      ansible.posix.mount:
-        path: /var/tmp
-        src: tmpfs
-        fstype: tmpfs
-        opts: defaults,noatime,nosuid,size=32M
         state: mounted
         dump: '0'
         passno: '0'
