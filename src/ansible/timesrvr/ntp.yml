@@ -19,8 +19,20 @@
 #
 # get ntp time sources
 # ntpq -pnu
+# to poll
+# watch -n 10 'ntpq -pnu'
 # get ntp system variables
 # ntpq -c rv
+# check associations
+# ntpq -c associations
+# check peers
+# ntpq -c peers -n
+# check kernel info
+# ntpq -c kerninfo
+# check system info
+# ntpq -c sysinfo
+# check statistics
+# ntpq -c statistics
 #
 - name: "setup ntp"
   hosts: "all"
@@ -136,3 +148,37 @@
         name: "ntpsec.service"
         enabled: true
         masked: false
+
+    - name: Create wait-for-gps pre-start script
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../../usr/local/bin/wait-for-gps.sh"
+        dest: /usr/local/bin/wait-for-gps.sh
+        mode: '0755'
+        owner: root
+        group: root
+
+    - name: Create systemd override directory for ntpsec
+      file:
+        path: /etc/systemd/system/ntpsec.service.d
+        state: directory
+        mode: '0755'
+
+    # pi doesn't have RTC and can start with learge offset
+    - name: Add ntpsec service override to wait for GPS
+      copy:
+        dest: /etc/systemd/system/ntpsec.service.d/wait-for-gps.conf
+        mode: '0644'
+        content: |
+          [Unit]
+          After=gpsd.service
+          Wants=gpsd.service
+          
+          [Service]
+          ExecStartPre=/usr/local/bin/wait-for-gps.sh
+          ExecStartPost=/usr/sbin/ntpdate time.cloudflare.com 2>/dev/null
+      register: ntpsec_override
+
+    - name: Reload systemd daemon
+      systemd:
+        daemon_reload: yes
+      when: ntpsec_override.changed
