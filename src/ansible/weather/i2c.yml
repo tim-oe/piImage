@@ -11,11 +11,12 @@
         cache_valid_time: 3600
     - name: "install mysql"
       apt:
-        name: "{{ item }}"
+        name:
+          - "i2c-tools"
+          - "libi2c0"
+          - "python3-smbus2"
         state: "present"
-      loop:
-        - "i2c-tools"
-        - "libi2c0"
+        
     - name: Enable I2C in /boot/config.txt
       ansible.builtin.lineinfile:
         path: /boot/config.txt

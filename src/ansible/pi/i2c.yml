@@ -1,0 +1,58 @@
+---
+- name: "install and enable ic2 interface"
+  hosts: "all"
+  become: true
+  vars:
+    config_txt_path: "/boot/firmware/config.txt"
+    local_user: "tcronin"
+
+  tasks:
+    - name: "Update apt repo and cache."
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Install I2C tools
+      ansible.builtin.apt:
+        name:
+          - i2c-tools
+          - python3-smbus
+        state: present
+        update_cache: yes
+      
+    - name: Enable I2C in /boot/config.txt
+      ansible.builtin.lineinfile:
+        path: /boot/config.txt
+        regexp: '^#?dtparam=i2c_arm='
+        line: 'dtparam=i2c_arm=on'
+        state: present
+      notify: reboot_required
+    
+    - name: Load I2C kernel module (i2c-dev)
+      ansible.builtin.lineinfile:
+        path: /etc/modules
+        line: 'i2c-dev'
+        state: present
+      notify: reboot_required
+
+    - name: "Add user to ic2 group"
+      ansible.builtin.user:
+        name: "{{ local_user }}"
+        groups: i2c
+        append: true
+
+    - name: Check if I2C is already enabled in config
+      ansible.builtin.command: raspi-config nonint get_i2c
+      register: i2c_status
+      changed_when: false
+      failed_when: false
+    
+    - name: Enable I2C via raspi-config
+      ansible.builtin.command: raspi-config nonint do_i2c 0
+      when: i2c_status.stdout == "1"
+      notify: reboot_required
+  
+  handlers:
+    - name: reboot_required
+      ansible.builtin.debug:
+        msg: "Reboot required for I2C changes to take effect. Run 'sudo reboot' manually or use the reboot task."

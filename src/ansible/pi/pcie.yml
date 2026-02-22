@@ -1,0 +1,32 @@
+# https://www.jeffgeerling.com/blog/2023/nvme-ssd-boot-raspberry-pi-5/
+# https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#nvme-ssd-boot
+---
+- name: "enable pcie"
+  hosts: "all"
+  become: true
+  vars:
+    config_file: "/boot/firmware/config.txt"
+    pcie_type: 3
+  tasks:
+
+    - name: "Enable pcie."
+      blockinfile:
+        state: "present"
+        insertafter: "EOF"
+        dest: "{{ config_file }}"
+        marker: "# {mark} _PCIE_ENABLE"
+        append_newline: true
+        prepend_newline: true
+        content: |
+          "dtparam=pciex1"
+          "dtparam=pciex1_gen={{ pcie_type }}\n"
+
+    - name: Reboot if pcie enabled
+      ansible.builtin.reboot:
+        msg: "Reboot initiated by Ansible for pcie update"
+        connect_timeout: 5
+        reboot_timeout: 300
+        pre_reboot_delay: 0
+        post_reboot_delay: 10
+        test_command: "uptime"
+      when: pcie_enabled.changed

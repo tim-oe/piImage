@@ -1,0 +1,16 @@
+---
+- name: "install pihole"
+  hosts: "all"
+  become: true
+  vars:
+  tasks:
+    - name: "get install script"
+      ansible.builtin.get_url:
+        url: "https://install.pi-hole.net"
+        dest: "/tmp/basic-install.sh"
+        mode: "0644"
+        force: true
+
+    - name: "run install script"
+      become: yes
+      shell: bash /tmp/basic-install.sh

@@ -3,7 +3,7 @@
   hosts: "all"
   become: true
   vars:
-    onewire_gpio_pin: 17
+    onewire_gpio_pin: 5
     config_txt_path: "/boot/firmware/config.txt"
     local_user: "tcronin"
     w1_master_timeout: 3000

@@ -220,6 +220,13 @@ tasks.register('adafruit', GradleBuild) {
     tasks = ['playbook']
 }
 
+tasks.register('remmina', GradleBuild) {
+    description = 'run ansible remmina script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/apps/remmina.yml']
+    tasks = ['playbook']
+}
+
 tasks.register('virtbox', GradleBuild) {
     description = 'run ansible virtbox script'
     group = "ansible"
@@ -395,6 +402,27 @@ tasks.register('1wire', GradleBuild) {
     tasks = ['playbook']
 }
 
+tasks.register('i2c', GradleBuild) {
+    description = 'run ansible i2c script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/pi/i2c.yml']
+    tasks = ['playbook']
+}
+
+tasks.register('pcie', GradleBuild) {
+    description = 'run ansible pcie script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/pi/pcie.yml']
+    tasks = ['playbook']
+}
+
+tasks.register('rtc', GradleBuild) {
+    description = 'run ansible rtc script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/pi/rtc.yml']
+    tasks = ['playbook']
+}
+
 tasks.register('sdr', GradleBuild) {
     description = 'run ansible sdr script'
     group = "ansible"
@@ -402,12 +430,6 @@ tasks.register('sdr', GradleBuild) {
     tasks = ['playbook']
 }
 
-tasks.register('i2c', GradleBuild) {
-    description = 'run ansible sdr script'
-    group = "ansible"
-    startParameter.projectProperties = ['ansible_playbook':'src/ansible/weather/i2c.yml']
-    tasks = ['playbook']
-}
 
 tasks.register('wPython', GradleBuild) {
     description = 'run ansible wPython script'

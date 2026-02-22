@@ -1,3 +1,5 @@
+# Install Firefox from Mozilla's official APT repository
+# https://www.baeldung.com/linux/firefox-install-using-apt
 ---
 - name: "install firefox"
   hosts: "all"
@@ -5,47 +7,53 @@
   vars:
     user: tcronin
   tasks:
-    - name: "create keyrings directory"
-      file:
-        path: /etc/apt/keyrings
-        state: directory
-        mode: '0755'
+  - name: Install Firefox from Mozilla
+    block:
+      - name: Create keyrings directory
+        shell: install -d -m 0755 /etc/apt/keyrings
+        args:
+          creates: /etc/apt/keyrings
 
-    - name: "download Mozilla GPG key"
-      get_url:
-        url: https://packages.mozilla.org/apt/repo-signing-key.gpg
-        dest: /etc/apt/keyrings/packages.mozilla.org.asc
-        mode: '0644'
+      - name: Download Mozilla APT repository signing key
+        shell: |
+          wget -q https://packages.mozilla.org/apt/repo-signing-key.gpg -O- | tee /etc/apt/keyrings/packages.mozilla.org.asc > /dev/null
+        args:
+          creates: /etc/apt/keyrings/packages.mozilla.org.asc
 
-    - name: "add Mozilla repository"
-      apt_repository:
-        repo: "deb [signed-by=/etc/apt/keyrings/packages.mozilla.org.asc] https://packages.mozilla.org/apt mozilla main"
-        state: present
-        filename: mozilla
+      - name: Add Mozilla APT repository
+        copy:
+          dest: /etc/apt/sources.list.d/mozilla.list
+          content: "deb [signed-by=/etc/apt/keyrings/packages.mozilla.org.asc] https://packages.mozilla.org/apt mozilla main\n"
+          mode: '0644'
 
-    - name: "set Firefox to prefer Mozilla PPA"
-      copy:
-        content: |
-          Package: firefox*
-          Pin: origin packages.mozilla.org
-          Pin-Priority: 1000
-        dest: /etc/apt/preferences.d/mozilla-firefox
+      - name: Configure APT to prioritize Mozilla packages
+        copy:
+          dest: /etc/apt/preferences.d/mozilla
+          content: |
+            Package: *
+            Pin: origin packages.mozilla.org
+            Pin-Priority: 1000
+          mode: '0644'
 
-    - name: "Update apt repo and cache."
+    # Fix for hash sum mismatch / corrupted cache errors
+    # https://askubuntu.com/questions/41605/trouble-downloading-packages-list-due-to-a-hash-sum-mismatch-error
+    - name: Clear apt cache to fix hash sum mismatch
+      shell: |
+        rm -rf /var/lib/apt/lists/*
+        apt-get clean
+
+    - name: Update apt cache
       apt:
         update_cache: true
-        cache_valid_time: 3600
 
-    - name: "install"
+    - name: Install Firefox
       apt:
-        name: "{{ item }}"
-        state: "present"
-      loop:
-        - firefox
-        - ffmpeg
-        - libavcodec-extra 
-        - ubuntu-restricted-extras
-
+        name: 
+          - firefox
+          - ffmpeg
+          - libavcodec-extra
+          - ubuntu-restricted-extras
+        state: present
 
     - name: "get user's dbus session address"
       shell: |

@@ -1,0 +1,27 @@
+# https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#real-time-clock-rtc
+# TODO rpi 5 setup
+---
+- name: "enable rtc"
+  hosts: "all"
+  become: true
+  vars:
+    config_file: "/boot/firmware/config.txt"
+    rtc_type: ds3231
+  tasks:
+    - name: "add rtc packages"
+      apt:
+        name:
+          - i2c-tools
+          - python3-smbus
+          - util-linux-extra
+        state: "present"
+
+    - name: "Enable rtc."
+      blockinfile:
+        state: "present"
+        insertafter: "EOF"
+        dest: "{{ config_file }}"
+        marker: "# {mark} _RTC_ENABLE"
+        append_newline: true
+        prepend_newline: true
+        content:  "dtoverlay=i2c-rtc,{{ rtc_type }}\n"

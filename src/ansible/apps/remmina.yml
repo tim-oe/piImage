@@ -1,0 +1,26 @@
+---
+- name: "install remmina"
+  hosts: "all"
+  become: true
+  tasks:
+    - name: Install software-properties-common for add-apt-repository
+      apt:
+        name: software-properties-common
+        state: present
+        update_cache: yes
+
+    - name: Add Remmina PPA repository
+      apt_repository:
+        repo: ppa:remmina-ppa-team/remmina-next
+        state: present
+        update_cache: yes
+
+    - name: Upgrade Remmina and FreeRDP packages
+      apt:
+        name:
+          - remmina
+          - remmina-plugin-rdp
+          - remmina-plugin-vnc
+          - freerdp2-x11
+        state: latest
+        update_cache: yes
