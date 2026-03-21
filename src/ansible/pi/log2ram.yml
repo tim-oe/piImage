@@ -79,7 +79,17 @@
         path: /tmp
         src: tmpfs
         fstype: tmpfs
-        opts: defaults,noatime,nosuid,size=64M
+        opts: defaults,noatime,nosuid,size=128M
+        state: mounted
+        dump: '0'
+        passno: '0'
+
+    - name: Ensure /var/tmp tmpfs mount in fstab
+      ansible.posix.mount:
+        path: /var/tmp
+        src: tmpfs
+        fstype: tmpfs
+        opts: defaults,noatime,nosuid,size=512M
         state: mounted
         dump: '0'
         passno: '0'

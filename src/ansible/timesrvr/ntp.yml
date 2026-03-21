@@ -175,7 +175,8 @@
           
           [Service]
           ExecStartPre=/usr/local/bin/wait-for-gps.sh
-          ExecStartPost=/usr/sbin/ntpdate time.cloudflare.com 2>/dev/null
+          # is for non RTC systems: 
+          # ExecStartPost=/usr/sbin/ntpdate time.cloudflare.com 2>/dev/null
       register: ntpsec_override
 
     - name: Reload systemd daemon
