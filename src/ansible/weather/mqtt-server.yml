@@ -1,0 +1,33 @@
+# https://mosquitto.org/
+# 
+---
+- name: "install mosquitto mqtt broker"
+  hosts: "all"
+  become: true
+  vars:
+    config_file: "/etc/mosquitto/conf.d/local.conf"
+  tasks:
+    - name: "Update apt repo and cache."
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+    - name: "install mosquitto broker"
+      apt:
+        name:
+          - "mosquitto"
+        state: "present"
+
+    - name: "configure mosquitto listener and auth"
+      ansible.builtin.copy:
+        dest: "{{ config_file }}"
+        content: |
+          listener 1883
+          allow_anonymous true
+        mode: "0644"
+
+    - name: "enable and restart mosquitto"
+      ansible.builtin.systemd_service:
+        name: "mosquitto"
+        enabled: true
+        state: restarted
+        daemon_reload: true

@@ -1,0 +1,15 @@
+---
+- name: "install mqtt client tools"
+  hosts: "all"
+  become: true
+  tasks:
+    - name: "Update apt repo and cache."
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+    - name: "install mosquitto clients and python mqtt lib"
+      apt:
+        name:
+          - "mosquitto-clients"
+          - "python3-paho-mqtt"
+        state: "present"
