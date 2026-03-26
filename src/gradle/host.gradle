@@ -1,16 +1,20 @@
 tasks.register('resetHost') {
-    description = 'reset known host for tec-test'
+    description = 'reset known host entry and rescan (resolves ~/.ssh/config aliases)'
     group = "hosts"
     doLast {
         exec {
             workingDir '.'
-            commandLine 'bash', '-c',
-                    "ssh-keygen -R ${target_host}"
-        }
-        exec {
-            workingDir '.'
-            commandLine 'bash', '-c',
-                    "ssh-keyscan -T 30 -H ${target_host} >> ~/.ssh/known_hosts"
+            commandLine 'bash', '-c', """
+                RESOLVED_HOST=\$(ssh -G ${target_host} | awk '/^hostname / {print \$2}')
+                RESOLVED_PORT=\$(ssh -G ${target_host} | awk '/^port / {print \$2}')
+                if [ "\$RESOLVED_PORT" != "22" ]; then
+                    ssh-keygen -R "[\$RESOLVED_HOST]:\$RESOLVED_PORT"
+                    ssh-keyscan -T 30 -p \$RESOLVED_PORT -H \$RESOLVED_HOST >> ~/.ssh/known_hosts
+                else
+                    ssh-keygen -R \$RESOLVED_HOST
+                    ssh-keyscan -T 30 -H \$RESOLVED_HOST >> ~/.ssh/known_hosts
+                fi
+            """.stripIndent().trim()
         }
     }
 }

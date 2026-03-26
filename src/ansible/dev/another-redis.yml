@@ -1,0 +1,54 @@
+# Install AnotherRedisDesktopManager via AppImage
+# https://github.com/qishibo/AnotherRedisDesktopManager/releases
+---
+- name: "install another redis desktop manager"
+  hosts: "all"
+  become: true
+  vars:
+    ardm_version: "1.7.1"
+    ardm_arch: "{{ 'arm64' if ansible_architecture == 'aarch64' else 'x86_64' }}"
+    ardm_appimage: "Another-Redis-Desktop-Manager-linux-{{ ardm_version }}-{{ ardm_arch }}.AppImage"
+    ardm_url: "https://github.com/qishibo/AnotherRedisDesktopManager/releases/download/v{{ ardm_version }}/{{ ardm_appimage }}"
+    ardm_icon_url: "https://raw.githubusercontent.com/qishibo/AnotherRedisDesktopManager/refs/heads/master/pack/electron/icons/icon.ico"
+    ardm_install_dir: "/opt/another-redis-desktop-manager"
+    ardm_desktop_file: "/usr/share/applications/another-redis-desktop-manager.desktop"
+    ardm_desktop_entry: |
+      [Desktop Entry]
+      Name=Another Redis Desktop Manager
+      Exec={{ ardm_install_dir }}/{{ ardm_appimage }} --no-sandbox
+      Icon={{ ardm_install_dir }}/icon.ico
+      Type=Application
+      Categories=Development;Database;
+      Comment=A faster, better and more stable Redis desktop manager
+      Terminal=false
+  tasks:
+    - name: "install libfuse2 (required for AppImage)"
+      apt:
+        name: "libfuse2"
+        state: "present"
+
+    - name: "create install directory"
+      ansible.builtin.file:
+        path: "{{ ardm_install_dir }}"
+        state: "directory"
+        mode: "0755"
+
+    - name: "download appimage"
+      ansible.builtin.get_url:
+        url: "{{ ardm_url }}"
+        dest: "{{ ardm_install_dir }}/{{ ardm_appimage }}"
+        mode: "0755"
+        force: true
+
+    - name: "download icon"
+      ansible.builtin.get_url:
+        url: "{{ ardm_icon_url }}"
+        dest: "{{ ardm_install_dir }}/icon.ico"
+        mode: "0644"
+        force: true
+
+    - name: "create desktop file"
+      copy:
+        dest: "{{ ardm_desktop_file }}"
+        content: "{{ ardm_desktop_entry }}"
+        mode: "0644"
