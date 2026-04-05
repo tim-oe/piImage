@@ -1,35 +1,40 @@
-# todo install via pipx
-# pipx install --include-deps ansible
 ---
 - name: "install ansible"
   hosts: "all"
   become: true
   vars:
-    dev_version: "jammy"
+    ansible_user: tcronin
   tasks:
-    - name: "add and sign repo"
-      block:
-        - name: "repo key"
-          ansible.builtin.get_url:
-            url: "https://keyserver.ubuntu.com/pks/lookup?fingerprint=on&op=get&search=0x6125E2A8C77F2818FB7BD15B93C4A3FD7BB9C367"
-            dest: "/tmp/ansible.key"
-            mode: "0644"
-            force: true
-        - name: Remove key
-          ansible.builtin.file:
-            path: /usr/share/keyrings/ansible-archive-keyring.gpg
-            state: absent
-        - name: "sign key"
-          command: "bash -c 'cat /tmp/ansible.key | gpg --dearmour -o /usr/share/keyrings/ansible-archive-keyring.gpg'"
-        - name: "apt source"
-          ansible.builtin.apt_repository:
-            repo:
-              "deb [signed-by=/usr/share/keyrings/ansible-archive-keyring.gpg] http://ppa.launchpad.net/ansible/ansible/ubuntu\
-              \ {{ dev_version }} main"
-            filename: "ansible"
-            state: "present"
-            update_cache: true
-    - name: "install ansible"
+    - name: "remove stale Ansible apt source (PPA / old playbook)"
+      ansible.builtin.file:
+        path: /etc/apt/sources.list.d/ansible.list
+        state: absent
+
+    - name: "remove distro ansible package if present (replaced by pipx)"
       ansible.builtin.apt:
-        name: "ansible"
-        state: "present"
+        name: ansible
+        state: absent
+
+    - name: "update apt cache"
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: "install pipx"
+      ansible.builtin.apt:
+        name:
+          - pipx
+          - python3-venv
+        state: present
+
+    - name: "install ansible via pipx"
+      community.general.pipx:
+        name: ansible
+        state: latest
+        install_deps: true
+      become_user: "{{ ansible_user }}"
+
+    - name: "ensure ~/.local/bin is on PATH for login shells"
+      ansible.builtin.command: pipx ensurepath
+      become_user: "{{ ansible_user }}"
+      changed_when: false
