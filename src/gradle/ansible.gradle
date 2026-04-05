@@ -640,34 +640,6 @@ tasks.register('encrypt') {
     }
 }
 
-tasks.register('piUpdate') {
-    description = 'run ansible apt update script on pi instances'
-    group = "ansible"
-    doLast {
-        exec {
-            workingDir '.'
-            commandLine 'bash', '-c',
-                    'ansible-playbook ' +
-                    '-l pi_all ' +
-                    'src/ansible/common/apt-update.yml'
-        }
-    }
-}
-
-tasks.register('kubeUpdate') {
-    description = 'run ansible apt update script on pi instances'
-    group = "ansible"
-    doLast {
-        exec {
-            workingDir '.'
-            commandLine 'bash', '-c',
-                    'ansible-playbook ' +
-                    '-l kube_all ' +
-                    'src/ansible/common/apt-update.yml'
-        }
-    }
-}
-
 tasks.register('piAptPurge') {
     description = 'run ansible apt purge script'
     group = "ansible"

@@ -52,7 +52,17 @@
       when: i2c_status.stdout == "1"
       notify: reboot_required
   
-  handlers:
-    - name: reboot_required
-      ansible.builtin.debug:
-        msg: "Reboot required for I2C changes to take effect. Run 'sudo reboot' manually or use the reboot task."
+    - name: "Check if a reboot is needed on all servers."
+      stat:
+        path: "/var/run/reboot-required"
+      register: "reboot_required_file"
+    
+    - name: "Reboot the box if kernel updated"
+      reboot:
+        msg: "Reboot initiated by Ansible for kernel updates"
+        connect_timeout: 5
+        reboot_timeout: 300
+        pre_reboot_delay: 0
+        post_reboot_delay: 10
+        test_command: "uptime"
+      when: "reboot_required_file.stat.exists or i2c_status.stdout == '1'"
