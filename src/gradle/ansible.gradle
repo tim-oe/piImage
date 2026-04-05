@@ -101,6 +101,13 @@ tasks.register('nodejs', GradleBuild) {
     tasks = ['playbook']
 }
 
+tasks.register('sdkman', GradleBuild) {
+    description = 'run ansible sdkman script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/dev/sdkman.yml']
+    tasks = ['playbook']
+}
+
 tasks.register('vscode', GradleBuild) {
     description = 'run ansible vscode script'
     group = "ansible"

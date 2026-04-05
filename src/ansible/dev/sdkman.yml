@@ -1,0 +1,33 @@
+# https://www.digitalocean.com/community/tutorials/how-to-install-node-js-on-ubuntu-22-04
+---
+- name: "install sdkman"
+  hosts: "all"
+  become: true
+  vars:
+    sdkman_user: "tcronin"
+  tasks:
+    - name: Resolve sdkman_user home directory
+      ansible.builtin.shell: "getent passwd {{ sdkman_user }} | cut -d: -f6"
+      register: sdkman_user_home
+      changed_when: false
+
+    - name: Install sdkman
+      shell: |
+        curl -s "https://get.sdkman.io" | bash
+      args:
+        executable: /bin/bash
+      become: yes
+      become_user: "{{ sdkman_user }}"
+
+    - name: Add sdkman init to .profile (login shells)
+      ansible.builtin.blockinfile:
+        state: present
+        insertafter: EOF
+        dest: "{{ sdkman_user_home.stdout }}/.profile"
+        marker: "# {mark} _sdkman_"
+        create: yes
+        owner: "{{ sdkman_user }}"
+        mode: "0644"
+        content: |
+          export SDKMAN_DIR="$HOME/.sdkman"
+          [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
