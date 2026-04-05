@@ -9,11 +9,13 @@
     svc: "systemd-networkd-wait-online"
     #device: enp2s0
     # work laptop old
-    device: enp0s31f6
+    #device: enp0s31f6
     # vm possible conflict with nm
     #device: enp3s0
     # kvm bridge device
     # device: kvmbr0
+    # for pi eth0 device
+    device: eth0
   tasks:
     - name: "gather service facts"
       ansible.builtin.service_facts: null
