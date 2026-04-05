@@ -18,8 +18,9 @@
         append_newline: true
         prepend_newline: true
         content: |
-          "dtparam=pciex1"
-          "dtparam=pciex1_gen={{ pcie_type }}\n"
+          dtparam=pciex1
+          dtparam=pciex1_gen={{ pcie_type }}
+      register: pcie_enabled
 
     - name: Reboot if pcie enabled
       ansible.builtin.reboot:

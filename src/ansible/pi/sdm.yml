@@ -1,0 +1,16 @@
+# https://github.com/gitbls/sdm
+---
+- name: "install sdm"
+  hosts: "all"
+  become: true
+  vars:
+  tasks:
+    - name: "get install script"
+      ansible.builtin.get_url:
+        url: "https://raw.githubusercontent.com/gitbls/sdm/master/install-sdm"
+        dest: "/tmp/install-sdm.sh"
+        mode: "0644"
+        force: true
+
+    - name: "run install script"
+      shell: bash /tmp/install-sdm.sh

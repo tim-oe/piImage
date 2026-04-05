@@ -416,6 +416,13 @@ tasks.register('i2c', GradleBuild) {
     tasks = ['playbook']
 }
 
+tasks.register('sdm', GradleBuild) {
+    description = 'run ansible sdm script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/pi/sdm.yml']
+    tasks = ['playbook']
+}
+
 tasks.register('pcie', GradleBuild) {
     description = 'run ansible pcie script'
     group = "ansible"
