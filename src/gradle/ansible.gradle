@@ -150,6 +150,13 @@ tasks.register('sonar-scanner', GradleBuild) {
     tasks = ['playbook']
 }
 
+tasks.register('wifiRealtek', GradleBuild) {
+    description = 'run ansible wifi realtek script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/pi/wifi-realtek.yml']
+    tasks = ['playbook']
+}
+
 tasks.register('disCamera', GradleBuild) {
     description = 'run ansible disable camera on pi script'
     group = "ansible"

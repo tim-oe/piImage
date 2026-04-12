@@ -1,0 +1,60 @@
+# using usb dongle for wifi can be spotty, need to have max voltage and no suspend
+# https://www.kernel.org/doc/html/v5.3/driver-api/usb/power-management.html
+---
+- name: "wifi realtek usb adapter"
+  hosts: "all"
+  become: true
+  vars:
+    config_file: "/boot/firmware/config.txt"
+  tasks:
+    - name: "install sysfsutils"
+      apt:
+        name: "sysfsutils"
+        state: "present"
+        update_cache: true
+
+    - name: "Check if firmware-realtek is installed"
+      command: dpkg-query -W -f='${Status}' firmware-realtek
+      register: pkg_check
+      failed_when: false
+      changed_when: false
+
+    - name: "Reinstall firmware-realtek"
+      command: apt-get install --reinstall -y firmware-realtek
+      when: "'install ok installed' in pkg_check.stdout"
+
+    - name: "Install firmware-realtek"
+      apt:
+        name: "firmware-realtek"
+        state: "present"
+      when: "'install ok installed' not in pkg_check.stdout"
+
+    - name: "Disable USB autosuspend via cmdline.txt"
+      ansible.builtin.lineinfile:
+        path: "/boot/firmware/cmdline.txt"
+        regexp: '^((?!.*usbcore\.autosuspend=-1).*)$'
+        line: '\1 usbcore.autosuspend=-1'
+        backrefs: true
+
+    - name: "Update initramfs"
+      command: "update-initramfs -u"
+
+    - name: "Reboot"
+      ansible.builtin.reboot:
+        msg: "Reboot initiated by Ansible for wifi-realtek setup"
+        connect_timeout: 5
+        reboot_timeout: 300
+        pre_reboot_delay: 0
+        post_reboot_delay: 10
+        test_command: "uptime"
+
+    - name: "Check usbcore autosuspend value"
+      shell: "systool -m usbcore -v | grep autosuspend"
+      register: autosuspend_check
+      changed_when: false
+
+    - name: "Verify usbcore autosuspend is -1"
+      ansible.builtin.assert:
+        that: "autosuspend_check.stdout | regex_search('autosuspend\\s*=\\s*\"-1\"') is not none"
+        fail_msg: "usbcore autosuspend is not -1: {{ autosuspend_check.stdout }}"
+        success_msg: "usbcore autosuspend correctly set to -1"
