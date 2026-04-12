@@ -23,6 +23,7 @@
         - "7zip" 
         - "p7zip-rar"
         - "isolinux"
+        - "partclone"
     - name: "Remove unused packages"
       ansible.builtin.apt:
         name: "{{ item }}"

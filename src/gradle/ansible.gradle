@@ -94,6 +94,13 @@ tasks.register('certbot', GradleBuild) {
     tasks = ['playbook']
 }
 
+tasks.register('nvm', GradleBuild) {
+    description = 'run ansible nvm script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/dev/nvm.yml']
+    tasks = ['playbook']
+}
+
 tasks.register('nodejs', GradleBuild) {
     description = 'run ansible nodejs script'
     group = "ansible"
@@ -350,6 +357,13 @@ tasks.register('wlanmonit', GradleBuild) {
     description = 'run ansible wlan monitor script'
     group = "ansible"
     startParameter.projectProperties = ['ansible_playbook':'src/ansible/net/wlan-monit.yml']
+    tasks = ['playbook']
+}
+
+tasks.register('nutmonitor', GradleBuild) {
+    description = 'run ansible NUT upsmon (netclient) monitoring service'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/common/nut-monitor.yml']
     tasks = ['playbook']
 }
 
@@ -669,7 +683,7 @@ tasks.register('piAptPurge') {
     }
 }
 
-tasks.register('brutoof') {
+tasks.register('disbt') {
     description = 'run ansible disable onboard brutoof script'
     group = "ansible"
     doLast {

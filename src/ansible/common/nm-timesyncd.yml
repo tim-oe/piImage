@@ -1,13 +1,35 @@
+# setup timesyncd for network manager to get ntp server information from dhcp
+# nmcli c show
+# nmcli connection show '<connection_name>' | grep ntp
+# timedatectl timesync-status
+# sudo nmcli con down "tec-wan" && sudo nmcli con up "tec-wan"
 ---
 - name: "set ntp timesyncd"
   hosts: "all"
   become: true
   tasks:
+    - name: "Update apt repo and cache."
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: "Install timesyncd"
+      ansible.builtin.apt:
+        name: "systemd-timesyncd"
+        state: "present"
+
+    - name: "Enable timesyncd"
+      ansible.builtin.systemd_service:
+        name: "systemd-timesyncd"
+        enabled: true
+        masked: false
+
     - name: "Create dispatcher.d directory if it does not exist"
       ansible.builtin.file:
         path: "/etc/NetworkManager/dispatcher.d"
         state: "directory"
         mode: "0755"
+
     - name: "deploy dispatcher script"
       ansible.builtin.copy:
         src: "/mnt/clones/data/etc/NetworkManager/dispatcher.d/05-dhcp-timesyncd"

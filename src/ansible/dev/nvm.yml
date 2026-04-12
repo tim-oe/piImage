@@ -1,0 +1,34 @@
+---
+# https://github.com/nvm-sh/nvm
+#
+- name: "install node js"
+  hosts: "all"
+  become: true
+  vars:
+    node_ver: 22
+    nvm_user: "tcronin"
+  tasks:
+    # - name: Check if AWS CLI is already installed
+    #   ansible.builtin.stat:
+    #     path: /usr/local/bin/aws
+    #   register: aws_installed
+
+    - name: Install nvm if not installed
+      block:
+        - name: Download nvm install script
+          ansible.builtin.get_url:
+            url: "https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh"
+            dest: /tmp/nvm.sh
+            mode: "0700"
+            owner: "{{ nvm_user }}"
+            group: "{{ nvm_user }}"
+            force: true
+
+        - name: Install nvm
+          ansible.builtin.shell: |
+            /tmp/nvm.sh
+          #args:
+          #  creates: /usr/local/bin/aws
+          become: yes
+          become_user: "{{ nvm_user }}"
+      #when: not aws_installed.stat.exists

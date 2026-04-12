@@ -1,0 +1,80 @@
+---
+# NUT upsmon client: monitor a UPS served by a remote NUT master (netclient).
+# Set nut_server, nut_ups_name, nut_monuser, nut_monpassword (use vault for the password).
+# STILL WIP
+#
+# Example:
+#   ansible-playbook ... -e nut_server=ups.example.com -e nut_ups_name=ups \
+#     -e nut_monuser=monuser -e nut_monpassword='secret'
+#
+- name: "install NUT monitoring service (upsmon netclient)"
+  hosts: "all"
+  become: true
+  vars:
+    # primary = host with UPS attached; secondary = netclient monitoring remote upsd
+    nut_upsmon_role: "secondary"
+  tasks:
+    - name: "Require NUT connection variables"
+      ansible.builtin.assert:
+        that:
+          - nut_server is defined
+          - nut_server | length > 0
+          - nut_ups_name is defined
+          - nut_ups_name | length > 0
+          - nut_monuser is defined
+          - nut_monuser | length > 0
+          - nut_monpassword is defined
+          - nut_monpassword | length > 0
+        fail_msg: "Set nut_server, nut_ups_name, nut_monuser, and nut_monpassword (e.g. -e or group_vars)."
+
+    - name: "Update apt repo and cache."
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: "Install nut (upsmon)"
+      ansible.builtin.apt:
+        name: "nut"
+        state: "present"
+
+    - name: "Set NUT mode to netclient"
+      ansible.builtin.replace:
+        path: "/etc/nut/nut.conf"
+        regexp: '^MODE=.*$'
+        replace: "MODE=netclient"
+      notify: "Restart nut-monitor"
+
+    - name: "Configure upsmon MONITOR for remote NUT master"
+      ansible.builtin.blockinfile:
+        path: "/etc/nut/upsmon.conf"
+        block: "MONITOR {{ nut_ups_name }}@{{ nut_server }} 1 {{ nut_monuser }} {{ nut_monpassword }} {{ nut_upsmon_role }}"
+        marker: "# {mark} ANSIBLE MANAGED nut-monitor"
+        mode: "0640"
+        owner: root
+        group: nut
+      no_log: true
+      notify: "Restart nut-monitor"
+
+    - name: "Ensure NUT config permissions"
+      ansible.builtin.file:
+        path: "{{ item }}"
+        owner: root
+        group: nut
+        mode: "0640"
+      loop:
+        - "/etc/nut/nut.conf"
+        - "/etc/nut/upsmon.conf"
+
+    - name: "Enable and start nut-monitor (upsmon)"
+      ansible.builtin.systemd_service:
+        name: "nut-monitor"
+        enabled: true
+        state: "started"
+        daemon_reload: true
+
+  handlers:
+    - name: "Restart nut-monitor"
+      ansible.builtin.systemd_service:
+        name: "nut-monitor"
+        state: "restarted"
+        daemon_reload: true

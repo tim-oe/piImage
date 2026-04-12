@@ -16,9 +16,18 @@ tasks.register('imgGet') {
     description = 'copy clean image to target'
     group = 'sdm'
     doLast {
-        delete files("${project.rootDir}/img/*")
-        //mkdir("${project.rootDir}/img")
-        ant.get(src: "${pi_img_url}", dest: "${project.rootDir}/img", verbose: true)
+        def imgDir = file("${project.rootDir}/img")
+        if (imgDir.exists() && !imgDir.isDirectory()) {
+            delete imgDir
+        }
+        if (!imgDir.exists()) {
+            imgDir.mkdirs()
+        }
+        delete files("${imgDir}/*")
+        exec {
+            workingDir "${project.rootDir}/img"
+            commandLine 'curl', '-fL', '--progress-bar', '-o', "${pi_img}.xz", "${pi_img_url}"
+        }
         exec {
             workingDir "${project.rootDir}/img"
             commandLine 'bash', '-c',
