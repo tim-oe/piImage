@@ -25,6 +25,13 @@
         scope: global
         state: present
       become_user: "{{ git_user | default('tcronin') }}"
+    - name: "Set git global core.editor"
+      ansible.builtin.git_config:
+        name: core.editor
+        value: "nano"
+        scope: global
+        state: present
+      become_user: "{{ git_user | default('tcronin') }}"
     - name: "Add git prompt to .bashrc"
       ansible.builtin.blockinfile:
         path: "/home/{{ git_user | default('tcronin') }}/.bashrc"

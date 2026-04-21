@@ -50,6 +50,12 @@
         - "putty-tools"
         - "remmina"
         - "shutter"
+        - "ffmpeg"
+        - "ubuntu-restricted-extras"
+        - "gstreamer1.0-plugins-good"
+        - "gstreamer1.0-plugins-bad"
+        - "gstreamer1.0-plugins-ugly"
+        - "gstreamer1.0-libav"
         - "linux-modules-extra-{{ ansible_facts.kernelrelease }}"
 
     - name: "get puttygen.exe"
