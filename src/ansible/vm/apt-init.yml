@@ -36,7 +36,6 @@
         - nautilus
         - update-manager
         - gedit
-        - "linux-modules-extra-{{ ansible_facts['kernel'] }}"
 
     - name: "Remove unused packages"
       ansible.builtin.apt:
@@ -45,27 +44,37 @@
         purge: yes
         autoremove: yes
       loop:
-        - ed
-        - thunderbird
         - modemmanager 
         - wpasupplicant 
         - avahi-daemon
-        - vim*
         - alsa*
         - bluez*
         - cups*
-        - printer-driver*
-        - speech*
-        - sssd*
-        - wireless*
-        - libreoffice-common
         - snapd
         - ubuntu-server-minimal
-        - xdg-desktop-portal-gnome
         - gnome-remote-desktop
+        - mobile-broadband-provider-info
         - multipath-tools
         - multipath-tools-boot 
         - kpartx
+        - linux-firmware-amd-graphics
+        - linux-firmware-amd-misc
+        - linux-firmware-broadcom-wireless
+        - linux-firmware-intel-graphics
+        - linux-firmware-intel-misc
+        - linux-firmware-intel-wireless
+        - linux-firmware-marvell-prestera
+        - linux-firmware-marvell-wireless
+        - linux-firmware-mediatek
+        - linux-firmware-mellanox-spectrum
+        - linux-firmware-misc
+        - linux-firmware-netronome
+        - linux-firmware-nvidia-graphics
+        - linux-firmware-qlogic
+        - linux-firmware-qualcomm-graphics
+        - linux-firmware-qualcomm-misc
+        - linux-firmware-qualcomm-wireless
+        - linux-firmware-realtek
 
     - name: "Upgrade all packages on servers."
       apt:
@@ -101,30 +110,6 @@
         owner: root
         group: root
         mode: 0600
-
-    - name: Set default systemd target to graphical.target
-      ansible.builtin.command: systemctl set-default graphical.target
-      changed_when: true  
-
-    # - name: "Disable Wayland in GDM"
-    #   lineinfile:
-    #     path: /etc/gdm3/custom.conf
-    #     regexp: '^#?WaylandEnable='
-    #     line: 'WaylandEnable=false'
-    #     insertafter: '^\[daemon\]'
-
-    - name: "Set default X11 session"
-      lineinfile:
-        path: /etc/gdm3/custom.conf
-        regexp: '^#?DefaultSession='
-        line: 'DefaultSession=ubuntu-xorg.desktop'
-        insertafter: '^\[daemon\]'
-
-    - name: "Configure logind to kill user processes on logout"
-      lineinfile:
-        path: /etc/systemd/logind.conf
-        regexp: '^#?KillUserProcesses='
-        line: 'KillUserProcesses=yes'
 
     - name: "ensure AccountsService directory exists"
       file:
