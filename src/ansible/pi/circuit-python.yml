@@ -33,6 +33,11 @@
         path: "/tmp/{{ blinka_install_script }}"
         regexp: '^(\s*shell.prompt_reboot\(\)).*$'
         replace: '# \1'
+    - name: "auto-accept blinka prompts"
+      ansible.builtin.replace:
+        path: "/tmp/{{ blinka_install_script }}"
+        regexp: '^(\s*)if not shell\.prompt\(.*\):.*$'
+        replace: '\1if False:'
     - name: Install adafruit-python-shell
       ansible.builtin.pip:
         name: adafruit-python-shell

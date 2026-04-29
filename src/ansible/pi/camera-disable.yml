@@ -1,14 +1,20 @@
 ---
-- name: "disable onboard wifi"
+- name: "disable camera"
   hosts: "all"
   become: true
   vars:
     config_file: "/boot/firmware/config.txt"
   tasks:
-    - name: "Remove unused wifi packages"
+    - name: "Remove camera and video packages"
       apt:
         name:
+          - "libcamera-ipa"
+          - "libcamera0.7"
+          - "librpicam-app1"
+          - "libpisp-common"
+          - "libpisp1"
           - "rpicam-apps-core"
+          - "rpicam-apps-lite"
           - "v4l-utils"
         state: "absent"
 
