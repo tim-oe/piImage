@@ -1,4 +1,3 @@
-
 ---
 - name: "initialize packages for openvpn client"
   hosts: "all"

@@ -5,32 +5,32 @@
   hosts: "all"
   become: true
   tasks:
-  - name: Add DBeaver repository
-    block:
-      - name: Remove old dbeaver apt sources
-        file:
-          path: "{{ item }}"
-          state: absent
-        loop:
-          - /etc/apt/keyrings/dbeaver.gpg
-          - /etc/apt/sources.list.d/dbeaver.list
+    - name: Add DBeaver repository
+      block:
+        - name: Remove old dbeaver apt sources
+          file:
+            path: "{{ item }}"
+            state: absent
+          loop:
+            - /etc/apt/keyrings/dbeaver.gpg
+            - /etc/apt/sources.list.d/dbeaver.list
 
-      - name: Add DBeaver GPG key
-        shell: |
-          wget -q -O - https://dbeaver.io/debs/dbeaver.gpg.key | gpg --dearmor -o /usr/share/keyrings/dbeaver.gpg.key
-          chmod 644 /usr/share/keyrings/dbeaver.gpg.key
+        - name: Add DBeaver GPG key
+          shell: |
+            wget -q -O - https://dbeaver.io/debs/dbeaver.gpg.key | gpg --dearmor -o /usr/share/keyrings/dbeaver.gpg.key
+            chmod 644 /usr/share/keyrings/dbeaver.gpg.key
 
-      - name: Add DBeaver apt source
-        copy:
-          dest: /etc/apt/sources.list.d/dbeaver.list
-          content: "deb [signed-by=/usr/share/keyrings/dbeaver.gpg.key] https://dbeaver.io/debs/dbeaver-ce /\n"
-          mode: '0644'
+        - name: Add DBeaver apt source
+          copy:
+            dest: /etc/apt/sources.list.d/dbeaver.list
+            content: "deb [signed-by=/usr/share/keyrings/dbeaver.gpg.key] https://dbeaver.io/debs/dbeaver-ce /\n"
+            mode: "0644"
 
-  - name: Update apt cache
-    apt:
-      update_cache: true
+    - name: Update apt cache
+      apt:
+        update_cache: true
 
-  - name: Install DBeaver CE
-    apt:
-      name: dbeaver-ce
-      state: present
+    - name: Install DBeaver CE
+      apt:
+        name: dbeaver-ce
+        state: present

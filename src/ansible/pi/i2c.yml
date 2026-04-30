@@ -20,18 +20,18 @@
           - python3-smbus2
         state: present
         update_cache: yes
-      
+
     - name: Enable I2C in /boot/config.txt
       ansible.builtin.lineinfile:
         path: /boot/config.txt
-        regexp: '^#?dtparam=i2c_arm='
-        line: 'dtparam=i2c_arm=on'
+        regexp: "^#?dtparam=i2c_arm="
+        line: "dtparam=i2c_arm=on"
         state: present
-    
+
     - name: Load I2C kernel module (i2c-dev)
       ansible.builtin.lineinfile:
         path: /etc/modules
-        line: 'i2c-dev'
+        line: "i2c-dev"
         state: present
 
     - name: "Add user to ic2 group"
@@ -45,15 +45,15 @@
       register: i2c_status
       changed_when: false
       failed_when: false
-    
+
     - name: Enable I2C via raspi-config
       ansible.builtin.command: raspi-config nonint do_i2c 0
-  
+
     - name: "Check if a reboot is needed on all servers."
       stat:
         path: "/var/run/reboot-required"
       register: "reboot_required_file"
-    
+
     - name: "Reboot the box if kernel updated"
       reboot:
         msg: "Reboot initiated by Ansible for kernel updates"

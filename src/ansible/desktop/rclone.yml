@@ -28,6 +28,6 @@
         mode: "0700"
         force: true
     - name: "install rclone"
-      ansible.builtin.shell: 
+      ansible.builtin.shell:
         executable: /bin/bash
         cmd: "/tmp/rclone-install.sh"

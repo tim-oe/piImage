@@ -24,4 +24,4 @@
         marker: "# {mark} _RTC_ENABLE"
         append_newline: true
         prepend_newline: true
-        content:  "dtoverlay=i2c-rtc,{{ rtc_type }}\n"
+        content: "dtoverlay=i2c-rtc,{{ rtc_type }}\n"

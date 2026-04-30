@@ -45,10 +45,9 @@
         state: restarted
 
     - name: "set tuned profile"
-      shell: 'tuned-adm profile virtual-guest'
+      shell: "tuned-adm profile virtual-guest"
 
     - name: "create udev scheduler rules"
       ansible.builtin.copy:
         dest: /etc/udev/rules.d/60-virtio-scheduler.rules
-        content:
-          ACTION=="add|change", KERNEL=="sd[a-z]|vd[a-z]", ATTR{queue/scheduler}="none"
+        content: ACTION=="add|change", KERNEL=="sd[a-z]|vd[a-z]", ATTR{queue/scheduler}="none"

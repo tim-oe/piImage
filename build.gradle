@@ -1,5 +1,5 @@
 plugins {
-    id("com.diffplug.spotless") version "6.25.0"
+    id("com.diffplug.spotless") version "8.4.0"
 }
 
 repositories {
@@ -14,17 +14,18 @@ apply from: 'src/gradle/cloud-init.gradle'
 
 // https://github.com/diffplug/spotless/tree/main/plugin-gradle
 spotless {
-    // https://github.com/diffplug/spotless/issues/1795
+    //https://github.com/diffplug/spotless/issues/1795
     // TODO https://github.com/google/yamlfmt
-    // yaml {
-    //     target '**/*.yml'
-    //     jackson()
-    //     prettier()
-    //     indentWithSpaces()
-    // }
+    yaml {
+        target '**/*.yml'
+        // JACKSON still stripping comments
+        // jackson()
+        prettier()
+        indentWithSpaces()
+    }
     groovyGradle {
         target '*.gradle','src/gradle/*.gradle'
         greclipse()
-        indentWithSpaces()
+        leadingTabsToSpaces()
     }
 }

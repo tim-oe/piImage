@@ -137,12 +137,12 @@
       ansible.builtin.file:
         path: "/etc/dhcp/dhclient-exit-hooks.d/ntp"
         state: "absent"
-    
+
     - name: "remove ntpsec dhcp hook file"
       ansible.builtin.file:
         path: "/etc/dhcp/dhclient-exit-hooks.d/ntpsec"
         state: "absent"
-    
+
     - name: "Enable ntp"
       ansible.builtin.systemd_service:
         name: "ntpsec.service"
@@ -153,7 +153,7 @@
       ansible.builtin.copy:
         src: "{{ playbook_dir }}/../../usr/local/bin/wait-for-gps.sh"
         dest: /usr/local/bin/wait-for-gps.sh
-        mode: '0755'
+        mode: "0755"
         owner: root
         group: root
 
@@ -161,18 +161,18 @@
       file:
         path: /etc/systemd/system/ntpsec.service.d
         state: directory
-        mode: '0755'
+        mode: "0755"
 
     # pi doesn't have RTC and can start with learge offset
     - name: Add ntpsec service override to wait for GPS
       copy:
         dest: /etc/systemd/system/ntpsec.service.d/wait-for-gps.conf
-        mode: '0644'
+        mode: "0644"
         content: |
           [Unit]
           After=gpsd.service
           Wants=gpsd.service
-          
+
           [Service]
           ExecStartPre=/usr/local/bin/wait-for-gps.sh
           # is for non RTC systems: 

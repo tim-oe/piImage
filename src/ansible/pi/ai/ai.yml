@@ -39,7 +39,7 @@
     - name: get hailo board
       ansible.builtin.command: "hailortcli fw-control identify"
       register: ai_board_name
-      changed_when: false   # Prevents command from always reporting as "changed"
+      changed_when: false # Prevents command from always reporting as "changed"
     - name: verify ai module
       ansible.builtin.assert:
         that:

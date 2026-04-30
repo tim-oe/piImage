@@ -8,7 +8,7 @@
       copy:
         dest: /etc/needrestart/conf.d/99-ansible.conf
         content: "$nrconf{restart} = 'a';\n"
-      ignore_errors: yes  # may not exist on all distros
+      ignore_errors: yes # may not exist on all distros
 
     - name: "Update apt repo and cache."
       apt:
@@ -18,7 +18,7 @@
     - name: Upgrade all packages
       apt:
         upgrade: full
-        dpkg_options: 'force-confdef,force-confold'
+        dpkg_options: "force-confdef,force-confold"
       environment:
         DEBIAN_FRONTEND: noninteractive
         NEEDRESTART_MODE: a

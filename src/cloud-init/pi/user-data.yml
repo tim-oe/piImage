@@ -2,7 +2,7 @@
 hostname: __HOSTNAME__
 manage_etc_hosts: true
 packages:
-- htop
+  - htop
 apt:
   conf: |
     Acquire {

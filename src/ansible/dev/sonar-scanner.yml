@@ -42,4 +42,4 @@
     - name: update path.
       copy:
         dest: /etc/profile.d/custom-path.sh
-        content: 'PATH=$PATH:/opt/sonar-scanner/bin'
+        content: "PATH=$PATH:/opt/sonar-scanner/bin"

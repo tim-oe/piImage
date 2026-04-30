@@ -33,4 +33,4 @@
         owner: root
         group: root
         state: link
-        mode: '0755'
+        mode: "0755"

@@ -1,4 +1,4 @@
-# 
+#
 ---
 - name: "eclipse j2ee install"
   hosts: "all"

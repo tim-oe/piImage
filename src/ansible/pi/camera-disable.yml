@@ -22,12 +22,12 @@
       lineinfile:
         path: "{{ config_file }}"
         regexp: '^#?\s*camera_auto_detect=.*'
-        line: 'camera_auto_detect=0'
+        line: "camera_auto_detect=0"
         state: present
 
     - name: Disable camera led (replace any existing setting or add if missing)
       lineinfile:
         path: "{{ config_file }}"
         regexp: '^#?\s*disable_camera_led=.*'
-        line: 'disable_camera_led=1'
+        line: "disable_camera_led=1"
         state: present

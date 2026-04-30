@@ -14,10 +14,10 @@
     - name: "Ansible apt install base deps"
       apt:
         name:
-        - "curl"
-        - "gnupg"
-        - "gpg"
-        - "wget"
+          - "curl"
+          - "gnupg"
+          - "gpg"
+          - "wget"
         state: "present"
 
     - name: "add and sign log2ram repo"
@@ -30,8 +30,7 @@
             force: true
         - name: "log2ram apt source"
           ansible.builtin.apt_repository:
-            repo:
-              "deb [signed-by=/usr/share/keyrings/azlux-archive-keyring.gpg] http://packages.azlux.fr/debian/ {{ ansible_distribution_release }} main"
+            repo: "deb [signed-by=/usr/share/keyrings/azlux-archive-keyring.gpg] http://packages.azlux.fr/debian/ {{ ansible_distribution_release }} main"
             filename: "log2ram-{{ ansible_distribution_release }}"
             state: "present"
             update_cache: true
@@ -57,7 +56,7 @@
       ansible.builtin.file:
         path: /etc/systemd/system/log2ram-daily.timer.d
         state: directory
-        mode: '0755'
+        mode: "0755"
 
     - name: Override log2ram timer to hourly
       ansible.builtin.copy:
@@ -66,7 +65,7 @@
           [Timer]
           OnCalendar=
           OnCalendar=hourly
-        mode: '0644'
+        mode: "0644"
 
     - name: reload systemd and restart timer
       ansible.builtin.systemd:
@@ -81,8 +80,8 @@
         fstype: tmpfs
         opts: defaults,noatime,nosuid,size=128M
         state: mounted
-        dump: '0'
-        passno: '0'
+        dump: "0"
+        passno: "0"
 
     - name: Ensure /var/tmp tmpfs mount in fstab
       ansible.posix.mount:
@@ -91,8 +90,8 @@
         fstype: tmpfs
         opts: defaults,noatime,nosuid,size=512M
         state: mounted
-        dump: '0'
-        passno: '0'
+        dump: "0"
+        passno: "0"
 
     - name: "reload fstab"
       command: "systemctl daemon-reload"

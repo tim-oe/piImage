@@ -18,7 +18,7 @@
           - dnsutils
           - net-tools
           - ethtool
-          - traceroute  
+          - traceroute
           - unattended-upgrades
           - needrestart
           - tmux
@@ -33,7 +33,7 @@
           - "ed"
           - "vim*"
           - "alsa*"
-          - "modemmanager" 
+          - "modemmanager"
           - "avahi*"
         state: "absent"
 

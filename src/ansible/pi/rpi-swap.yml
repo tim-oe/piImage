@@ -14,7 +14,7 @@
       apt:
         update_cache: true
         cache_valid_time: 3600
-    
+
     - name: "install pipx deps"
       apt:
         name:
@@ -26,7 +26,7 @@
       file:
         path: /etc/rpi/swap.conf.d
         state: directory
-        mode: '0755'
+        mode: "0755"
 
     - name: "configure rpi swap"
       copy:

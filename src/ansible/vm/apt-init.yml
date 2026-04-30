@@ -11,11 +11,11 @@
 ---
 - name: "initialize packages for vm"
   hosts: "all"
-  gather_facts: true 
+  gather_facts: true
   become: true
   vars:
     user: tcronin
-    exclude_file: /var/lib/AccountsService/users/ansible 
+    exclude_file: /var/lib/AccountsService/users/ansible
   tasks:
     - name: "Update apt repo and cache."
       apt:
@@ -44,8 +44,8 @@
         purge: yes
         autoremove: yes
       loop:
-        - modemmanager 
-        - wpasupplicant 
+        - modemmanager
+        - wpasupplicant
         - avahi-daemon
         - alsa*
         - bluez*
@@ -55,7 +55,7 @@
         - gnome-remote-desktop
         - mobile-broadband-provider-info
         - multipath-tools
-        - multipath-tools-boot 
+        - multipath-tools-boot
         - kpartx
         - linux-firmware-amd-graphics
         - linux-firmware-amd-misc
@@ -88,7 +88,7 @@
       apt:
         autoremove: true
 
-    # TODO sudo nano  /usr/share/polkit-1/actions/org.gnome.settings-daemon.plugins.power.policy    
+    # TODO sudo nano  /usr/share/polkit-1/actions/org.gnome.settings-daemon.plugins.power.policy
     - name: "stop n mask power targets"
       ansible.builtin.systemd_service:
         name: "{{ item }}"
@@ -106,7 +106,7 @@
     - name: deploy user exclude file
       copy:
         src: "{{ playbook_dir }}/../..{{ exclude_file }}"
-        dest: "{{ exclude_file }}" 
+        dest: "{{ exclude_file }}"
         owner: root
         group: root
         mode: 0600
@@ -115,7 +115,7 @@
       file:
         path: /var/lib/AccountsService/users
         state: directory
-        mode: '0755'
+        mode: "0755"
 
     - name: "set default session to ubuntu for user"
       copy:
@@ -125,7 +125,7 @@
           XSession=ubuntu
           SystemAccount=false
         dest: "/var/lib/AccountsService/users/{{ user }}"
-        mode: '0644'
+        mode: "0644"
 
     - name: "get default gnome terminal profile"
       shell: gsettings get org.gnome.Terminal.ProfilesList default | tr -d \'
@@ -136,7 +136,7 @@
       file:
         path: "{{ item }}"
         state: directory
-        mode: '0755'
+        mode: "0755"
       loop:
         - /etc/dconf/db/local.d
         - /etc/dconf/profile

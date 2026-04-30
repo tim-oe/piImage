@@ -40,7 +40,7 @@
     - name: "Set NUT mode to netclient"
       ansible.builtin.replace:
         path: "/etc/nut/nut.conf"
-        regexp: '^MODE=.*$'
+        regexp: "^MODE=.*$"
         replace: "MODE=netclient"
       notify: "Restart nut-monitor"
 

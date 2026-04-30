@@ -3,7 +3,7 @@
 # https://linux.die.net/man/5/smartd.conf
 # email test
 # /dev/sda -H -m tecronin@gmail.com -M test -M exec /usr/share/smartmontools/msmtp_mailer.sh
-# this relies on the msmtp being installed 
+# this relies on the msmtp being installed
 - name: "install smart tools"
   hosts: "all"
   become: true
@@ -12,15 +12,15 @@
     env_file: "/etc/default/smartmontools"
     mailer_file: "/usr/share/smartmontools/msmtp_mailer.sh"
     drives:
-      # laptop    
+      # laptop
       #- "/dev/nvme0n1"
       #- "/dev/nvme1n1"
       # desktop
-      - "/dev/sda" 
-      - "/dev/sdb" 
-      - "/dev/sdc" 
-      - "/dev/sdd" 
-      - "/dev/sde" 
+      - "/dev/sda"
+      - "/dev/sdb"
+      - "/dev/sdc"
+      - "/dev/sdd"
+      - "/dev/sde"
   tasks:
     - name: "install deps"
       apt:
@@ -30,7 +30,7 @@
         - "nvme-cli"
         - "smartmontools"
     - name: "enable smart monitoring"
-      ansible.builtin.shell: 
+      ansible.builtin.shell:
         executable: /bin/bash
         cmd: "smartctl -s on -S on {{ item }}"
       loop: "{{ drives }}"
@@ -48,7 +48,7 @@
     - name: comment out devicesscan
       ansible.builtin.lineinfile:
         path: "{{ config_file }}"
-        regexp: '^(DEVICESCAN.*)$'
+        regexp: "^(DEVICESCAN.*)$"
         line: '#\1'
         backrefs: yes
         backup: true

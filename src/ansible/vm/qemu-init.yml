@@ -15,7 +15,7 @@
         cache_valid_time: 3600
 
     - name: "install base deps"
-      apt: 
+      apt:
         name: "{{ item }}"
         state: "present"
       loop:
@@ -34,7 +34,7 @@
         state: restarted
 
     - name: "set tuned profile"
-      shell: 'tuned-adm profile virtual-guest'
+      shell: "tuned-adm profile virtual-guest"
 
     - name: "Enable serial-getty@ttyS0"
       ansible.builtin.systemd_service:
@@ -64,4 +64,4 @@
         state: stopped
         scope: user
       become: yes
-      become_user: "{{ user }}"      
+      become_user: "{{ user }}"

@@ -18,7 +18,7 @@
     - name: "Enable 1-Wire overlay in config.txt"
       ansible.builtin.lineinfile:
         path: "{{ config_txt_path }}"
-        regexp: '^#?dtoverlay=w1-gpio'
+        regexp: "^#?dtoverlay=w1-gpio"
         line: "dtoverlay=w1-gpio,gpiopin={{ onewire_gpio_pin }}"
         state: present
       register: boot_config
@@ -54,8 +54,8 @@
         content: |
           #!/bin/bash
           echo 4 | tee /sys/devices/w1_bus_master1/w1_master_max_slave_count > /dev/null
-        mode: '0755'
-    
+        mode: "0755"
+
     - name: Create systemd service
       ansible.builtin.copy:
         dest: /etc/systemd/system/configure-1wire.service
@@ -63,16 +63,16 @@
           [Unit]
           Description=Set 1-Wire max slave count
           After=multi-user.target
-          
+
           [Service]
           Type=oneshot
           ExecStart=/usr/local/bin/configure-1wire.sh
           RemainAfterExit=yes
-          
+
           [Install]
           WantedBy=multi-user.target
-        mode: '0644'
-            
+        mode: "0644"
+
     - name: Enable 1-Wire configuration service
       ansible.builtin.systemd:
         name: configure-1wire
@@ -84,4 +84,3 @@
       ansible.builtin.reboot:
         msg: "Rebooting to apply 1-Wire configuration changes"
         reboot_timeout: 300
-

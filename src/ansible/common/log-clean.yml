@@ -11,8 +11,8 @@
         file_type: file
         use_regex: yes
         recurse: yes
-        patterns: 
-          - '.*\.gz$' 
+        patterns:
+          - '.*\.gz$'
           - '.*\.[0-9]$'
       register: old_logs
     - name: delete old log archives
@@ -21,5 +21,4 @@
         state: absent
       with_items: "{{ old_logs.files }}"
     - name: "truncate journal"
-      command:
-        "journalctl --vacuum-time=30days"
+      command: "journalctl --vacuum-time=30days"

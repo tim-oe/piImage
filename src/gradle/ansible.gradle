@@ -634,7 +634,7 @@ tasks.register('mysql') {
                     '-i ' +
                     "${target_host}, " +
                     'src/ansible/weather/mysql.yml'
-                    "-e '{\"root_pwd\":\"${mysql_root_pwd}\"}'"
+            "-e '{\"root_pwd\":\"${mysql_root_pwd}\"}'"
         }
     }
 }
@@ -670,7 +670,7 @@ tasks.register('encrypt') {
                     'ansible-vault encrypt_string ' +
                     "${ans_val} " +
                     '--name ' +
-                    "${ans_prop} " 
+                    "${ans_prop} "
         }
     }
 }

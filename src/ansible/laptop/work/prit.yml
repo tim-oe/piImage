@@ -21,14 +21,11 @@
     - name: "add apt source"
       copy:
         dest: "/etc/apt/sources.list.d/pritunl.list"
-        content:
-          "deb https://repo.pritunl.com/stable/apt oracular main"
+        content: "deb https://repo.pritunl.com/stable/apt oracular main"
     - name: "add key"
-      command:
-        "gpg --keyserver hkp://keyserver.ubuntu.com --recv-keys 7568D9BB55FF9E5287D586017AE645C0CF8E292A"
+      command: "gpg --keyserver hkp://keyserver.ubuntu.com --recv-keys 7568D9BB55FF9E5287D586017AE645C0CF8E292A"
     - name: "export key"
-      command:
-        "bash -c 'gpg --armor --export 7568D9BB55FF9E5287D586017AE645C0CF8E292A | tee /etc/apt/trusted.gpg.d/pritunl.asc'"
+      command: "bash -c 'gpg --armor --export 7568D9BB55FF9E5287D586017AE645C0CF8E292A | tee /etc/apt/trusted.gpg.d/pritunl.asc'"
     - name: "Update apt added repo and cache."
       apt:
         update_cache: true

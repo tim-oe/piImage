@@ -4,7 +4,7 @@
   become: true
   vars:
     user: tcronin
-    exclude_file: /var/lib/AccountsService/users/ansible 
+    exclude_file: /var/lib/AccountsService/users/ansible
   tasks:
     - name: "Update apt repo and cache."
       apt:
@@ -64,7 +64,7 @@
       loop:
         - ed
         - thunderbird
-        - modemmanager 
+        - modemmanager
         - avahi-daemon
         - vim*
         - alsa*
@@ -73,7 +73,7 @@
         - xdg-desktop-portal-gnome
         - gnome-remote-desktop
         - multipath-tools
-        - multipath-tools-boot 
+        - multipath-tools-boot
         - kpartx
 
     - name: "Upgrade all packages on servers."
@@ -92,40 +92,40 @@
     - name: deploy user exclude file
       copy:
         src: "{{ playbook_dir }}/../../..{{ exclude_file }}"
-        dest: "{{ exclude_file }}" 
+        dest: "{{ exclude_file }}"
         owner: root
         group: root
         mode: 0600
 
     - name: Set default systemd target to graphical.target
       ansible.builtin.command: systemctl set-default graphical.target
-      changed_when: true  
+      changed_when: true
 
     - name: "Disable Wayland in GDM"
       lineinfile:
         path: /etc/gdm3/custom.conf
-        regexp: '^#?WaylandEnable='
-        line: 'WaylandEnable=false'
+        regexp: "^#?WaylandEnable="
+        line: "WaylandEnable=false"
         insertafter: '^\[daemon\]'
 
     - name: "Set default X11 session"
       lineinfile:
         path: /etc/gdm3/custom.conf
-        regexp: '^#?DefaultSession='
-        line: 'DefaultSession=ubuntu-xorg.desktop'
+        regexp: "^#?DefaultSession="
+        line: "DefaultSession=ubuntu-xorg.desktop"
         insertafter: '^\[daemon\]'
 
     - name: "Configure logind to kill user processes on logout"
       lineinfile:
         path: /etc/systemd/logind.conf
-        regexp: '^#?KillUserProcesses='
-        line: 'KillUserProcesses=yes'
+        regexp: "^#?KillUserProcesses="
+        line: "KillUserProcesses=yes"
 
     - name: "ensure AccountsService directory exists"
       file:
         path: /var/lib/AccountsService/users
         state: directory
-        mode: '0755'
+        mode: "0755"
 
     - name: "set default session to ubuntu for user"
       copy:
@@ -135,7 +135,7 @@
           XSession=ubuntu
           SystemAccount=false
         dest: "/var/lib/AccountsService/users/{{ user }}"
-        mode: '0644'
+        mode: "0644"
 
     - name: "stop any dconf service for user (to unlock database)"
       become: yes
@@ -173,7 +173,7 @@
           favorite-apps=['notepad-plus-plus_notepad-plus-plus.desktop', 'org.gnome.Terminal.desktop', 'putty.desktop', 'org.gnome.Nautilus.desktop', 'update-manager.desktop']
         dest: "/tmp/dconf_settings_{{ user }}.ini"
         owner: "{{ user }}"
-        mode: '0600'
+        mode: "0600"
 
     - name: "load settings using user's dbus session"
       become: yes

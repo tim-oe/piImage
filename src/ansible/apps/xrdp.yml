@@ -2,7 +2,7 @@
 # https://askubuntu.com/questions/1524884/how-to-make-polkit-work-with-xrdp
 # https://github.com/neutrinolabs/xrdp/issues/2542
 # https://github.com/flatpak/xdg-desktop-portal/issues/986
-# 
+#
 ---
 - name: "install xrdp"
   hosts: "all"
@@ -16,7 +16,7 @@
     - name: "Fail if GDM config not found"
       fail:
         msg: "ERROR: /etc/gdm3/custom.conf not found. GDM may not be installed."
-      when: not gdm_config.stat.exists  
+      when: not gdm_config.stat.exists
 
     - name: "Verify Wayland is disabled in GDM config"
       shell: |
@@ -44,7 +44,7 @@
       loop:
         - xrdp
         - xorgxrdp
-        - dbus-x11  # Important for GNOME session        
+        - dbus-x11 # Important for GNOME session
 
     - name: "remove conflicting package"
       apt:
@@ -64,12 +64,11 @@
       with_fileglob:
         - "{{ playbook_dir }}/../../etc/polkit-1/localauthority/50-local.d/*"
 
-
     - name: "Configure xrdp startwm.sh for GNOME"
       blockinfile:
         path: /etc/xrdp/startwm.sh
         marker: "# {mark} ANSIBLE MANAGED - GNOME Session Fix"
-        insertbefore: '^test -x /etc/X11/Xsession'
+        insertbefore: "^test -x /etc/X11/Xsession"
         block: |
           unset DBUS_SESSION_BUS_ADDRESS
           unset XDG_RUNTIME_DIR
@@ -86,50 +85,50 @@
     - name: "Configure xrdp session policy"
       lineinfile:
         path: /etc/xrdp/sesman.ini
-        regexp: '^Policy='
-        line: 'Policy=Default'
+        regexp: "^Policy="
+        line: "Policy=Default"
         insertafter: '^\[Sessions\]'
 
     - name: "Configure xrdp max sessions"
       lineinfile:
         path: /etc/xrdp/sesman.ini
-        regexp: '^MaxSessions='
-        line: 'MaxSessions=2'
+        regexp: "^MaxSessions="
+        line: "MaxSessions=2"
         insertafter: '^\[Sessions\]'
 
     - name: "Configure xrdp kill disconnected"
       lineinfile:
         path: /etc/xrdp/sesman.ini
-        regexp: '^KillDisconnected='
-        line: 'KillDisconnected=false'
+        regexp: "^KillDisconnected="
+        line: "KillDisconnected=false"
         insertafter: '^\[Sessions\]'
 
     - name: "Configure xrdp disconnected timeout"
       lineinfile:
         path: /etc/xrdp/sesman.ini
-        regexp: '^DisconnectedTimeLimit='
-        line: 'DisconnectedTimeLimit=0'
+        regexp: "^DisconnectedTimeLimit="
+        line: "DisconnectedTimeLimit=0"
         insertafter: '^\[Sessions\]'
 
     - name: "Configure xrdp idle timeout"
       lineinfile:
         path: /etc/xrdp/sesman.ini
-        regexp: '^IdleTimeLimit='
-        line: 'IdleTimeLimit=0'
+        regexp: "^IdleTimeLimit="
+        line: "IdleTimeLimit=0"
         insertafter: '^\[Sessions\]'
 
     - name: "Configure PAM to NOT start systemd user instance for xrdp"
       lineinfile:
         path: /etc/pam.d/xrdp-sesman
-        regexp: '^session.*pam_systemd.so'
-        line: '#session optional pam_systemd.so'
+        regexp: "^session.*pam_systemd.so"
+        line: "#session optional pam_systemd.so"
         backrefs: yes
 
     - name: "Ensure systemd user instance is properly configured"
       lineinfile:
         path: /etc/systemd/logind.conf
-        regexp: '^#?KillUserProcesses='
-        line: 'KillUserProcesses=no'
+        regexp: "^#?KillUserProcesses="
+        line: "KillUserProcesses=no"
         insertafter: '^\[Login\]'
 
     - name: "start systemd-logind"
@@ -145,11 +144,11 @@
     #     option: "{{ item.option }}"
     #     value: "{{ item.value }}"
     #   loop:
-          # - { option: 'Policy', value: 'Default' }
-          # - { option: 'MaxSessions', value: '10' }
-          # - { option: 'KillDisconnected', value: 'false' }
-          # - { option: 'DisconnectedTimeLimit', value: '0' }
-          # - { option: 'IdleTimeLimit', value: '0' }
+    # - { option: 'Policy', value: 'Default' }
+    # - { option: 'MaxSessions', value: '10' }
+    # - { option: 'KillDisconnected', value: 'false' }
+    # - { option: 'DisconnectedTimeLimit', value: '0' }
+    # - { option: 'IdleTimeLimit', value: '0' }
 
     - name: "Enable xrdp"
       ansible.builtin.systemd_service:

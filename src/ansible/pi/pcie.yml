@@ -8,7 +8,6 @@
     config_file: "/boot/firmware/config.txt"
     pcie_type: 3
   tasks:
-
     - name: "Enable pcie."
       blockinfile:
         state: "present"

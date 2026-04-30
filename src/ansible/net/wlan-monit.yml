@@ -6,13 +6,13 @@
 - name: Install WLAN Monitor
   hosts: all
   become: yes
-  
+
   vars:
     monitor_script: wlan-monit
     log_file: /var/log/wlan-monit.log
     wlan_ssid: tec-wan
     wlan_bssid: 84:78:48:36:5B:C8
-  
+
   tasks:
     - name: "Update apt repo and cache."
       apt:
@@ -28,7 +28,7 @@
         dest: "/usr/local/bin/{{ monitor_script }}"
         owner: root
         group: root
-        mode: '0755'
+        mode: "0755"
 
     - name: Create log file
       file:
@@ -36,7 +36,7 @@
         state: touch
         owner: root
         group: root
-        mode: '0644'
+        mode: "0644"
 
     - name: Install logrotate configuration
       template:
@@ -44,7 +44,7 @@
         dest: /etc/logrotate.d/wlan-monit.logrotate
         owner: root
         group: root
-        mode: '0644'
+        mode: "0644"
 
     - name: Install cron job
       copy:
@@ -52,7 +52,7 @@
         dest: /etc/cron.d/wlan-monit
         owner: root
         group: root
-        mode: '0644'
+        mode: "0644"
 
     - name: Ensure NetworkManager is running
       systemd:
@@ -68,7 +68,7 @@
           wifi.powersave = 2
         owner: root
         group: root
-        mode: '0644'
+        mode: "0644"
       notify: restart NetworkManager
 
     - name: Configure WiFi connection for optimal 2.4GHz performance

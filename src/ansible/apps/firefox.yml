@@ -7,90 +7,90 @@
   vars:
     user: tcronin
   tasks:
-  - name: Install Firefox from Mozilla
-    block:
-      - name: Create keyrings directory
-        shell: install -d -m 0755 /etc/apt/keyrings
-        args:
-          creates: /etc/apt/keyrings
+    - name: Install Firefox from Mozilla
+      block:
+        - name: Create keyrings directory
+          shell: install -d -m 0755 /etc/apt/keyrings
+          args:
+            creates: /etc/apt/keyrings
 
-      - name: Download Mozilla APT repository signing key
-        shell: |
-          wget -q https://packages.mozilla.org/apt/repo-signing-key.gpg -O- | tee /etc/apt/keyrings/packages.mozilla.org.asc > /dev/null
-        args:
-          creates: /etc/apt/keyrings/packages.mozilla.org.asc
+        - name: Download Mozilla APT repository signing key
+          shell: |
+            wget -q https://packages.mozilla.org/apt/repo-signing-key.gpg -O- | tee /etc/apt/keyrings/packages.mozilla.org.asc > /dev/null
+          args:
+            creates: /etc/apt/keyrings/packages.mozilla.org.asc
 
-      - name: Add Mozilla APT repository
-        copy:
-          dest: /etc/apt/sources.list.d/mozilla.list
-          content: "deb [signed-by=/etc/apt/keyrings/packages.mozilla.org.asc] https://packages.mozilla.org/apt mozilla main\n"
-          mode: '0644'
+        - name: Add Mozilla APT repository
+          copy:
+            dest: /etc/apt/sources.list.d/mozilla.list
+            content: "deb [signed-by=/etc/apt/keyrings/packages.mozilla.org.asc] https://packages.mozilla.org/apt mozilla main\n"
+            mode: "0644"
 
-      - name: Configure APT to prioritize Mozilla packages
-        copy:
-          dest: /etc/apt/preferences.d/mozilla
-          content: |
-            Package: *
-            Pin: origin packages.mozilla.org
-            Pin-Priority: 1000
-          mode: '0644'
+        - name: Configure APT to prioritize Mozilla packages
+          copy:
+            dest: /etc/apt/preferences.d/mozilla
+            content: |
+              Package: *
+              Pin: origin packages.mozilla.org
+              Pin-Priority: 1000
+            mode: "0644"
 
-  # Fix for hash sum mismatch / corrupted cache errors
-  # https://askubuntu.com/questions/41605/trouble-downloading-packages-list-due-to-a-hash-sum-mismatch-error
-  - name: Clear apt cache to fix hash sum mismatch
-    shell: |
-      rm -rf /var/lib/apt/lists/*
-      apt-get clean
+    # Fix for hash sum mismatch / corrupted cache errors
+    # https://askubuntu.com/questions/41605/trouble-downloading-packages-list-due-to-a-hash-sum-mismatch-error
+    - name: Clear apt cache to fix hash sum mismatch
+      shell: |
+        rm -rf /var/lib/apt/lists/*
+        apt-get clean
 
-  - name: Update apt cache
-    apt:
-      update_cache: true
+    - name: Update apt cache
+      apt:
+        update_cache: true
 
-  - name: Install Firefox
-    apt:
-      name:
-        - firefox
-        - ffmpeg
-        - libavcodec-extra
-        - ubuntu-restricted-extras
-      state: present
+    - name: Install Firefox
+      apt:
+        name:
+          - firefox
+          - ffmpeg
+          - libavcodec-extra
+          - ubuntu-restricted-extras
+        state: present
 
-  - name: "get user's dbus session address"
-    shell: |
-      ps e -u {{ user }} | grep -o 'DBUS_SESSION_BUS_ADDRESS=[^ ]*' | head -1 | cut -d= -f2-
-    register: user_dbus
-    changed_when: false
-    failed_when: user_dbus.stdout == ""
+    - name: "get user's dbus session address"
+      shell: |
+        ps e -u {{ user }} | grep -o 'DBUS_SESSION_BUS_ADDRESS=[^ ]*' | head -1 | cut -d= -f2-
+      register: user_dbus
+      changed_when: false
+      failed_when: user_dbus.stdout == ""
 
-  - name: "get current user favorites"
-    become: yes
-    become_user: "{{ user }}"
-    shell: |
-      export DBUS_SESSION_BUS_ADDRESS="{{ user_dbus.stdout }}"
-      dconf read /org/gnome/shell/favorite-apps
-    register: current_favorites
-    changed_when: false
+    - name: "get current user favorites"
+      become: yes
+      become_user: "{{ user }}"
+      shell: |
+        export DBUS_SESSION_BUS_ADDRESS="{{ user_dbus.stdout }}"
+        dconf read /org/gnome/shell/favorite-apps
+      register: current_favorites
+      changed_when: false
 
-  - name: "add firefox to favorites list"
-    shell: |
-      python3 -c "
-      import ast
-      apps = {{ current_favorites.stdout }}
-      if 'firefox.desktop' not in apps and 'firefox_firefox.desktop' not in apps:
-          apps.insert(0, 'firefox.desktop')
-      print(str(apps))
-      "
-    register: new_favorites
-    changed_when: false
+    - name: "add firefox to favorites list"
+      shell: |
+        python3 -c "
+        import ast
+        apps = {{ current_favorites.stdout }}
+        if 'firefox.desktop' not in apps and 'firefox_firefox.desktop' not in apps:
+            apps.insert(0, 'firefox.desktop')
+        print(str(apps))
+        "
+      register: new_favorites
+      changed_when: false
 
-  - name: "check if favorites changed"
-    set_fact:
-      favorites_changed: "{{ current_favorites.stdout != new_favorites.stdout }}"
+    - name: "check if favorites changed"
+      set_fact:
+        favorites_changed: "{{ current_favorites.stdout != new_favorites.stdout }}"
 
-  - name: "update user favorites with firefox"
-    become: yes
-    become_user: "{{ user }}"
-    shell: |
-      export DBUS_SESSION_BUS_ADDRESS="{{ user_dbus.stdout }}"
-      dconf write /org/gnome/shell/favorite-apps "{{ new_favorites.stdout }}"
-    when: favorites_changed | bool
+    - name: "update user favorites with firefox"
+      become: yes
+      become_user: "{{ user }}"
+      shell: |
+        export DBUS_SESSION_BUS_ADDRESS="{{ user_dbus.stdout }}"
+        dconf write /org/gnome/shell/favorite-apps "{{ new_favorites.stdout }}"
+      when: favorites_changed | bool

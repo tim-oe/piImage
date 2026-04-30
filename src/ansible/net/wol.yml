@@ -4,7 +4,7 @@
   hosts: "all"
   become: true
   vars:
-    svc_file: usr/lib/systemd/system/wol.service 
+    svc_file: usr/lib/systemd/system/wol.service
     net_dev: enp2s0
   tasks:
     - name: "Update apt repo and cache."
@@ -19,7 +19,7 @@
         - "etherwake"
         - "ethtool"
     - name: "verify wol"
-      ansible.builtin.shell: 
+      ansible.builtin.shell:
         executable: /bin/bash
         cmd: "ethtool {{ net_dev }} | egrep 'Supports Wake-on:.*' | sed -E 's/Supports Wake-on:\\s+(.*)/\\1/'"
       register: wol_flags
@@ -28,20 +28,20 @@
         msg: "nic does not support wol"
       when: '"g" not in wol_flags.stdout'
     - name: "enable wol"
-      ansible.builtin.shell: 
+      ansible.builtin.shell:
         executable: /bin/bash
         cmd: "ethtool {{ net_dev }} -s wol g"
     - name: deploy wol service
       copy:
         src: "{{ playbook_dir }}/../../{{svc_file}}"
-        dest: "/{{ svc_file }}" 
+        dest: "/{{ svc_file }}"
         owner: root
         group: root
         mode: 0644
     - name: set device
       ansible.builtin.replace:
         path: "/{{ svc_file }}"
-        regexp: '_ETH_DEV_'
+        regexp: "_ETH_DEV_"
         replace: "{{ net_dev }}"
     - name: reload systemd configs
       ansible.builtin.systemd_service:

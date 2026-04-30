@@ -22,7 +22,7 @@
         - "ed"
         - "vim-tiny"
         - "vim-common"
-        - "modemmanager" 
+        - "modemmanager"
         - "avahi-daemon"
     - name: "Upgrade all packages on servers."
       apt:

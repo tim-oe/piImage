@@ -16,12 +16,12 @@
           - "libi2c0"
           - "python3-smbus2"
         state: "present"
-        
+
     - name: Enable I2C in /boot/config.txt
       ansible.builtin.lineinfile:
         path: /boot/config.txt
-        regexp: '^#?dtparam=i2c_arm='
-        line: 'dtparam=i2c_arm=on'
+        regexp: "^#?dtparam=i2c_arm="
+        line: "dtparam=i2c_arm=on"
         state: present
       become: yes
       register: boot_config

@@ -20,7 +20,7 @@
         - "jq"
         - "htop"
         - "xorriso"
-        - "7zip" 
+        - "7zip"
         - "p7zip-rar"
         - "isolinux"
         - "partclone"

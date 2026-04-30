@@ -1,5 +1,5 @@
 # https://mosquitto.org/
-# 
+#
 ---
 - name: "install mosquitto mqtt broker"
   hosts: "all"

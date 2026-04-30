@@ -24,7 +24,7 @@
         - "libusb-1.0-0-dev"
         - "librtlsdr-dev"
         - "build-essential"
-        - "cmake" 
+        - "cmake"
         - "pkg-config"
         - "ninja-build"
         - "doxygen"

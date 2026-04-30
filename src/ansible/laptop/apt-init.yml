@@ -3,7 +3,7 @@
 ---
 - name: "initialize packages for laptop"
   hosts: "all"
-  gather_facts: true 
+  gather_facts: true
   become: true
   tasks:
     - name: "Update apt repo and cache."

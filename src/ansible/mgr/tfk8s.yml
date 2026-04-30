@@ -22,7 +22,7 @@
     - name: update path.
       copy:
         dest: /etc/profile.d/go-path.sh
-        content: 'PATH=$PATH:/opt/go/bin'
+        content: "PATH=$PATH:/opt/go/bin"
     - name: "install tfk8s"
       command: "/opt/go/bin/go install github.com/jrhouston/tfk8s@latest"
     - name: move

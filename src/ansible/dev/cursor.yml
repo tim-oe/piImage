@@ -1,6 +1,6 @@
 # https://cursor.com/docs/downloads
 # https://dev.to/mhbaando/how-to-install-cursor-the-ai-editor-on-linux-41dm
-# https://gist.github.com/evgenyneu/5c5c37ca68886bf1bea38026f60603b6 
+# https://gist.github.com/evgenyneu/5c5c37ca68886bf1bea38026f60603b6
 ---
 - name: "cursor install via apt repository"
   hosts: "all"
@@ -9,42 +9,42 @@
     cursor_gpg_url: "https://downloads.cursor.com/keys/anysphere.asc"
     cursor_gpg_key: "/etc/apt/keyrings/cursor.gpg"
     cursor_repo: "https://downloads.cursor.com/aptrepo"
-  tasks:    
-  - name: "install apt dependencies"
-    apt:
-      name:
-        - "curl"
-        - "gpg"
-      state: "present"
+  tasks:
+    - name: "install apt dependencies"
+      apt:
+        name:
+          - "curl"
+          - "gpg"
+        state: "present"
 
-  - name: "create keyrings directory"
-    ansible.builtin.file:
-      path: "/etc/apt/keyrings"
-      state: "directory"
-      mode: "0755"
+    - name: "create keyrings directory"
+      ansible.builtin.file:
+        path: "/etc/apt/keyrings"
+        state: "directory"
+        mode: "0755"
 
-  - name: "download cursor gpg key"
-    ansible.builtin.shell: |
-      curl -fsSL {{ cursor_gpg_url }} | gpg --dearmor -o {{ cursor_gpg_key }}
-    args:
-      creates: "{{ cursor_gpg_key }}"
+    - name: "download cursor gpg key"
+      ansible.builtin.shell: |
+        curl -fsSL {{ cursor_gpg_url }} | gpg --dearmor -o {{ cursor_gpg_key }}
+      args:
+        creates: "{{ cursor_gpg_key }}"
 
-  - name: "set gpg key permissions"
-    ansible.builtin.file:
-      path: "{{ cursor_gpg_key }}"
-      mode: "0644"
+    - name: "set gpg key permissions"
+      ansible.builtin.file:
+        path: "{{ cursor_gpg_key }}"
+        mode: "0644"
 
-  - name: "add cursor apt repository"
-    ansible.builtin.apt_repository:
-      repo: "deb [arch=amd64,arm64 signed-by={{ cursor_gpg_key }}] {{ cursor_repo }} stable main"
-      filename: "cursor"
-      state: "present"
+    - name: "add cursor apt repository"
+      ansible.builtin.apt_repository:
+        repo: "deb [arch=amd64,arm64 signed-by={{ cursor_gpg_key }}] {{ cursor_repo }} stable main"
+        filename: "cursor"
+        state: "present"
 
-  - name: "update apt cache"
-    apt:
-      update_cache: true
+    - name: "update apt cache"
+      apt:
+        update_cache: true
 
-  - name: "install cursor"
-    apt:
-      name: "cursor"
-      state: "present"
+    - name: "install cursor"
+      apt:
+        name: "cursor"
+        state: "present"

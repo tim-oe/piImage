@@ -17,7 +17,7 @@
         state: "touch"
         owner: tcronin
         group: tcronin
-        mode: '0600'
+        mode: "0600"
     - name: "write config"
       copy:
         dest: "{{ config_file }}"
@@ -25,5 +25,5 @@
     - name: set host
       ansible.builtin.replace:
         path: "{{ config_file }}"
-        regexp: 'server: https://.*:6443'
-        replace: 'server: https://{{ kube_master_host }}:6443'
+        regexp: "server: https://.*:6443"
+        replace: "server: https://{{ kube_master_host }}:6443"

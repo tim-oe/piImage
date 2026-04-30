@@ -86,10 +86,9 @@
         pre_reboot_delay: 0
         post_reboot_delay: 10
         test_command: "uptime"
-      when:
-        "pwr_led.changed or \
-        \ pwr_tgr.changed or \ 
+      when: "pwr_led.changed or \
+        \ pwr_tgr.changed or \
         \ act_tgr.changed or \
-        \ act_low.changed or \ 
+        \ act_low.changed or \
         \ eth0_led.changed or \
         \ eth1_led.changed"

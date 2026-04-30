@@ -36,7 +36,7 @@
       ansible.builtin.blockinfile:
         path: "/home/{{ git_user | default('tcronin') }}/.bashrc"
         block: |
-          
+
           # Source git prompt function
           # Check direct git-core location (Ubuntu 24, Debian-based systems)
           if [ -f /usr/lib/git-core/git-sh-prompt ]; then
@@ -45,7 +45,7 @@
           elif [ -f /etc/bash_completion.d/git-prompt ]; then
             source /etc/bash_completion.d/git-prompt
           fi
-          
+
           # Git prompt configuration
           export GIT_PS1_SHOWDIRTYSTATE=1
           # Update PS1 to include git branch
@@ -55,4 +55,4 @@
         create: true
         owner: "{{ git_user | default('tcronin') }}"
         group: "{{ git_user | default('tcronin') }}"
-        mode: '0644'
+        mode: "0644"

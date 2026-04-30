@@ -21,4 +21,3 @@
       ansible.builtin.file:
         path: "/usr/local/bin/LICENSE"
         state: "absent"
-

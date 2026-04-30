@@ -51,7 +51,7 @@ autoinstall:
     - unattended-upgrades
     - apt-transport-https
     - bash-completion
-    
+
   ssh:
     install-server: true
     allow-pw: false
@@ -92,10 +92,10 @@ autoinstall:
         match:
           name: wlp*
         dhcp4: true
-      # pci mounted nic  
+      # pci mounted nic
       enp:
         match:
-          name:  enp*
+          name: enp*
         dhcp4: true
 
   # format drive using defaults
@@ -106,7 +106,6 @@ autoinstall:
   swap:
     filename: /swap.img
     size: 8589934592
-
 # kvm dep
 #  late-commands:
 #    - sudo systemctl enable serial-getty@ttyS0.service

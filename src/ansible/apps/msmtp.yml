@@ -57,11 +57,11 @@
         replace: "{{ smtp_pwd }}"
     - name: disable apparmor profile
       ansible.builtin.file:
-        src: '/etc/apparmor.d/usr.bin.msmtp'
-        dest: '/etc/apparmor.d/disable/usr.bin.msmtp'
+        src: "/etc/apparmor.d/usr.bin.msmtp"
+        dest: "/etc/apparmor.d/disable/usr.bin.msmtp"
         state: link
     - name: "reload parser"
-      ansible.builtin.shell: 
+      ansible.builtin.shell:
         executable: /bin/bash
         cmd: "apparmor_parser -r /etc/apparmor.d/usr.bin.msmtp"
     - name: "restart appArmor"

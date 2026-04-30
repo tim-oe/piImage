@@ -28,12 +28,10 @@
             mode: "0644"
             force: true
         - name: "sign key"
-          command:
-            "bash -c 'cat /tmp/kubectl.key | gpg --dearmor --yes --output /usr/share/keyrings/kubernetes-apt-keyring.gpg'"
+          command: "bash -c 'cat /tmp/kubectl.key | gpg --dearmor --yes --output /usr/share/keyrings/kubernetes-apt-keyring.gpg'"
         - name: "apt source"
           ansible.builtin.apt_repository:
-            repo:
-              "deb [arch=amd64 signed-by=/usr/share/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/{{ kube_ver }}/deb/ /" 
+            repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/{{ kube_ver }}/deb/ /"
             filename: "kubernetes"
             state: "present"
             update_cache: true
