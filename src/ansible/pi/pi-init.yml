@@ -23,19 +23,10 @@
           - needrestart
           - tmux
           - acl
+          - wget
           - apt-transport-https
           - raspi-config
         state: "present"
-
-    - name: "Remove unused packages"
-      apt:
-        name:
-          - "ed"
-          - "vim*"
-          - "alsa*"
-          - "modemmanager"
-          - "avahi*"
-        state: "absent"
 
     - name: "Upgrade all packages on servers."
       apt:

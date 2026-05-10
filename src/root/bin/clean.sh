@@ -1,0 +1,57 @@
+#!/bin/bash
+#
+# script to clean system
+# https://unix.stackexchange.com/questions/92346/why-does-find-mtime-1-only-return-files-older-than-2-days
+#
+START=`date "+%Y-%m-%d %T"`
+echo "starting clean system $START"
+
+echo 'purging temp'
+# purge files
+find /tmp/ -maxdepth 1 -type f -mtime +1 -exec rm -vfR {} \;
+# purge all other subdirs
+find /tmp/* -maxdepth 1 -type d \( ! -iname ".*" \) -mtime +1 -exec rm -vfR {} \;
+# purge files
+
+echo 'purging archived logs'
+# global log files
+find /var/log/ -iname "*.gz" -type f -exec rm -vfR {} \;
+find /var/log/ -iname "*.backup" -type f -exec rm -vfR {} \;
+for i in 0 1 2 3 4 5 6 7 8 9;
+        do find /var/log/ -iname *.$i -type f -exec rm -vfR {} \;;
+done
+journalctl --vacuum-time=7days
+
+echo 'truncating apt'
+sudo apt clean
+sudo apt autoremove --purge
+
+# snap
+if command -v snap &> /dev/null
+then
+    echo 'truncating snap'
+    sudo snap set system refresh.retain=2
+    set -eu
+    LANG=en_US.UTF-8 snap list --all | awk '/disabled/{print $1, $3}' |
+            while read snapname revision; do
+                    snap remove "$snapname" --revision="$revision"
+        done
+    sudo rm -fR /var/lib/snapd/cache/*
+fi
+
+# docker
+if command -v docker &> /dev/null
+then
+        echo 'truncating docker'
+        #sudo docker system prune -af
+        sudo docker image prune -af
+        sudo docker container prune -f
+        #sudo docker volume prune -af
+fi
+
+df -H
+echo 'list large folders'
+du -x / -aBM 2>/dev/null | sort -nr | head -n 50
+
+END=`date "+%Y-%m-%d %T"`
+echo "complete clean system $END"

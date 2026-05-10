@@ -59,17 +59,17 @@ Run these commands on the **Host OS** while the VM is powered off to apply setti
 
 **Enable Large Pages for the VM:**
 ```bash
-VBoxManage modifyvm "Ubuntu_26" --largepages on
+VBoxManage modifyvm "<vm-name>" --largepages on
 ```
 
 **Pass-through Host CPU Architecture (enables AVX/AES instructions):**
 ```bash
-VBoxManage modifyvm "Ubuntu_26" --cpu-profile "host"
+VBoxManage modifyvm "<vm-name>" --cpu-profile "host"
 ```
 
 **Force 256MB VRAM (Bypasses GUI 128MB Limit for smoother UI):**
 ```bash
-VBoxManage modifyvm "Ubuntu_26" --vram 256
+VBoxManage modifyvm "<vm-name>" --vram 256
 ```
 
 ---
@@ -102,6 +102,9 @@ Because the Host OS is already caching and scheduling disk writes, having the Gu
    ```   
 
 ### C. Fix GRUB "Invalid Environment Block" Warning
+
+Note: building UEFI disk issue did not happen
+
 VirtualBox's handling of sparse files via Host I/O Caching can corrupt the 1024-byte `grubenv` file, causing a "press any key to continue" warning on boot. 
 
 Run the following commands inside the Guest OS to force-create a physically thick file:

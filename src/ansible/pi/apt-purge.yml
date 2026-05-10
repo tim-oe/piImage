@@ -108,7 +108,6 @@
           - "rpi-keyboard-config"
           - "rpi-keyboard-fw-update"
           - "rpi-loop-utils"
-          - "rpi-swap"
           - "rpi-update"
           - "rpi-usb-gadget"
         state: "absent"
@@ -162,6 +161,7 @@
           - "udisks2"
           - "usbutils"
           - "vim*"
+          - "snapd"
         state: "absent"
 
     - name: "Remove GPIO tools"

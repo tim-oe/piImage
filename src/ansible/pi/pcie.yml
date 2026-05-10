@@ -1,12 +1,13 @@
 # https://www.jeffgeerling.com/blog/2023/nvme-ssd-boot-raspberry-pi-5/
 # https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#nvme-ssd-boot
+# https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#boot-from-pcie
 ---
 - name: "enable pcie"
   hosts: "all"
   become: true
   vars:
     config_file: "/boot/firmware/config.txt"
-    pcie_type: 3
+    pcie_type: 2
   tasks:
     - name: "Enable pcie."
       blockinfile:

@@ -108,6 +108,13 @@ tasks.register('nodejs', GradleBuild) {
     tasks = ['playbook']
 }
 
+tasks.register('rust', GradleBuild) {
+    description = 'run ansible rust script'
+    group = "ansible"
+    startParameter.projectProperties = ['ansible_playbook':'src/ansible/dev/rust.yml']
+    tasks = ['playbook']
+}
+
 tasks.register('sdkman', GradleBuild) {
     description = 'run ansible sdkman script'
     group = "ansible"

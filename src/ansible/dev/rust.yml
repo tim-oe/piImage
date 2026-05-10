@@ -1,0 +1,43 @@
+---
+# https://rustup.rs/
+#
+- name: "install rust toolchain"
+  hosts: "all"
+  become: true
+  vars:
+    rust_user: "tcronin"
+  tasks:
+    - name: Install Rust build dependencies
+      ansible.builtin.apt:
+        name:
+          - curl
+          - gcc
+          - pkg-config
+          - libssl-dev
+          - cmake
+        state: present
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Check if rustup is already installed
+      ansible.builtin.stat:
+        path: "/home/{{ rust_user }}/.cargo/bin/rustc"
+      register: rust_rustc
+
+    - name: Install rustup if missing
+      when: not rust_rustc.stat.exists
+      block:
+        - name: Download rustup installer
+          ansible.builtin.get_url:
+            url: "https://sh.rustup.rs"
+            dest: /tmp/rustup-init.sh
+            mode: "0700"
+            owner: "{{ rust_user }}"
+            group: "{{ rust_user }}"
+            force: true
+
+        - name: Run rustup installer
+          ansible.builtin.shell: |
+            /tmp/rustup-init.sh -y --default-toolchain stable
+          become: true
+          become_user: "{{ rust_user }}"
