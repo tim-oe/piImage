@@ -3,7 +3,12 @@
 LOG_FILE="/var/log/wlan-monit.log"
 MAX_FAILURES=2
 FAILURE_FILE="/tmp/network_failures"
-CHECK_INTERVAL=15  # Seconds between checks when detecting failures
+USB_DEV_PATH_FILE="/tmp/wlan_usb_path"
+CYCLE_FAIL_FILE="/tmp/wlan_cycle_failures"  # Persists across invocations; cleared by reboot
+USB_WIFI_VENDOR="0bda"
+USB_WIFI_PRODUCT="c811"
+REBOOT_THRESHOLD=3  # Reboot after this many consecutive failed cycles
+CHECK_INTERVAL=15   # Seconds between checks when detecting failures
 IFACE="wlan0"
 
 log_message() {
@@ -17,6 +22,109 @@ log_block() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') - >>> $label" >> "$LOG_FILE"
     echo "$output" >> "$LOG_FILE"
     echo "$(date '+%Y-%m-%d %H:%M:%S') - <<< $label" >> "$LOG_FILE"
+}
+
+interface_exists() {
+    ip link show "$IFACE" > /dev/null 2>&1
+}
+
+save_usb_device_path() {
+    # Walk sysfs from wlan0's device node upward to find the USB device directory
+    # (the one containing 'authorized', used for USB-level reset). Called whenever
+    # connectivity is confirmed healthy so the path is fresh when recovery needs it.
+    local dev_path usb_path
+    dev_path=$(readlink -f "/sys/class/net/$IFACE/device" 2>/dev/null)
+    [[ -z "$dev_path" ]] && return 1
+    usb_path="$dev_path"
+    while [[ "$usb_path" != "/" ]]; do
+        if [[ -f "$usb_path/authorized" ]]; then
+            echo "$usb_path" > "$USB_DEV_PATH_FILE"
+            return 0
+        fi
+        usb_path=$(dirname "$usb_path")
+    done
+    return 1
+}
+
+find_usb_device_by_id() {
+    # Locate the USB sysfs path by vendor:product ID. Used as a fallback when
+    # the dongle crashes before save_usb_device_path has ever written the cache
+    # file (e.g. first failure after boot). Scans /sys/bus/usb/devices/ for a
+    # device matching USB_WIFI_VENDOR and USB_WIFI_PRODUCT.
+    local d
+    for d in /sys/bus/usb/devices/*/; do
+        if [[ -f "$d/idVendor" ]] && [[ -f "$d/idProduct" ]] && \
+           [[ "$(cat "$d/idVendor")" == "$USB_WIFI_VENDOR" ]] && \
+           [[ "$(cat "$d/idProduct")" == "$USB_WIFI_PRODUCT" ]]; then
+            echo "${d%/}"
+            return 0
+        fi
+    done
+    return 1
+}
+
+reset_usb_device() {
+    # Deauthorize then reauthorize the USB device, forcing the host controller
+    # to re-enumerate it and reload the driver. Equivalent to a physical unplug/replug.
+    local usb_path
+
+    # Prefer the cached path; fall back to scanning by vendor:product ID
+    if [[ -f "$USB_DEV_PATH_FILE" ]] && [[ -f "$(cat "$USB_DEV_PATH_FILE")/authorized" ]]; then
+        usb_path=$(cat "$USB_DEV_PATH_FILE")
+    else
+        log_message "Cached USB path missing or stale — scanning by ID ${USB_WIFI_VENDOR}:${USB_WIFI_PRODUCT}"
+        usb_path=$(find_usb_device_by_id)
+        if [[ -z "$usb_path" ]]; then
+            log_message "USB device ${USB_WIFI_VENDOR}:${USB_WIFI_PRODUCT} not found in sysfs — cannot reset"
+            return 1
+        fi
+    fi
+
+    log_message "Resetting USB WiFi device at $usb_path"
+    echo 0 > "$usb_path/authorized"
+    sleep 2
+    echo 1 > "$usb_path/authorized"
+    local i
+    for i in $(seq 1 20); do
+        if interface_exists; then
+            log_message "Interface $IFACE reappeared after USB reset (${i}s)"
+            return 0
+        fi
+        sleep 1
+    done
+    log_message "Interface $IFACE did not reappear after USB reset"
+    return 1
+}
+
+reload_wifi_module() {
+    # Fall back to module reload when USB reset isn't available. rtw_8821cu is the
+    # in-kernel RPi driver for the RTL8811CU (0bda:c811) dongle; the rest cover
+    # other common USB WiFi chipsets in case the dongle is ever swapped out.
+    local module m
+    for m in rtw88_8821cu rtw88_8821c rtl8xxxu r8188eu rtl8192cu rtl88xxau mt7601u mt76x0u mt76x2u rt2800usb rt2870sta ath9k_htc; do
+        if lsmod | grep -q "^$m "; then
+            module="$m"
+            break
+        fi
+    done
+    if [[ -z "$module" ]]; then
+        log_message "No USB WiFi module found in lsmod — cannot reload module"
+        return 1
+    fi
+    log_message "Reloading USB WiFi kernel module: $module"
+    modprobe -r "$module" >> "$LOG_FILE" 2>&1
+    sleep 3
+    modprobe "$module" >> "$LOG_FILE" 2>&1
+    local i
+    for i in $(seq 1 20); do
+        if interface_exists; then
+            log_message "Interface $IFACE reappeared after module reload (${i}s)"
+            return 0
+        fi
+        sleep 1
+    done
+    log_message "Interface $IFACE did not reappear after module reload"
+    return 1
 }
 
 check_interface_up() {
@@ -109,19 +217,90 @@ log_diagnostics() {
     log_block "NetworkManager journal (last 30 lines)" \
         "$(journalctl -u NetworkManager -n 30 --no-pager 2>/dev/null)"
 
-    # Kernel WiFi events: firmware crashes, deauth/disassoc events, driver errors.
-    # This is the most likely place to find the root cause trigger.
-    log_block "dmesg wifi/driver events (last 30)" \
-        "$(dmesg | grep -E '(wlan|brcm|wifi|ieee80211|cfg80211|mmc)' | tail -30)"
+    # Kernel WiFi/USB events with timestamps. Covers rtw88 driver messages,
+    # USB disconnect/reset events, cfg80211/mac80211 errors, and the Pi 3B's
+    # dwc2/dwc_otg USB controller driver which drops devices on error recovery.
+    log_block "dmesg wifi/usb events (last 40)" \
+        "$(dmesg -T | grep -E '(rtw88|wlan|wifi|ieee80211|cfg80211|mac80211|usb [0-9]-|USB disconnect|USB reset|usbcore|dwc2|dwc_otg)' | tail -40)"
+
+    # USB disconnect/error events specifically — catches bus resets that precede
+    # the interface vanishing even when the WiFi-specific filter above misses them.
+    log_block "dmesg usb errors/resets (last 20)" \
+        "$(dmesg -T | grep -iE '(usb.*error|usb.*reset|usb.*disconnect|device descriptor|cannot reset|cannot enable|babble|timeout.*urb|dwc2.*error|dwc_otg.*error)' | tail -20)"
 
     # OOM killer activity — rules out memory pressure killing network processes
     log_block "dmesg OOM events" \
-        "$(dmesg | grep -iE '(oom|killed process|out of memory)' | tail -10)"
+        "$(dmesg -T | grep -iE '(oom|killed process|out of memory)' | tail -10)"
 
-    # CPU temperature — Pi WiFi firmware is known to degrade under thermal throttling.
-    # The AP can time out the association if the Pi's radio becomes sluggish.
+    # Pi throttle flags — the single most important indicator of USB instability.
+    # Bit meanings: 0=undervoltage now, 1=freq-capped now, 2=throttled now,
+    # 16=undervoltage occurred, 17=freq-capped occurred, 18=throttled occurred.
+    # Any non-zero value (especially 0x50000/0x50005) means power supply issues
+    # that directly cause USB bus resets and device disappearance.
+    log_block "Pi throttle flags (vcgencmd get_throttled)" \
+        "$(vcgencmd get_throttled 2>/dev/null)"
+
+    # Pi voltage rails — sag on core or sdram rails under load indicates the
+    # buck converter feeding the Pi can't sustain current demand. Normal core
+    # voltage is ~1.2V; sdram rails are ~1.2V. Any reading below ~1.1V is suspect.
+    log_block "Pi voltage rails (vcgencmd measure_volts)" \
+        "$(for rail in core sdram_c sdram_i sdram_p; do
+               echo "$rail: $(vcgencmd measure_volts $rail 2>/dev/null)"
+           done)"
+
+    # ARM and core clock speeds — if throttling is active the ARM clock drops
+    # from 1200000000 Hz (1.2GHz) to 600000000 Hz or lower. A reduced clock here
+    # confirms active throttling even if get_throttled only shows historical bits.
+    log_block "Pi clock speeds (vcgencmd measure_clock)" \
+        "$(for clk in arm core; do
+               echo "$clk: $(vcgencmd measure_clock $clk 2>/dev/null)"
+           done)"
+
+    # CPU temperature
     log_block "CPU temperature" \
         "$(vcgencmd measure_temp 2>/dev/null || cat /sys/class/thermal/thermal_zone0/temp 2>/dev/null)"
+
+    # USB device tree — shows whether the dongle is still visible on the USB bus
+    # even when the network interface is gone. If absent here, it's a physical
+    # disconnect (power/hardware); if present, it's a driver-level failure.
+    log_block "lsusb -t" \
+        "$(lsusb -t 2>/dev/null)"
+
+    # USB power management state for the dongle.
+    # runtime_status=suspended despite autosuspend=-1 means something overrode it.
+    log_block "USB dongle power state (${USB_WIFI_VENDOR}:${USB_WIFI_PRODUCT})" \
+        "$(for d in /sys/bus/usb/devices/*/; do
+               if [[ -f "$d/idVendor" ]] && \
+                  [[ "$(cat "$d/idVendor")" == "$USB_WIFI_VENDOR" ]] && \
+                  [[ "$(cat "$d/idProduct" 2>/dev/null)" == "$USB_WIFI_PRODUCT" ]]; then
+                   echo "sysfs path: $d"
+                   for f in power/control power/autosuspend_delay_ms power/runtime_status power/runtime_suspended_time; do
+                       [[ -f "$d/$f" ]] && echo "$f: $(cat "$d/$f")"
+                   done
+               fi
+           done)"
+
+    # USB device error counters — accumulating errors before a disconnect point
+    # to a ground/voltage issue on the Y-cable rather than a driver crash.
+    # num_interfaces=0 or err_count climbing = USB comms are failing at PHY level.
+    log_block "USB dongle error counters (${USB_WIFI_VENDOR}:${USB_WIFI_PRODUCT})" \
+        "$(for d in /sys/bus/usb/devices/*/; do
+               if [[ -f "$d/idVendor" ]] && \
+                  [[ "$(cat "$d/idVendor")" == "$USB_WIFI_VENDOR" ]] && \
+                  [[ "$(cat "$d/idProduct" 2>/dev/null)" == "$USB_WIFI_PRODUCT" ]]; then
+                   for f in speed bMaxPower urbnum avoid_reset_quirk; do
+                       [[ -f "$d/$f" ]] && echo "$f: $(cat "$d/$f")"
+                   done
+                   # Per-endpoint error stats live under the interface subdirs
+                   find "$d" -name 'uevent' -path '*/ep_*/*' 2>/dev/null | head -5 | xargs -I{} dirname {} | while read ep; do
+                       echo "  $ep: $(cat "$ep/type" 2>/dev/null) $(cat "$ep/interval" 2>/dev/null)"
+                   done
+               fi
+           done)"
+
+    # rfkill — rules out the radio being soft-blocked by the kernel or NM
+    log_block "rfkill list" \
+        "$(rfkill list 2>/dev/null)"
 
     # System load and uptime
     log_block "uptime / load" \
@@ -135,16 +314,35 @@ log_diagnostics() {
 }
 
 bring_interface_up() {
+    # For a USB dongle the interface can vanish entirely (not just go DOWN) when
+    # the USB driver crashes. nmcli cannot operate on a missing interface, so we
+    # must first recover the device at the USB/kernel level.
+    if ! interface_exists; then
+        log_message "Interface $IFACE missing from kernel — attempting USB device reset"
+        log_block "lsusb" "$(lsusb 2>/dev/null)"
+        if ! reset_usb_device; then
+            log_message "USB reset unavailable — attempting kernel module reload"
+            if ! reload_wifi_module; then
+                log_message "ERROR: Could not recover missing interface $IFACE"
+                return 1
+            fi
+        fi
+        sleep 2
+        # After USB recovery NM may need a moment to re-enumerate the device
+        systemctl restart NetworkManager >> "$LOG_FILE" 2>&1
+        sleep 10
+    fi
+
     log_message "Interface $IFACE is physically DOWN - bringing it up via NetworkManager"
 
     # Use NetworkManager to bring the interface up rather than raw ip link calls.
     # Mixing direct ip link commands with NM on the same interface causes conflicts
     # where NM overrides or ignores the manual state change.
-    sudo nmcli device set "$IFACE" managed yes >> "$LOG_FILE" 2>&1
+    nmcli device set "$IFACE" managed yes >> "$LOG_FILE" 2>&1
     sleep 2
-    sudo nmcli device connect "$IFACE" >> "$LOG_FILE" 2>&1
+    nmcli device connect "$IFACE" >> "$LOG_FILE" 2>&1
     sleep 10
-    sudo iw dev "$IFACE" set power_save off 2>/dev/null
+    iw dev "$IFACE" set power_save off 2>/dev/null
 
     if check_interface_up; then
         log_message "Interface successfully brought up"
@@ -164,16 +362,16 @@ restart_network() {
     log_wifi_stats
 
     # Step 1: Ensure power management is off
-    sudo iw dev "$IFACE" set power_save off 2>/dev/null
+    iw dev "$IFACE" set power_save off 2>/dev/null
 
     # Step 2: Try NetworkManager reconnect (lightweight, non-destructive)
     log_message "Attempting NetworkManager reconnect..."
     if nmcli device status | grep -q "$IFACE.*connected"; then
-        sudo nmcli device disconnect "$IFACE" >> "$LOG_FILE" 2>&1
+        nmcli device disconnect "$IFACE" >> "$LOG_FILE" 2>&1
         sleep 2
     fi
-    sudo nmcli device connect "$IFACE" >> "$LOG_FILE" 2>&1
-    sudo iw dev "$IFACE" set power_save off 2>/dev/null
+    nmcli device connect "$IFACE" >> "$LOG_FILE" 2>&1
+    iw dev "$IFACE" set power_save off 2>/dev/null
     sleep 10
 
     if check_connectivity; then
@@ -184,12 +382,12 @@ restart_network() {
 
     # Step 3: Force NM to re-manage the interface (toggle managed state)
     log_message "Attempting $IFACE interface restart via NetworkManager..."
-    sudo nmcli device set "$IFACE" managed no >> "$LOG_FILE" 2>&1
+    nmcli device set "$IFACE" managed no >> "$LOG_FILE" 2>&1
     sleep 3
-    sudo nmcli device set "$IFACE" managed yes >> "$LOG_FILE" 2>&1
+    nmcli device set "$IFACE" managed yes >> "$LOG_FILE" 2>&1
     sleep 5
-    sudo nmcli device connect "$IFACE" >> "$LOG_FILE" 2>&1
-    sudo iw dev "$IFACE" set power_save off 2>/dev/null
+    nmcli device connect "$IFACE" >> "$LOG_FILE" 2>&1
+    iw dev "$IFACE" set power_save off 2>/dev/null
     sleep 10
 
     if check_connectivity; then
@@ -200,9 +398,9 @@ restart_network() {
 
     # Step 4: Restart NetworkManager service (most disruptive — last resort)
     log_message "Restarting NetworkManager service..."
-    sudo systemctl restart NetworkManager >> "$LOG_FILE" 2>&1
+    systemctl restart NetworkManager >> "$LOG_FILE" 2>&1
     sleep 15
-    sudo iw dev "$IFACE" set power_save off 2>/dev/null
+    iw dev "$IFACE" set power_save off 2>/dev/null
 
     if check_connectivity; then
         log_message "SUCCESS: NetworkManager restart recovered connection"
@@ -214,17 +412,49 @@ restart_network() {
     return 1
 }
 
+# ── Cycle failure tracking ───────────────────────────────────────────────────
+#
+# Each invocation is a "cycle". Consecutive failed cycles are counted in
+# CYCLE_FAIL_FILE so that a reboot can be triggered after REBOOT_THRESHOLD
+# cycles without recovery. /tmp is cleared on boot, so the counter resets
+# automatically after a reboot — no risk of an infinite reboot loop across
+# separate outage events.
+
+record_cycle_success() {
+    rm -f "$CYCLE_FAIL_FILE"
+    echo "0" > "$FAILURE_FILE"
+}
+
+record_cycle_failure() {
+    local count
+    count=$(( $(cat "$CYCLE_FAIL_FILE" 2>/dev/null || echo 0) + 1 ))
+    echo "$count" > "$CYCLE_FAIL_FILE"
+    echo "$count" > "$FAILURE_FILE"
+    log_message "Consecutive failed cycles: $count/$REBOOT_THRESHOLD"
+
+    if [[ $count -ge $REBOOT_THRESHOLD ]]; then
+        log_message "=== REBOOT THRESHOLD REACHED — rebooting to recover connectivity ==="
+        rm -f "$CYCLE_FAIL_FILE"
+        sync
+        systemctl reboot
+    fi
+}
+
 # ── Main ────────────────────────────────────────────────────────────────────
 
 log_message "checking wlan connectivity"
 
-# First: Check if interface is physically DOWN (genuine local hardware/driver issue)
+# First: Check if interface is physically DOWN or missing (hardware/driver issue)
 if ! check_interface_up; then
-    log_message "WARNING: Interface $IFACE is physically DOWN"
+    if ! interface_exists; then
+        log_message "WARNING: Interface $IFACE missing from kernel (USB driver/device crash)"
+    else
+        log_message "WARNING: Interface $IFACE is physically DOWN"
+    fi
     log_diagnostics
     if ! bring_interface_up; then
         # Interface couldn't be raised — nothing else we can do this run
-        echo "$MAX_FAILURES" > "$FAILURE_FILE"
+        record_cycle_failure
         exit 1
     fi
 fi
@@ -234,10 +464,11 @@ failure_count=0
 
 for attempt in $(seq 1 $MAX_FAILURES); do
     if check_connectivity; then
+        save_usb_device_path  # keep USB sysfs path fresh for future recovery
         if [ $failure_count -gt 0 ]; then
             log_message "Connection verified after previous check failed"
         fi
-        echo "0" > "$FAILURE_FILE"
+        record_cycle_success
         exit 0
     else
         ((failure_count++))
@@ -249,10 +480,10 @@ for attempt in $(seq 1 $MAX_FAILURES); do
             # already modified interface/NM state.
             log_diagnostics
             if restart_network; then
-                echo "0" > "$FAILURE_FILE"
+                record_cycle_success
                 exit 0
             else
-                echo "$failure_count" > "$FAILURE_FILE"
+                record_cycle_failure
                 exit 1
             fi
         fi
@@ -264,5 +495,5 @@ for attempt in $(seq 1 $MAX_FAILURES); do
     fi
 done
 
-echo "$failure_count" > "$FAILURE_FILE"
+record_cycle_failure
 exit 1
