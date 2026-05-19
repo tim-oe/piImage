@@ -1,4 +1,8 @@
 #!/bin/bash
+#
+# TODO: Persist USB sysfs path across reboot (e.g. /var/lib/wlan-monit/usb_path) if
+# recovery issues remain. Must validate idVendor/idProduct on use and clear the file
+# when hardware changes; document a manual clear step after dongle swaps.
 
 LOG_FILE="/var/log/wlan-monit.log"
 MAX_FAILURES=2
