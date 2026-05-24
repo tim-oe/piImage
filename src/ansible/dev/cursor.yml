@@ -1,6 +1,8 @@
 # https://cursor.com/docs/downloads
 # https://dev.to/mhbaando/how-to-install-cursor-the-ai-editor-on-linux-41dm
 # https://gist.github.com/evgenyneu/5c5c37ca68886bf1bea38026f60603b6
+# to set to load code window changed exec line
+# Exec=/usr/share/cursor/cursor --classic %F
 ---
 - name: "cursor install via apt repository"
   hosts: "all"
@@ -15,6 +17,7 @@
         name:
           - "curl"
           - "gpg"
+          - "bubblewrap"
         state: "present"
 
     - name: "create keyrings directory"
