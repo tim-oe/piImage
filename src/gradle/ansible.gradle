@@ -45,6 +45,7 @@ registerAnsibleTask('aliases', 'src/ansible/common/aliases.yml', 'run ansible al
 registerAnsibleTask('unUpgrade', 'src/ansible/common/unattended-upgrade.yml', 'run ansible unattended upgrades script')
 registerAnsibleTask('fixWait', 'src/ansible/common/systemd-networkd-wait-online.yml', 'fix wait online issue...')
 registerAnsibleTask('aptUpdate', 'src/ansible/common/apt-update.yml', 'run ansible apt update script')
+registerAnsibleTask('rmsnap', 'src/ansible/common/rmsnap.yml', 'remove snapd and installed snaps')
 registerAnsibleTask('logClean', 'src/ansible/common/log-clean.yml', 'run ansible log clean script')
 registerAnsibleTask('ntpClient', 'src/ansible/common/ntp-client.yml', 'run ansible ntp client script')
 registerAnsibleTask('timesyncd', 'src/ansible/common/nm-timesyncd.yml', 'deploy ansible ntp timesyncd script')

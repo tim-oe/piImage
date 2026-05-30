@@ -1,0 +1,66 @@
+---
+- name: "Remove snapd and block reinstall"
+  hosts: "all"
+  become: true
+  tasks:
+    - name: Check whether snap command exists
+      ansible.builtin.stat:
+        path: /usr/bin/snap
+      register: snap_bin
+
+    - name: Collect installed snap package names
+      ansible.builtin.shell: "snap list | awk 'NR > 1 {print $1}' | sort -u"
+      args:
+        executable: /bin/bash
+      register: installed_snaps
+      changed_when: false
+      failed_when: false
+      when: snap_bin.stat.exists
+
+    - name: Remove installed snap packages
+      ansible.builtin.command: "snap remove --purge {{ item }}"
+      loop: "{{ installed_snaps.stdout_lines | default([]) }}"
+      failed_when: false
+      when:
+        - snap_bin.stat.exists
+        - (installed_snaps.stdout_lines | default([])) | length > 0
+
+    - name: Stop and mask snapd units
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        state: stopped
+        enabled: false
+        masked: true
+      loop:
+        - snapd.service
+        - snapd.socket
+        - snapd.seeded.service
+      failed_when: false
+
+    - name: Purge snapd apt package
+      ansible.builtin.apt:
+        name: snapd
+        state: absent
+        purge: true
+        autoremove: true
+
+    - name: Remove snap data directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /snap
+        - /var/snap
+        - /var/lib/snapd
+        - /var/cache/snapd
+
+    - name: Block snapd from apt installation
+      ansible.builtin.copy:
+        dest: /etc/apt/preferences.d/no-snap.pref
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          Package: snapd
+          Pin: version *
+          Pin-Priority: -1
