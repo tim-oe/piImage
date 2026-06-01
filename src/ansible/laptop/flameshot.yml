@@ -1,0 +1,99 @@
+---
+- name: "install flameshot and set wayland shortcut"
+  hosts: "all"
+  become: true
+  vars:
+    user: "{{ shortcut_user | default('tcronin') }}"
+    flameshot_shortcut_path: "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/"
+  tasks:
+    - name: "Update apt repo and cache."
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: "install flameshot and wl-clipboard"
+      apt:
+        name:
+          - "flameshot"
+          - "wl-clipboard"
+        state: "present"
+
+    - name: "configure Ctrl+Print custom shortcut for flameshot"
+      become_user: "{{ user }}"
+      ansible.builtin.shell: |
+        dbus-run-session -- python3 - <<'PY'
+        import ast
+        import subprocess
+
+        schema = "org.gnome.settings-daemon.plugins.media-keys"
+        key = "custom-keybindings"
+        path = "{{ flameshot_shortcut_path }}"
+
+        current = subprocess.check_output(
+            ["gsettings", "get", schema, key], text=True
+        ).strip()
+
+        shortcuts = [] if current == "@as []" else ast.literal_eval(current)
+        if path not in shortcuts:
+            shortcuts.append(path)
+            subprocess.check_call(["gsettings", "set", schema, key, str(shortcuts)])
+
+        # avoid GNOME default Ctrl+Print capture shortcut conflicts when keys exist
+        media_keys = set(
+            subprocess.check_output(["gsettings", "list-keys", schema], text=True).split()
+        )
+        for shot_key in [
+            "screenshot-clip",
+            "window-screenshot-clip",
+            "area-screenshot-clip",
+        ]:
+            if shot_key in media_keys:
+                subprocess.check_call(["gsettings", "set", schema, shot_key, "''"])
+
+        shell_schema = "org.gnome.shell.keybindings"
+        shell_keys = set(
+            subprocess.check_output(
+                ["gsettings", "list-keys", shell_schema], text=True
+            ).split()
+        )
+        for shot_key in [
+            "show-screenshot-ui",
+            "screenshot",
+            "screenshot-window",
+            "show-screen-recording-ui",
+        ]:
+            if shot_key in shell_keys:
+                subprocess.check_call(
+                    ["gsettings", "set", shell_schema, shot_key, "[]"]
+                )
+
+        subprocess.check_call(
+            [
+                "gsettings",
+                "set",
+                f"org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:{path}",
+                "name",
+                "Flameshot",
+            ]
+        )
+        subprocess.check_call(
+            [
+                "gsettings",
+                "set",
+                f"org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:{path}",
+                "command",
+                'sh -c "if [ \\"$XDG_SESSION_TYPE\\" = wayland ] || [ -n \\"$WAYLAND_DISPLAY\\" ]; then QT_QPA_PLATFORM=wayland /usr/bin/flameshot gui; else /usr/bin/flameshot gui; fi"',
+            ]
+        )
+        subprocess.check_call(
+            [
+                "gsettings",
+                "set",
+                f"org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:{path}",
+                "binding",
+                "<Primary>Print",
+            ]
+        )
+        PY
+      args:
+        executable: /bin/bash

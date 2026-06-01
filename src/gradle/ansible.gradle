@@ -83,6 +83,7 @@ registerAnsibleTask('libreoffice', 'src/ansible/apps/libreoffice.yml', 'run ansi
 registerAnsibleTask('pritunl', 'src/ansible/laptop/work/prit.yml', 'run ansible pritunl script')
 registerAnsibleTask('shutter', 'src/ansible/apps/shutter.yml', 'run ansible shutter script')
 registerAnsibleTask('ltPrinter', 'src/ansible/laptop/printer.yml', 'run ansible brother printer script')
+registerAnsibleTask('ltFlameshot', 'src/ansible/laptop/flameshot.yml', 'install flameshot and configure Ctrl+Print shortcut')
 registerAnsibleTask('dtInit', 'src/ansible/desktop/desktop-init.yml', 'run ansible desktop init script')
 registerAnsibleTask('dtMount', 'src/ansible/desktop/raid-mnt.yml', 'run ansible desktop init script')
 registerAnsibleTask('awscli', 'src/ansible/dev/awscli.yml', 'run ansible awscli script')

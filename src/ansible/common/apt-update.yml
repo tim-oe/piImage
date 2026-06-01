@@ -10,6 +10,11 @@
         content: "$nrconf{restart} = 'a';\n"
       ignore_errors: yes # may not exist on all distros
 
+    - name: Purge apt list contents
+      ansible.builtin.shell: "rm -rf /var/lib/apt/lists/*"
+      args:
+        executable: /bin/bash
+
     - name: "Update apt repo and cache."
       apt:
         update_cache: true
