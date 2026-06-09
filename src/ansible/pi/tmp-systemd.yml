@@ -1,0 +1,34 @@
+---
+- name: "set /tmp tmpfs size via systemd"
+  hosts: "all"
+  become: true
+  vars:
+    tmp_mount_override_dir: "/etc/systemd/system/tmp.mount.d"
+    tmp_mount_override_file: "{{ tmp_mount_override_dir }}/override.conf"
+    tmp_tmpfs_size: "8G"
+    ansible_remote_tmp: "/var/tmp/.ansible/tmp"
+  tasks:
+    - name: "create tmp.mount override directory"
+      ansible.builtin.file:
+        path: "{{ tmp_mount_override_dir }}"
+        state: "directory"
+        owner: "root"
+        group: "root"
+        mode: "0755"
+
+    - name: "write tmp.mount override"
+      ansible.builtin.copy:
+        dest: "{{ tmp_mount_override_file }}"
+        owner: "root"
+        group: "root"
+        mode: "0644"
+        content: |
+          [Mount]
+          Options=mode=1777,strictatime,nosuid,nodev,size={{ tmp_tmpfs_size }}
+
+    - name: "reload systemd daemon"
+      ansible.builtin.systemd:
+        daemon_reload: true
+
+    - name: "remount /tmp to apply updated mount options"
+      ansible.builtin.command: "mount -o remount /tmp"

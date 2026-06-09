@@ -55,6 +55,7 @@ registerAnsibleTask('certbot', 'src/ansible/mgr/certbot.yml', 'run ansible certb
 registerAnsibleTask('nvm', 'src/ansible/dev/nvm.yml', 'run ansible nvm script')
 registerAnsibleTask('nodejs', 'src/ansible/dev/nodejs.yml', 'run ansible nodejs script')
 registerAnsibleTask('rust', 'src/ansible/dev/rust.yml', 'run ansible rust script')
+registerAnsibleTask('rustToolchain', 'src/ansible/dev/rust-toolchain.yml', 'install rust toolchain via rustup')
 registerAnsibleTask('sdkman', 'src/ansible/dev/sdkman.yml', 'run ansible sdkman script')
 registerAnsibleTask('vscode', 'src/ansible/dev/vscode.yml', 'run ansible vscode script')
 registerAnsibleTask('cursor', 'src/ansible/dev/cursor.yml', 'run ansible cursor script')
@@ -139,6 +140,7 @@ registerAnsibleTask('ssh', 'src/ansible/common/ssh-lockdown.yml', 'run ansible s
 // for newer rpi-swap package
 registerAnsibleTask('piSwap', 'src/ansible/pi/rpi-swap.yml', 'run ansible rpi swap script')
 registerAnsibleTask('log2ram', 'src/ansible/pi/log2ram.yml', 'run ansible log2ram script')
+registerAnsibleTask('tmpSystemd', 'src/ansible/pi/tmp-systemd.yml', 'set /tmp tmpfs size via systemd', "-e '{\"tmp_tmpfs_size\":\"${findProperty('tmp_tmpfs_size') ?: '8G'}\"}'")
 
 tasks.register('mysql') {
     description = 'run ansible apt weather python script'
