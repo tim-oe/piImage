@@ -5,17 +5,65 @@
   become: true
   vars:
     config_file: "/etc/rpi/swap.conf.d/swap.conf"
-    multiline: |
-      [File]
-      MaxSizeMiB=4096
+    swap_profiles:
+      pi3:
+        mechanism: swapfile
+        fixed_size_mib: 2048
+      pi4:
+        mechanism: swapfile
+        fixed_size_mib: 4096
+      pi5:
+        mechanism: swapfile
+        fixed_size_mib: 4096
+      default:
+        mechanism: swapfile
+        fixed_size_mib: 2048
 
   tasks:
+    - name: "Gather hardware facts"
+      ansible.builtin.setup:
+        gather_subset:
+          - hardware
+
+    - name: "Read Raspberry Pi model"
+      ansible.builtin.slurp:
+        src: /proc/device-tree/model
+      register: pi_model_file
+
+    - name: "Set Pi hardware facts"
+      ansible.builtin.set_fact:
+        pi_model: "{{ pi_model_file.content | b64decode | replace('\0', '') | trim }}"
+        pi_mem_mb: "{{ ansible_memtotal_mb | int }}"
+
+    - name: "Determine Pi generation"
+      ansible.builtin.set_fact:
+        pi_generation: >-
+          {%- if 'Pi 5' in pi_model -%}pi5
+          {%- elif 'Pi 4' in pi_model -%}pi4
+          {%- elif 'Pi 3' in pi_model or 'Compute Module 3' in pi_model -%}pi3
+          {%- else -%}default{%- endif -%}
+
+    - name: "Apply swap profile for detected hardware"
+      ansible.builtin.set_fact:
+        swap_mechanism: "{{ swap_mechanism | default(swap_profiles[pi_generation].mechanism) }}"
+        swap_fixed_size_mib: "{{ swap_fixed_size_mib | default(swap_profiles[pi_generation].fixed_size_mib) }}"
+
+    - name: "Show selected swap configuration"
+      ansible.builtin.debug:
+        msg: >-
+          model={{ pi_model }},
+          generation={{ pi_generation }},
+          ram={{ pi_mem_mb }}MiB,
+          mechanism={{ swap_mechanism }},
+          fixed_size={{ swap_fixed_size_mib }}MiB
+          (override with -e swap_mechanism=... -e swap_fixed_size_mib=...)
+
     - name: "Update apt repo and cache."
       apt:
         update_cache: true
         cache_valid_time: 3600
 
-    - name: "install pipx deps"
+    - name: "install rpi-swap packages"
       apt:
         name:
           - rpi-swap
@@ -31,7 +79,13 @@
     - name: "configure rpi swap"
       copy:
         dest: "{{ config_file }}"
-        content: "{{ multiline }}"
+        content: |
+          [Main]
+          Mechanism={{ swap_mechanism }}
+
+          [File]
+          FixedSizeMiB={{ swap_fixed_size_mib }}
+          Path=/var/swap
 
     - name: "Check if a reboot is needed on all servers."
       stat:

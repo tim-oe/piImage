@@ -5,7 +5,7 @@
   vars:
     tmp_mount_override_dir: "/etc/systemd/system/tmp.mount.d"
     tmp_mount_override_file: "{{ tmp_mount_override_dir }}/override.conf"
-    tmp_tmpfs_size: "8G"
+    tmp_tmpfs_size: "4G"
     ansible_remote_tmp: "/var/tmp/.ansible/tmp"
   tasks:
     - name: "create tmp.mount override directory"

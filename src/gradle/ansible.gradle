@@ -140,7 +140,7 @@ registerAnsibleTask('ssh', 'src/ansible/common/ssh-lockdown.yml', 'run ansible s
 // for newer rpi-swap package
 registerAnsibleTask('piSwap', 'src/ansible/pi/rpi-swap.yml', 'run ansible rpi swap script')
 registerAnsibleTask('log2ram', 'src/ansible/pi/log2ram.yml', 'run ansible log2ram script')
-registerAnsibleTask('tmpSystemd', 'src/ansible/pi/tmp-systemd.yml', 'set /tmp tmpfs size via systemd', "-e '{\"tmp_tmpfs_size\":\"${findProperty('tmp_tmpfs_size') ?: '8G'}\"}'")
+registerAnsibleTask('tmpSystemd', 'src/ansible/pi/tmp-systemd.yml', 'set /tmp tmpfs size via systemd', "-e '{\"tmp_tmpfs_size\":\"${findProperty('tmp_tmpfs_size') ?: '4G'}\"}'")
 
 tasks.register('mysql') {
     description = 'run ansible apt weather python script'
