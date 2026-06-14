@@ -14,7 +14,7 @@
           - "gcc"
           - "pkg-config"
           - "libssl-dev"
-          - "cmake"
+          - "build-essential"
           - "ripgrep"
           - "python3-venv"
           - "python3-pip"
