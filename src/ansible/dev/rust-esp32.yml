@@ -1,0 +1,165 @@
+---
+# ESP32 Rust host setup (assumes rust.yml has already been applied)
+# https://docs.esp-rs.org/book/
+# https://raw.githubusercontent.com/tim-oe/rust_gps_ntp/refs/heads/main/docs/setup.md
+- name: "install esp32 rust toolchain and tools"
+  hosts: "all"
+  become: true
+  vars:
+    rust_user: "tcronin"
+    rust_cargo_bin: "/home/{{ rust_user }}/.cargo/bin"
+    rust_home: "/home/{{ rust_user }}"
+    rust_export_esp: "/home/{{ rust_user }}/.cargo/export-esp.sh"
+  tasks:
+    - name: "check rust toolchain is installed"
+      ansible.builtin.stat:
+        path: "{{ rust_cargo_bin }}/cargo"
+      register: rust_cargo
+      failed_when: not rust_cargo.stat.exists
+
+    - name: "add user to dialout group for serial access"
+      ansible.builtin.user:
+        name: "{{ rust_user }}"
+        groups: "dialout"
+        append: true
+
+    - name: "check if espup is installed"
+      ansible.builtin.stat:
+        path: "{{ rust_cargo_bin }}/espup"
+      register: espup_bin
+
+    - name: "install espup"
+      ansible.builtin.command:
+        cmd: "{{ rust_cargo_bin }}/cargo install espup"
+      become: true
+      become_user: "{{ rust_user }}"
+      environment:
+        HOME: "{{ rust_home }}"
+        PATH: "{{ rust_cargo_bin }}:{{ ansible_env.PATH }}"
+      when: not espup_bin.stat.exists
+
+    - name: "check if esp toolchain is installed"
+      ansible.builtin.command:
+        cmd: "{{ rust_cargo_bin }}/rustup toolchain list"
+      become: true
+      become_user: "{{ rust_user }}"
+      register: rustup_toolchains
+      changed_when: false
+
+    - name: "check if export-esp.sh exists under ~/.cargo"
+      ansible.builtin.stat:
+        path: "{{ rust_export_esp }}"
+      register: export_esp_cargo
+
+    - name: "check if export-esp.sh exists in home directory"
+      ansible.builtin.stat:
+        path: "{{ rust_home }}/export-esp.sh"
+      register: export_esp_home
+
+    - name: "migrate export-esp.sh to ~/.cargo"
+      ansible.builtin.command:
+        cmd: "mv {{ rust_home }}/export-esp.sh {{ rust_export_esp }}"
+      become: true
+      become_user: "{{ rust_user }}"
+      when:
+        - export_esp_home.stat.exists
+        - not export_esp_cargo.stat.exists
+
+    - name: "install esp toolchain via espup"
+      ansible.builtin.shell: |
+        espup install --export-file "$HOME/.cargo/export-esp.sh"
+      args:
+        executable: /bin/bash
+      become: true
+      become_user: "{{ rust_user }}"
+      environment:
+        HOME: "{{ rust_home }}"
+        PATH: "{{ rust_cargo_bin }}:{{ ansible_env.PATH }}"
+      when: >
+        'esp' not in rustup_toolchains.stdout or
+        (not export_esp_cargo.stat.exists and not export_esp_home.stat.exists)
+
+    - name: "check if espflash is installed"
+      ansible.builtin.stat:
+        path: "{{ rust_cargo_bin }}/espflash"
+      register: espflash_bin
+
+    - name: "install esp flashing tools"
+      ansible.builtin.command:
+        cmd: "{{ rust_cargo_bin }}/cargo install espflash cargo-espflash"
+      become: true
+      become_user: "{{ rust_user }}"
+      environment:
+        HOME: "{{ rust_home }}"
+        PATH: "{{ rust_cargo_bin }}:{{ ansible_env.PATH }}"
+      when: not espflash_bin.stat.exists
+
+    - name: "check if ldproxy is installed"
+      ansible.builtin.stat:
+        path: "{{ rust_cargo_bin }}/ldproxy"
+      register: ldproxy_bin
+
+    - name: "install ldproxy"
+      ansible.builtin.command:
+        cmd: "{{ rust_cargo_bin }}/cargo install ldproxy"
+      become: true
+      become_user: "{{ rust_user }}"
+      environment:
+        HOME: "{{ rust_home }}"
+        PATH: "{{ rust_cargo_bin }}:{{ ansible_env.PATH }}"
+      when: not ldproxy_bin.stat.exists
+
+    - name: "check if just is installed"
+      ansible.builtin.stat:
+        path: "{{ rust_cargo_bin }}/just"
+      register: just_bin
+
+    - name: "install just task runner"
+      ansible.builtin.command:
+        cmd: "{{ rust_cargo_bin }}/cargo install just"
+      become: true
+      become_user: "{{ rust_user }}"
+      environment:
+        HOME: "{{ rust_home }}"
+        PATH: "{{ rust_cargo_bin }}:{{ ansible_env.PATH }}"
+      when: not just_bin.stat.exists
+
+    - name: "install llvm-tools-preview for coverage"
+      ansible.builtin.command:
+        cmd: "{{ rust_cargo_bin }}/rustup component add llvm-tools-preview"
+      become: true
+      become_user: "{{ rust_user }}"
+      environment:
+        HOME: "{{ rust_home }}"
+        PATH: "{{ rust_cargo_bin }}:{{ ansible_env.PATH }}"
+      register: llvm_tools
+      changed_when: "'is up to date' not in llvm_tools.stdout"
+
+    - name: "check if cargo-llvm-cov is installed"
+      ansible.builtin.stat:
+        path: "{{ rust_cargo_bin }}/cargo-llvm-cov"
+      register: cargo_llvm_cov_bin
+
+    - name: "install cargo-llvm-cov"
+      ansible.builtin.command:
+        cmd: "{{ rust_cargo_bin }}/cargo install cargo-llvm-cov"
+      become: true
+      become_user: "{{ rust_user }}"
+      environment:
+        HOME: "{{ rust_home }}"
+        PATH: "{{ rust_cargo_bin }}:{{ ansible_env.PATH }}"
+      when: not cargo_llvm_cov_bin.stat.exists
+
+    - name: "persist esp environment in .profile"
+      ansible.builtin.blockinfile:
+        path: "{{ rust_home }}/.profile"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK - rust esp"
+        block: |
+
+          if [ -f "$HOME/.cargo/export-esp.sh" ]; then
+            . "$HOME/.cargo/export-esp.sh"
+          fi
+        create: true
+        owner: "{{ rust_user }}"
+        group: "{{ rust_user }}"
+        mode: "0644"

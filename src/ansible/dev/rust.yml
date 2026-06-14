@@ -1,43 +1,60 @@
 ---
 # https://rustup.rs/
-#
-- name: "install rust toolchain"
+- name: "install rust toolchain via rustup"
   hosts: "all"
   become: true
   vars:
     rust_user: "tcronin"
+    rust_toolchain: "stable"
   tasks:
-    - name: Install Rust build dependencies
+    - name: "install rust toolchain dependencies"
       ansible.builtin.apt:
         name:
-          - curl
-          - gcc
-          - pkg-config
-          - libssl-dev
-          - cmake
-        state: present
+          - "curl"
+          - "gcc"
+          - "pkg-config"
+          - "libssl-dev"
+          - "cmake"
+          - "ripgrep"
+          - "python3-venv"
+          - "python3-pip"
+        state: "present"
         update_cache: true
         cache_valid_time: 3600
 
-    - name: Check if rustup is already installed
+    - name: "check if rustup exists"
       ansible.builtin.stat:
-        path: "/home/{{ rust_user }}/.cargo/bin/rustc"
-      register: rust_rustc
+        path: "/home/{{ rust_user }}/.cargo/bin/rustup"
+      register: rustup_bin
 
-    - name: Install rustup if missing
-      when: not rust_rustc.stat.exists
+    - name: "install rustup if missing"
+      when: not rustup_bin.stat.exists
       block:
-        - name: Download rustup installer
+        - name: "download rustup installer"
           ansible.builtin.get_url:
             url: "https://sh.rustup.rs"
-            dest: /tmp/rustup-init.sh
+            dest: "/tmp/rustup-init.sh"
             mode: "0700"
             owner: "{{ rust_user }}"
             group: "{{ rust_user }}"
             force: true
 
-        - name: Run rustup installer
-          ansible.builtin.shell: |
-            /tmp/rustup-init.sh -y --default-toolchain stable
+        - name: "run rustup installer"
+          ansible.builtin.command:
+            cmd: "/tmp/rustup-init.sh -y --default-toolchain {{ rust_toolchain }}"
           become: true
           become_user: "{{ rust_user }}"
+
+    - name: "ensure default rust toolchain is installed"
+      ansible.builtin.command:
+        cmd: "/home/{{ rust_user }}/.cargo/bin/rustup toolchain install {{ rust_toolchain }}"
+      become: true
+      become_user: "{{ rust_user }}"
+      changed_when: false
+
+    - name: "set rustup default toolchain"
+      ansible.builtin.command:
+        cmd: "/home/{{ rust_user }}/.cargo/bin/rustup default {{ rust_toolchain }}"
+      become: true
+      become_user: "{{ rust_user }}"
+      changed_when: false
